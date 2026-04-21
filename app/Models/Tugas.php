@@ -16,6 +16,7 @@ class Tugas extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_pertemuan',
+        'id_guru',
         'judul',
         'deskripsi',
         'file_url',
@@ -36,5 +37,10 @@ class Tugas extends Model
      public function Pertemuan()
     {
         return $this->hasOne(Pertemuan::class, 'id_pertemuan');
+    }
+
+    public function Guru()
+    {
+        return $this->hasOne(Guru::class, 'id_guru');
     }
 }
