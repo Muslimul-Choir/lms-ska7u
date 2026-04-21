@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class JamBelajar extends Model
+{
+    use SoftDeletes; // Mengaktifkan deleted_at
+
+    // Nama tabel
+    protected $table = 'jam_belajar';
+    protected $primaryKey = 'id';
+
+    // Kolom yang bisa diisi massal
+    protected $fillable = [
+        'id_guru_mapel',
+        'jam_mulai',
+        'jam_selesai',
+    ];
+
+    // Kolom tanggal yang otomatis diubah menjadi Carbon
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
+     public function GuruMapel()
+    {
+        return $this->hasOne(GuruMapel::class, 'id_guru_mapel');
+    }
+}
