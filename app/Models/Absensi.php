@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Absensi extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes; // Mengaktifkan deleted_at
 
+    // Nama tabel
     protected $table = 'absensi';
     protected $primaryKey = 'id';
 
+    // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_pertemuan',
         'id_siswa',
@@ -19,21 +21,15 @@ class Absensi extends Model
         'keterangan',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+    // Kolom tanggal yang otomatis diubah menjadi Carbon
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
     ];
 
-    // Absensi dimiliki oleh satu Pertemuan
-    public function pertemuan()
+     public function Pertemuan()
     {
         return $this->belongsTo(Pertemuan::class, 'id_pertemuan');
-    }
-
-    // Absensi dimiliki oleh satu Siswa
-    public function siswa()
-    {
-        return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 }
