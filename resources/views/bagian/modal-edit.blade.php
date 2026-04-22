@@ -1,39 +1,125 @@
 <div id="modalEdit" style="display:none; position:fixed; inset:0; z-index:9999;">
-    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45);" id="overlayEdit"></div>
+
+    {{-- Overlay --}}
+    <div id="overlayEdit"
+         style="position:absolute; inset:0; background:rgba(10,25,60,0.55); backdrop-filter:blur(3px);">
+    </div>
+
+    {{-- Dialog wrapper --}}
     <div style="position:relative; z-index:10; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:1rem;">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-800">Edit Bagian</h3>
-                <button type="button" id="closeEdit" class="text-gray-400 hover:text-gray-700 text-2xl leading-none font-bold">&times;</button>
+
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden
+                    ring-1 ring-slate-200">
+
+            {{-- Modal Header --}}
+            <div class="flex items-center justify-between px-6 py-4
+                        bg-gradient-to-r from-[#7A5500] to-[#C8992A]">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-md bg-white/15 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                                     m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-semibold text-sm tracking-wide">Edit Bagian</h3>
+                        <p class="text-amber-100 text-[11px]">Perbarui data unit/divisi</p>
+                    </div>
+                </div>
+                <button type="button" id="closeEdit"
+                        class="w-7 h-7 flex items-center justify-center rounded-lg
+                               bg-white/10 hover:bg-white/25 text-white transition">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
+
+            {{-- Notice bar --}}
+            <div class="flex items-center gap-2 px-6 py-2.5 bg-amber-50 border-b border-amber-100">
+                <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213
+                             3.001-1.742 3.001H4.42c-1.53
+                             0-2.493-1.667-1.743-3.001l5.58-9.92zM11
+                             13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1
+                             1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clip-rule="evenodd"/>
+                </svg>
+                <p class="text-amber-700 text-[11px] font-medium">
+                    Perubahan akan langsung disimpan ke database.
+                </p>
+            </div>
+
+            {{-- Modal Body --}}
             <form id="formEdit" action="" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
                 @method('PUT')
+
+                {{-- Nama Bagian --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Nama Bagian <span class="text-red-500">*</span>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                        Nama Bagian <span class="text-red-400">*</span>
                     </label>
-                    <input type="text" id="editNamaBagian" name="nama_bagian"
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                           placeholder="Contoh: HRD">
+                    <input type="text"
+                           id="editNamaBagian"
+                           name="nama_bagian"
+                           placeholder="Contoh: HRD, Keuangan, IT..."
+                           class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700
+                                  placeholder-slate-300
+                                  focus:outline-none focus:ring-2 focus:ring-[#C8992A]/30 focus:border-[#C8992A]
+                                  transition">
                 </div>
+
+                {{-- Deskripsi --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                    <textarea id="editDeskripsi" name="deskripsi" rows="3"
-                              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                              placeholder="Deskripsi singkat (opsional)"></textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                        Deskripsi
+                        <span class="normal-case font-normal text-slate-400 tracking-normal ml-1">(opsional)</span>
+                    </label>
+                    <textarea id="editDeskripsi"
+                              name="deskripsi"
+                              rows="3"
+                              placeholder="Deskripsi singkat mengenai bagian ini..."
+                              class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700
+                                     placeholder-slate-300 resize-none
+                                     focus:outline-none focus:ring-2 focus:ring-[#C8992A]/30 focus:border-[#C8992A]
+                                     transition"></textarea>
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
+
+                {{-- Divider --}}
+                <div class="border-t border-slate-100"></div>
+
+                {{-- Actions --}}
+                <div class="flex items-center justify-end gap-2 pt-1">
                     <button type="button" id="cancelEdit"
-                            class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">
+                            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium
+                                   bg-slate-100 hover:bg-slate-200 text-slate-600
+                                   rounded-lg transition border border-slate-200">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
                         Batal
                     </button>
                     <button type="submit"
-                            class="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition">
+                            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold
+                                   bg-[#1B3A6B] hover:bg-[#0F2145] text-white
+                                   rounded-lg transition shadow-sm shadow-blue-900/20">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1
+                                     m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
                         Update
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
