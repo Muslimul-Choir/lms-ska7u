@@ -29,11 +29,11 @@ class JadwalBelajar extends Model
 
      public function JamBelajar()
     {
-        return $this->hasOne(JamBelajar::class, 'id_jam');
+        return $this->belongsTo(JamBelajar::class, 'id_jam');
     }
 
      public function Kelas()
     {
-        return $this->hasOne(Kelas::class, 'id_kelas');
+        return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 }

@@ -29,16 +29,16 @@ class Gurumapel extends Model
 
      public function Mapel()
     {
-        return $this->hasOne(Mapel::class, 'id_mapel');
+        return $this->belongsTo(Mapel::class, 'id_mapel');
     }
 
      public function Guru()
     {
-        return $this->hasOne(Guru::class, 'id_guru');
+        return $this->belongsTo(Guru::class, 'id_guru');
     }
 
      public function Kelas()
     {
-        return $this->hasOne(Kelas::class, 'id_kelas');
+        return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 }

@@ -36,11 +36,11 @@ class Tugas extends Model
 
      public function Pertemuan()
     {
-        return $this->hasOne(Pertemuan::class, 'id_pertemuan');
+        return $this->belongsTo(Pertemuan::class, 'id_pertemuan');
     }
 
     public function Guru()
     {
-        return $this->hasOne(Guru::class, 'id_guru');
+        return $this->belongsTo(Guru::class, 'id_guru');
     }
 }

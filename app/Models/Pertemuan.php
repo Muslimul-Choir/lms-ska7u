@@ -30,6 +30,6 @@ class Pertemuan extends Model
 
      public function JadwalBelajar()
     {
-        return $this->hasOne(JadwalBelajar::class, 'id_jadwal');
+        return $this->belongsTo(JadwalBelajar::class, 'id_jadwal');
     }
 }

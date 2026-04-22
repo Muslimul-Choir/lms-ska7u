@@ -31,11 +31,11 @@ class Penilaian extends Model
 
      public function PengumpulanTugas()
     {
-        return $this->hasOne(PengumpulanTugas::class, 'id_pengumpulan_tugas');
+        return $this->belongsTo(PengumpulanTugas::class, 'id_pengumpulan_tugas');
     }
 
      public function Guru()
     {
-        return $this->hasOne(Guru::class, 'id_guru');
+        return $this->belongsTo(Guru::class, 'id_guru');
     }
 }

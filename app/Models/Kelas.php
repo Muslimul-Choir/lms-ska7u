@@ -31,26 +31,26 @@ class Kelas extends Model
 
     public function Tingkatan()
         {
-            return $this->hasOne(Tingkatan::class, 'id_tingkatan');
+            return $this->belongsTo(Tingkatan::class, 'id_tingkatan');
         }    
 
      public function Jurusan()
     {
-        return $this->hasOne(Jurusan::class, 'id_jurusan');
+        return $this->belongsTo(Jurusan::class, 'id_jurusan');
     }
 
      public function Bagian()
     {
-        return $this->hasOne(Bagian::class, 'id_bagian');
+        return $this->belongsTo(Bagian::class, 'id_bagian');
     }
 
      public function TahunAjaran()
     {
-        return $this->hasOne(TahunAjaran::class, 'id_tahun_ajaran');
+        return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
     }
 
      public function Semester()
     {
-        return $this->hasOne(Semester::class, 'id_semester');
+        return $this->belongsTo(Semester::class, 'id_semester');
     }
 }

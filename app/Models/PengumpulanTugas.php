@@ -30,11 +30,11 @@ class PengumpulanTugas extends Model
 
      public function Tugas()
     {
-        return $this->hasOne(Tugas::class, 'id_tugas');
+        return $this->belongsTo(Tugas::class, 'id_tugas');
     }
 
      public function Siswa()
     {
-        return $this->hasOne(Siswa::class, 'id_siswa');
+        return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 }

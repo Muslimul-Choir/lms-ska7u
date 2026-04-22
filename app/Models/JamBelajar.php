@@ -29,6 +29,6 @@ class JamBelajar extends Model
 
      public function GuruMapel()
     {
-        return $this->hasOne(GuruMapel::class, 'id_guru_mapel');
+        return $this->belongsTo(GuruMapel::class, 'id_guru_mapel');
     }
 }

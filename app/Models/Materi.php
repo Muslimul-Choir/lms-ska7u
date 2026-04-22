@@ -31,6 +31,6 @@ class Materi extends Model
 
      public function Pertemuan()
     {
-        return $this->hasOne(Pertemuan::class, 'id_pertemuan');
+        return $this->belongsTo(Pertemuan::class, 'id_pertemuan');
     }
 }

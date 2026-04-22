@@ -2,46 +2,90 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BagianRequest;
 use App\Models\Bagian;
-use Illuminate\Http\Request;
-use App\Http\Requests\Bagian\StoreBagianRequest;
-use App\Http\Requests\Bagian\UpdateBagianRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class BagianController extends Controller
 {
-    public function index()
+   
+    public function index(): View
     {
-        $bagians = Bagian::all();
-        return response()->json($bagians);
+        $bagians = Bagian::latest()->paginate(10);
+
+        return view('bagian.index', compact('bagians'));
     }
 
-    public function store(StoreBagianRequest $request)
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): View
     {
-        $validated = $request->validated();
-
-        $bagian = Bagian::create($validated);
-        return response()->json($bagian, 201);
+        return view('bagian.create');
     }
 
-    public function show($id)
+    public function store(BagianRequest $request): RedirectResponse
     {
-        $bagian = Bagian::findOrFail($id);
-        return response()->json($bagian);
+        Bagian::create($request->validated());
+
+        return redirect()
+            ->route('bagian.index')
+            ->with('success', 'Bagian berhasil ditambahkan.');
     }
 
-    public function update(UpdateBagianRequest $request, $id)
+    public function show(Bagian $bagian): View
     {
-        $validated = $request->validated();
-
-        $bagian = Bagian::findOrFail($id);
-        $bagian->update($validated);
-        return response()->json($bagian);
+        return view('bagian.show', compact('bagian'));
     }
 
-    public function destroy($id)
+    public function edit(Bagian $bagian): View
     {
-        $bagian = Bagian::findOrFail($id);
+        return view('bagian.edit', compact('bagian'));
+    }
+
+    public function update(BagianRequest $request, Bagian $bagian): RedirectResponse
+    {
+        $bagian->update($request->validated());
+
+        return redirect()
+            ->route('bagian.index')
+            ->with('success', 'Bagian berhasil diperbarui.');
+    }
+
+    public function destroy(Bagian $bagian): RedirectResponse
+    {
         $bagian->delete();
-        return response()->json(null, 204);
+
+        return redirect()
+            ->route('bagian.index')
+            ->with('success', 'Bagian berhasil dihapus.');
+    }
+
+    public function trash(): View
+    {
+        $bagians = Bagian::onlyTrashed()->latest()->paginate(10);
+
+        return view('bagian.trash', compact('bagians'));
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $bagian = Bagian::onlyTrashed()->findOrFail($id);
+        $bagian->restore();
+
+        return redirect()
+            ->route('bagian.trash')
+            ->with('success', 'Bagian berhasil dipulihkan.');
+    }
+
+    public function forceDelete(int $id): RedirectResponse
+    {
+        $bagian = Bagian::onlyTrashed()->findOrFail($id);
+        $bagian->forceDelete();
+
+        return redirect()
+            ->route('bagian.trash')
+            ->with('success', 'Bagian berhasil dihapus permanen.');
     }
 }
