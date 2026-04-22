@@ -11,9 +11,16 @@ class SemesterController extends Controller
 {
     public function index(): View
     {
-        $semesters = Semester::latest()->paginate(5);
+        $search = request('search');
 
-        return view('semester.index', compact('semesters'));
+        $semesters = Semester::when($search, function ($query, $search) {
+                return $query->where('nama_semester', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('semester.index', compact('semesters', 'search'));
     }
 
     public function create(): View

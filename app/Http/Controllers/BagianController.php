@@ -12,9 +12,16 @@ class BagianController extends Controller
    
     public function index(): View
     {
-        $bagians = Bagian::latest()->paginate(5);
+        $search = request('search');
 
-        return view('bagian.index', compact('bagians'));
+        $bagians = Bagian::when($search, function ($query, $search) {
+                return $query->where('nama_bagian', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(5)
+            ->withQueryString(); // biar search tidak hilang saat pagination
+
+        return view('bagian.index', compact('bagians', 'search'));
     }
 
     public function create(): View

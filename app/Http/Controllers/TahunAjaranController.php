@@ -11,9 +11,16 @@ class TahunAjaranController extends Controller
 {
     public function index(): View
     {
-        $tahunAjarans = TahunAjaran::latest()->paginate(5);
+        $search = request('search');
 
-        return view('tahunajaran.index', compact('tahunAjarans'));
+        $tahunAjarans = TahunAjaran::when($search, function ($query, $search) {
+                return $query->where('nama_tahun_ajaran', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('tahunajaran.index', compact('tahunAjarans', 'search'));
     }
 
     public function create(): View

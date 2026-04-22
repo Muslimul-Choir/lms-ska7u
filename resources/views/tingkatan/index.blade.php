@@ -32,6 +32,22 @@
                     </div>
                 </div>
 
+                <form action="{{ route('tingkatan.index') }}" method="GET" class="mb-4 flex gap-2">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ request('search') }}"
+                        placeholder="Cari tingkatan..."
+                        class="border rounded px-3 py-2 w-full"
+                    >
+                    <button 
+                        type="submit" 
+                        class="bg-red-500 text-white px-4 py-2 rounded"
+                    >
+                        Cari
+                    </button>
+                </form>
+
                 {{-- Table --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
