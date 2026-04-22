@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Trash — Semester') }}
+            {{ __('Trash — Tahun Ajaran') }}
         </h2>
     </x-slot>
 
@@ -18,8 +18,8 @@
 
             <div class="bg-white shadow-sm rounded-xl overflow-hidden">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-700">Data Semester Terhapus</h3>
-                    <a href="{{ route('semester.index') }}"
+                    <h3 class="text-lg font-semibold text-gray-700">Data Tahun Ajaran Terhapus</h3>
+                    <a href="{{ route('tahunajaran.index') }}"
                         class="inline-flex items-center gap-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition">
                             ← Data Utama
                     </a>
@@ -30,27 +30,28 @@
                         <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
                             <tr>
                                 <th class="px-6 py-3 text-left w-12">#</th>
-                                <th class="px-6 py-3 text-left">Nama Semester</th>
+                                <th class="px-6 py-3 text-left">Nama Tahun Ajaran</th>
                                 <th class="px-6 py-3 text-left">Dihapus Pada</th>
                                 <th class="px-6 py-3 text-center w-44">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-gray-700">
-                            @forelse ($semesters as $semester)
+                            @forelse ($tahunAjarans as $tahun)
                                 <tr class="hover:bg-gray-50 transition">
                                     <td class="px-6 py-4">
-                                        {{ $loop->iteration + ($semesters->currentPage() - 1) * $semesters->perPage() }}
+                                        {{ $loop->iteration + ($tahunAjarans->currentPage() - 1) * $tahunAjarans->perPage() }}
                                     </td>
                                     <td class="px-6 py-4 font-medium">
-                                        {{ $semester->nama_semester }}
+                                        {{ $tahun->nama_tahun }}
                                     </td>
                                     <td class="px-6 py-4 text-gray-400 text-xs">
-                                        {{ $semester->deleted_at->format('d M Y, H:i') }}
+                                        {{ $tahun->deleted_at->format('d M Y, H:i') }}
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
+
                                             {{-- Restore --}}
-                                            <form action="{{ route('semester.restore', $semester->id) }}" method="POST">
+                                            <form action="{{ route('tahunajaran.restore', $tahun->id) }}" method="POST">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
@@ -60,7 +61,7 @@
                                             </form>
 
                                             {{-- Force Delete --}}
-                                            <form action="{{ route('semester.force-delete', $semester->id) }}" method="POST"
+                                            <form action="{{ route('tahunajaran.force-delete', $tahun->id) }}" method="POST"
                                                   onsubmit="return confirm('Hapus permanen? Data tidak bisa dipulihkan!')">
                                                 @csrf
                                                 @method('DELETE')
@@ -69,6 +70,7 @@
                                                     Hapus Permanen
                                                 </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 </tr>
@@ -83,11 +85,13 @@
                     </table>
                 </div>
 
-                @if ($semesters->hasPages())
+                {{-- Pagination --}}
+                @if ($tahunAjarans->hasPages())
                     <div class="px-6 py-4 border-t border-gray-200">
-                        {{ $semesters->links() }}
+                        {{ $tahunAjarans->links() }}
                     </div>
                 @endif
+
             </div>
         </div>
     </div>

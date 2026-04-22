@@ -20,8 +20,8 @@
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-700">Data Bagian Terhapus</h3>
                     <a href="{{ route('bagian.index') }}"
-                       class="inline-flex items-center gap-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition">
-                        ← Kembali
+                        class="inline-flex items-center gap-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition">
+                            ← Data Utama
                     </a>
                 </div>
 
