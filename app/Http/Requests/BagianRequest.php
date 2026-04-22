@@ -7,20 +7,21 @@ use Illuminate\Validation\Rule;
 
 class BagianRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'nama_bagian' => trim($this->nama_bagian),
+            'deskripsi'   => $this->deskripsi ? trim($this->deskripsi) : null,
+        ]);
+    }
+
     public function rules(): array
     {
-        // Ambil ID bagian jika sedang update (route model binding)
         $bagianId = $this->route('bagian')?->id;
 
         return [
@@ -40,20 +41,14 @@ class BagianRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom attribute names for validator errors.
-     */
     public function attributes(): array
     {
         return [
             'nama_bagian' => 'Nama Bagian',
-            'deskripsi'  => 'deskripsi',
+            'deskripsi'   => 'Deskripsi',
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
     public function messages(): array
     {
         return [
@@ -61,8 +56,9 @@ class BagianRequest extends FormRequest
             'nama_bagian.string'   => ':attribute harus berupa teks.',
             'nama_bagian.max'      => ':attribute tidak boleh lebih dari :max karakter.',
             'nama_bagian.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
-            'deskripsi.string'    => ':attribute harus berupa teks.',
-            'deskripsi.max'       => ':attribute tidak boleh lebih dari :max karakter.',
+
+            'deskripsi.string'     => ':attribute harus berupa teks.',
+            'deskripsi.max'        => ':attribute tidak boleh lebih dari :max karakter.',
         ];
     }
 }

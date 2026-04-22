@@ -17,7 +17,6 @@ class JamBelajar extends Model
     protected $fillable = [
         'jam_mulai',
         'jam_selesai',
-        '',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon

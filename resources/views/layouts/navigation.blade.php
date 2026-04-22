@@ -18,6 +18,12 @@
                     <x-nav-link :href="route('bagian.index')" :active="request()->routeIs('bagian.*')">
                         {{ __('Bagian') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('mapel.index')" :active="request()->routeIs('mapel.*')">
+                        {{ __('Mapel') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('jambelajar.index')" :active="request()->routeIs('jambelajar.*')">
+                        {{ __('Jam Belajar') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('jurusan.index')" :active="request()->routeIs('jurusan.*')">
                         {{ __('Jurusan') }}
                     </x-nav-link>

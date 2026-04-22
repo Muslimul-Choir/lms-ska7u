@@ -12,6 +12,26 @@ class TahunAjaranRequest extends FormRequest
         return true;
     }
 
+    // 🔥 SANITASI INPUT
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'nama_tahun' => $this->cleanString($this->nama_tahun),
+        ]);
+    }
+
+    // helper sanitasi
+    private function cleanString($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        return trim(
+            preg_replace('/\s+/', ' ', strip_tags($value))
+        );
+    }
+
     public function rules(): array
     {
         $tahunAjaranId = $this->route('tahunajaran')?->id;
