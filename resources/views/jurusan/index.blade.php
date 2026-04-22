@@ -92,8 +92,8 @@
     </div>
 
     {{-- Include Modal Partials --}}
-    @include('jurusan.partials.modal-create')
-    @include('jurusan.partials.modal-edit')
+    @include('jurusan.modal-create')
+    @include('jurusan.modal-edit')
 
     {{-- ======================== SCRIPT ======================== --}}
     <script>

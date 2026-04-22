@@ -99,8 +99,8 @@
     </div>
 
     {{-- Modal --}}
-    @include('tingkatan.partials.modal-create')
-    @include('tingkatan.partials.modal-edit')
+    @include('tingkatan.modal-create')
+    @include('tingkatan.modal-edit')
 
     {{-- SCRIPT --}}
     <script>

@@ -94,8 +94,8 @@
     </div>
 
     {{-- Modal --}}
-    @include('semester.partials.modal-create')
-    @include('semester.partials.modal-edit')
+    @include('semester.modal-create')
+    @include('semester.modal-edit')
 
     {{-- SCRIPT --}}
     <script>

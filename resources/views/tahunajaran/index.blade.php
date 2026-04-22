@@ -94,8 +94,8 @@
     </div>
 
     {{-- Modal --}}
-    @include('tahunajaran.partials.modal-create')
-    @include('tahunajaran.partials.modal-edit')
+    @include('tahunajaran.modal-create')
+    @include('tahunajaran.modal-edit')
 
     {{-- SCRIPT --}}
     <script>

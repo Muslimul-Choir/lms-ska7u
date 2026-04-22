@@ -92,8 +92,8 @@
     </div>
 
     {{-- Include Modal Partials --}}
-    @include('bagian.partials.modal-create')
-    @include('bagian.partials.modal-edit')
+    @include('bagian.modal-create')
+    @include('bagian.modal-edit')
 
     {{-- ======================== SCRIPT ======================== --}}
     <script>
