@@ -15,6 +15,15 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('bagian.index')" :active="request()->routeIs('bagian.*')">
+                        {{ __('Bagian') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('jurusan.index')" :active="request()->routeIs('jurusan.*')">
+                        {{ __('Jurusan') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('semester.index')" :active="request()->routeIs('semester.*')">
+                        {{ __('Semester') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -69,6 +78,12 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('bagian.index')" :active="request()->routeIs('bagian.*')">
+                {{ __('Bagian') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('jurusan.index')" :active="request()->routeIs('jurusan.*')">
+                {{ __('Jurusan') }}
             </x-responsive-nav-link>
         </div>
 

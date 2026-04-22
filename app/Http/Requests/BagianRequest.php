@@ -32,7 +32,7 @@ class BagianRequest extends FormRequest
                     ->ignore($bagianId)
                     ->whereNull('deleted_at'),
             ],
-            'keterangan' => [
+            'deskripsi' => [
                 'nullable',
                 'string',
                 'max:255',
@@ -47,7 +47,7 @@ class BagianRequest extends FormRequest
     {
         return [
             'nama_bagian' => 'Nama Bagian',
-            'keterangan'  => 'Keterangan',
+            'deskripsi'  => 'deskripsi',
         ];
     }
 
@@ -61,8 +61,8 @@ class BagianRequest extends FormRequest
             'nama_bagian.string'   => ':attribute harus berupa teks.',
             'nama_bagian.max'      => ':attribute tidak boleh lebih dari :max karakter.',
             'nama_bagian.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
-            'keterangan.string'    => ':attribute harus berupa teks.',
-            'keterangan.max'       => ':attribute tidak boleh lebih dari :max karakter.',
+            'deskripsi.string'    => ':attribute harus berupa teks.',
+            'deskripsi.max'       => ':attribute tidak boleh lebih dari :max karakter.',
         ];
     }
 }

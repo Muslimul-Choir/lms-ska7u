@@ -16,7 +16,7 @@ class Bagian extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'nama_bagian',
-        'keterangan',
+        'deskripsi',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BagianController;
 use App\Http\Controllers\JurusanController;
+use App\Http\Controllers\SemesterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,6 +30,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('jurusan/trash/{id}/restore', [JurusanController::class, 'restore'])->name('jurusan.restore');
     Route::delete('jurusan/trash/{id}/force-delete', [JurusanController::class, 'forceDelete'])->name('jurusan.force-delete');
     Route::resource('jurusan', JurusanController::class);
+
+    // Semester Routes
+    Route::get('semester/trash', [SemesterController::class, 'trash'])->name('semester.trash');
+    Route::patch('semester/trash/{id}/restore', [SemesterController::class, 'restore'])->name('semester.restore');
+    Route::delete('semester/trash/{id}/force-delete', [SemesterController::class, 'forceDelete'])->name('semester.force-delete');
+    Route::resource('semester', SemesterController::class);
 });
 
 require __DIR__.'/auth.php';

@@ -12,7 +12,7 @@ class BagianController extends Controller
    
     public function index(): View
     {
-        $bagians = Bagian::latest()->paginate(10);
+        $bagians = Bagian::latest()->paginate(5);
 
         return view('bagian.index', compact('bagians'));
     }

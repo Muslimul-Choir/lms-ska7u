@@ -2,46 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SemesterRequest;
 use App\Models\Semester;
-use Illuminate\Http\Request;
-use App\Http\Requests\Semester\StoreSemesterRequest;
-use App\Http\Requests\Semester\UpdateSemesterRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class SemesterController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        $semesters = Semester::all();
-        return response()->json($semesters);
+        $semesters = Semester::latest()->paginate(5);
+
+        return view('semester.index', compact('semesters'));
     }
 
-    public function store(StoreSemesterRequest $request)
+    public function create(): View
     {
-        $validated = $request->validated();
-
-        $semester = Semester::create($validated);
-        return response()->json($semester, 201);
+        return view('semester.create');
     }
 
-    public function show($id)
+    public function store(SemesterRequest $request): RedirectResponse
     {
-        $semester = Semester::findOrFail($id);
-        return response()->json($semester);
+        Semester::create($request->validated());
+
+        return redirect()
+            ->route('semester.index')
+            ->with('success', 'Semester berhasil ditambahkan.');
     }
 
-    public function update(UpdateSemesterRequest $request, $id)
+    public function show(Semester $semester): View
     {
-        $validated = $request->validated();
-
-        $semester = Semester::findOrFail($id);
-        $semester->update($validated);
-        return response()->json($semester);
+        return view('semester.show', compact('semester'));
     }
 
-    public function destroy($id)
+    public function edit(Semester $semester): View
     {
-        $semester = Semester::findOrFail($id);
+        return view('semester.edit', compact('semester'));
+    }
+
+    public function update(SemesterRequest $request, Semester $semester): RedirectResponse
+    {
+        $semester->update($request->validated());
+
+        return redirect()
+            ->route('semester.index')
+            ->with('success', 'Semester berhasil diperbarui.');
+    }
+
+    public function destroy(Semester $semester): RedirectResponse
+    {
         $semester->delete();
-        return response()->json(null, 204);
+
+        return redirect()
+            ->route('semester.index')
+            ->with('success', 'Semester berhasil dihapus.');
+    }
+
+    public function trash(): View
+    {
+        $semesters = Semester::onlyTrashed()->latest()->paginate(10);
+
+        return view('semester.trash', compact('semesters'));
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $semester = Semester::onlyTrashed()->findOrFail($id);
+        $semester->restore();
+
+        return redirect()
+            ->route('semester.trash')
+            ->with('success', 'Semester berhasil dipulihkan.');
+    }
+
+    public function forceDelete(int $id): RedirectResponse
+    {
+        $semester = Semester::onlyTrashed()->findOrFail($id);
+        $semester->forceDelete();
+
+        return redirect()
+            ->route('semester.trash')
+            ->with('success', 'Semester berhasil dihapus permanen.');
     }
 }
