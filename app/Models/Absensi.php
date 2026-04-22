@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Absensi extends Model
-{
+{ 
     use SoftDeletes; // Mengaktifkan deleted_at
 
     // Nama tabel
