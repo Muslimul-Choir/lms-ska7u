@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('mapel', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_tahun_ajaran')->constrained('tahun_ajaran')->onUpdate('cascade');
-            $table->foreignId('id_semester')->constrained('semester')->onUpdate('cascade');
+            $table->string('kode_mapel', 20)->nullable()->unique();
             $table->string('nama_mapel', 100);
             $table->text('deskripsi')->nullable();
             $table->timestamps();

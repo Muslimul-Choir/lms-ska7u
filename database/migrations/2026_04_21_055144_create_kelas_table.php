@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('id_jurusan')->constrained('jurusan')->onUpdate('cascade');
             $table->foreignId('id_bagian')->constrained('bagian')->onUpdate('cascade');
             $table->foreignId('id_tahun_ajaran')->constrained('tahun_ajaran')->onUpdate('cascade');
-            $table->foreignId('id_semester')->constrained('semester')->onUpdate('cascade');
+            $table->foreignId('id_wali_kelas')->constrained('guru')->onUpdate('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

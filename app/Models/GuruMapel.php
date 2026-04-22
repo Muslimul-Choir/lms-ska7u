@@ -18,6 +18,7 @@ class Gurumapel extends Model
         'id_,mapel',
         'id_guru',
         'id_kelas',
+        'id_semester',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -40,5 +41,10 @@ class Gurumapel extends Model
      public function Kelas()
     {
         return $this->belongsTo(Kelas::class, 'id_kelas');
+    }
+
+     public function Semester()
+    {
+        return $this->belongsTo(Semester::class, 'id_semester');
     }
 }

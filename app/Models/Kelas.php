@@ -19,7 +19,7 @@ class Kelas extends Model
         'id_jurusan',
         'id_bagian',
         'id_tahun_ajaran',
-        'id_semester',
+        'id_wali_kelas',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -49,8 +49,8 @@ class Kelas extends Model
         return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
     }
 
-     public function Semester()
+     public function Guru()
     {
-        return $this->belongsTo(Semester::class, 'id_semester');
+        return $this->belongsTo(Guru::class, 'id_wali_kelas');
     }
 }

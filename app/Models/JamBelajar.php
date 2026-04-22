@@ -15,9 +15,9 @@ class JamBelajar extends Model
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
-        'id_guru_mapel',
         'jam_mulai',
         'jam_selesai',
+        '',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -27,8 +27,4 @@ class JamBelajar extends Model
         'deleted_at',
     ];
 
-     public function GuruMapel()
-    {
-        return $this->belongsTo(GuruMapel::class, 'id_guru_mapel');
-    }
 }

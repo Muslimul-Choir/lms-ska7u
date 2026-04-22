@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->time('jam_mulai');
             $table->time('jam_selesai');
-            $table->foreignId('id_guru_mapel')->constrained('guru_mapel')
-                  ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

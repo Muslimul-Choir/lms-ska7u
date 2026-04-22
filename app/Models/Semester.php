@@ -16,6 +16,8 @@ class Semester extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'nama_semester',
+        'id_tahun_ajaran',
+        'is_aktif',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -24,4 +26,9 @@ class Semester extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function TahunAjaran()
+    {
+        return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
+    }
 }

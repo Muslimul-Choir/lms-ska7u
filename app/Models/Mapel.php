@@ -15,6 +15,7 @@ class Mapel extends Model
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
+        'kode_mapel',
         'nama_mapel',
         'deskripsi',
     ];

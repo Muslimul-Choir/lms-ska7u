@@ -16,11 +16,8 @@ class Siswa extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_user',
-        'id_guru',
-        'nama_lengkap',
-        'email',
         'agama',
-        'tahun_tanggal_lahir',
+        'id_kelas',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -33,5 +30,10 @@ class Siswa extends Model
      public function User()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+     public function Kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 }
