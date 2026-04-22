@@ -17,9 +17,6 @@ class BagianController extends Controller
         return view('bagian.index', compact('bagians'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(): View
     {
         return view('bagian.create');
