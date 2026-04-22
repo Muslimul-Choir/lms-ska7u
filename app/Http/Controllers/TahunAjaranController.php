@@ -2,46 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TahunAjaranRequest;
 use App\Models\TahunAjaran;
-use Illuminate\Http\Request;
-use App\Http\Requests\TahunAjaran\StoreTahunAjaranRequest;
-use App\Http\Requests\TahunAjaran\UpdateTahunAjaranRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class TahunAjaranController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        $tahunAjarans = TahunAjaran::all();
-        return response()->json($tahunAjarans);
+        $tahunAjarans = TahunAjaran::latest()->paginate(5);
+
+        return view('tahunajaran.index', compact('tahunAjarans'));
     }
 
-    public function store(StoreTahunAjaranRequest $request)
+    public function create(): View
     {
-        $validated = $request->validated();
-
-        $tahunAjaran = TahunAjaran::create($validated);
-        return response()->json($tahunAjaran, 201);
+        return view('tahunajaran.create');
     }
 
-    public function show($id)
+    public function store(TahunAjaranRequest $request): RedirectResponse
     {
-        $tahunAjaran = TahunAjaran::findOrFail($id);
-        return response()->json($tahunAjaran);
+        TahunAjaran::create($request->validated());
+
+        return redirect()
+            ->route('tahunajaran.index')
+            ->with('success', 'Tahun ajaran berhasil ditambahkan.');
     }
 
-    public function update(UpdateTahunAjaranRequest $request, $id)
+    public function show(TahunAjaran $tahunajaran): View
     {
-        $validated = $request->validated();
-
-        $tahunAjaran = TahunAjaran::findOrFail($id);
-        $tahunAjaran->update($validated);
-        return response()->json($tahunAjaran);
+        return view('tahunajaran.show', compact('tahunajaran'));
     }
 
-    public function destroy($id)
+    public function edit(TahunAjaran $tahunajaran): View
     {
-        $tahunAjaran = TahunAjaran::findOrFail($id);
-        $tahunAjaran->delete();
-        return response()->json(null, 204);
+        return view('tahunajaran.edit', compact('tahunajaran'));
+    }
+
+    public function update(TahunAjaranRequest $request, TahunAjaran $tahunajaran): RedirectResponse
+    {
+        $tahunajaran->update($request->validated());
+
+        return redirect()
+            ->route('tahunajaran.index')
+            ->with('success', 'Tahun ajaran berhasil diperbarui.');
+    }
+
+    public function destroy(TahunAjaran $tahunajaran): RedirectResponse
+    {
+        $tahunajaran->delete();
+
+        return redirect()
+            ->route('tahunajaran.index')
+            ->with('success', 'Tahun ajaran berhasil dihapus.');
+    }
+
+    public function trash(): View
+    {
+        $tahunAjarans = TahunAjaran::onlyTrashed()->latest()->paginate(10);
+
+        return view('tahunajaran.trash', compact('tahunAjarans'));
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $tahunajaran = TahunAjaran::onlyTrashed()->findOrFail($id);
+        $tahunajaran->restore();
+
+        return redirect()
+            ->route('tahunajaran.trash')
+            ->with('success', 'Tahun ajaran berhasil dipulihkan.');
+    }
+
+    public function forceDelete(int $id): RedirectResponse
+    {
+        $tahunajaran = TahunAjaran::onlyTrashed()->findOrFail($id);
+        $tahunajaran->forceDelete();
+
+        return redirect()
+            ->route('tahunajaran.trash')
+            ->with('success', 'Tahun ajaran berhasil dihapus permanen.');
     }
 }

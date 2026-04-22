@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BagianController;
 use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\SemesterController;
+use App\Http\Controllers\TahunAjaranController;
+use App\Http\Controllers\TingkatanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -36,6 +38,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('semester/trash/{id}/restore', [SemesterController::class, 'restore'])->name('semester.restore');
     Route::delete('semester/trash/{id}/force-delete', [SemesterController::class, 'forceDelete'])->name('semester.force-delete');
     Route::resource('semester', SemesterController::class);
+
+    // Tahun Ajaran Routes
+    Route::get('tahunajaran/trash', [TahunAjaranController::class, 'trash'])->name('tahunajaran.trash');
+    Route::patch('tahunajaran/trash/{id}/restore', [TahunAjaranController::class, 'restore'])->name('tahunajaran.restore');
+    Route::delete('tahunajaran/trash/{id}/force-delete', [TahunAjaranController::class, 'forceDelete'])->name('tahunajaran.force-delete');
+    Route::resource('tahunajaran', TahunAjaranController::class);
+
+    // Tingkatan Routes
+    Route::get('tingkatan/trash', [TingkatanController::class, 'trash'])->name('tingkatan.trash');
+    Route::patch('tingkatan/trash/{id}/restore', [TingkatanController::class, 'restore'])->name('tingkatan.restore');
+    Route::delete('tingkatan/trash/{id}/force-delete', [TingkatanController::class, 'forceDelete'])->name('tingkatan.force-delete');
+    Route::resource('tingkatan', TingkatanController::class);
 });
 
 require __DIR__.'/auth.php';

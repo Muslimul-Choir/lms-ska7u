@@ -24,6 +24,12 @@
                     <x-nav-link :href="route('semester.index')" :active="request()->routeIs('semester.*')">
                         {{ __('Semester') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('tahunajaran.index')" :active="request()->routeIs('tahunajaran.*')">
+                        {{ __('Tahun Ajaran') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('tingkatan.index')" :active="request()->routeIs('tingkatan.*')">
+                        {{ __('Tingkatan') }}
+                    </x-nav-link>
                 </div>
             </div>
 
