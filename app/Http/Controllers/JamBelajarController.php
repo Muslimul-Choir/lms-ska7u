@@ -10,7 +10,7 @@ class JamBelajarController extends Controller
 {
         public function index(): View
     {
-        $jamBelajars = JamBelajar::latest()->get(); // atau paginate(5)
+        $jamBelajars = JamBelajar::latest()->paginate(5);
 
         return view('jambelajar.index', compact('jamBelajars'));
     }

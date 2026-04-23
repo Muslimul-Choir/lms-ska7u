@@ -108,6 +108,8 @@
                             <tr class="bg-slate-50 border-b border-slate-200">
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest w-12">#</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Nama Semester</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tahun Ajaran</th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-24">Status</th>
                                 <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-40">Aksi</th>
                             </tr>
                         </thead>
@@ -129,12 +131,36 @@
                                             <span class="font-semibold text-[#0F2145] text-sm">{{ $semester->nama_semester }}</span>
                                         </div>
                                     </td>
+                                    {{-- Tahun Ajaran --}}
+                                    <td class="px-6 py-4">
+                                        <span class="text-slate-600 text-sm">{{ $semester->tahunAjaran->nama_tahun ?? 'N/A' }}</span>
+                                    </td>
+                                    {{-- Status --}}
+                                    <td class="px-6 py-4 text-center">
+                                        @if($semester->is_aktif)
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[10px] font-semibold rounded-full">
+                                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 text-slate-500 border border-slate-200 text-[10px] font-semibold rounded-full">
+                                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Nonaktif
+                                            </span>
+                                        @endif
+                                    </td>
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <button type="button"
                                                 data-id="{{ $semester->id }}"
                                                 data-nama="{{ $semester->nama_semester }}"
+                                                data-id_tahun_ajaran="{{ $semester->id_tahun_ajaran }}"
+                                                data-is_aktif="{{ $semester->is_aktif }}"
                                                 class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
                                                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -158,7 +184,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-6 py-16 text-center">
+                                    <td colspan="5" class="px-6 py-16 text-center">
                                         <div class="flex flex-col items-center gap-3">
                                             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -214,6 +240,8 @@
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', function () {
                 document.getElementById('editNamaSemester').value = this.dataset.nama;
+                document.getElementById('editIdTahunAjaran').value = this.dataset.id_tahun_ajaran;
+                document.getElementById('editIsAktif').checked = this.dataset.is_aktif == '1';
                 document.getElementById('formEdit').action        = `/semester/${this.dataset.id}`;
                 modalEdit.style.display = 'block';
             });

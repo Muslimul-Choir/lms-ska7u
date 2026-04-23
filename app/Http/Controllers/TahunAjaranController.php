@@ -14,7 +14,7 @@ class TahunAjaranController extends Controller
         $search = request('search');
 
         $tahunAjarans = TahunAjaran::when($search, function ($query, $search) {
-                return $query->where('nama_tahun_ajaran', 'like', '%' . $search . '%');
+                return $query->where('nama_tahun', 'like', '%' . $search . '%');
             })
             ->latest()
             ->paginate(5)

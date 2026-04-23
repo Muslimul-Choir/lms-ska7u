@@ -13,7 +13,8 @@ class SemesterController extends Controller
     {
         $search = request('search');
 
-        $semesters = Semester::when($search, function ($query, $search) {
+        $semesters = Semester::with('tahunAjaran')
+            ->when($search, function ($query, $search) {
                 return $query->where('nama_semester', 'like', '%' . $search . '%');
             })
             ->latest()
