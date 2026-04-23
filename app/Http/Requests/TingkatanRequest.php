@@ -12,6 +12,26 @@ class TingkatanRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'nama_tingkatan' => $this->cleanString($this->nama_tingkatan),
+            'keterangan'     => $this->cleanString($this->keterangan),
+        ]);
+    }
+
+    // helper sanitasi
+    private function cleanString($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        return trim(
+            preg_replace('/\s+/', ' ', strip_tags($value))
+        );
+    }
+
     public function rules(): array
     {
         $tingkatanId = $this->route('tingkatan')?->id;

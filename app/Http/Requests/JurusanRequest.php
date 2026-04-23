@@ -7,10 +7,17 @@ use Illuminate\Validation\Rule;
 
 class JurusanRequest extends FormRequest
 {
-   
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'nama_jurusan' => ucwords(strtolower(trim($this->nama_jurusan))),
+            'keterangan'   => $this->keterangan ? trim($this->keterangan) : null,
+        ]);
     }
 
     public function rules(): array
@@ -48,6 +55,7 @@ class JurusanRequest extends FormRequest
             'nama_jurusan.string'   => ':attribute harus berupa teks.',
             'nama_jurusan.max'      => ':attribute tidak boleh lebih dari :max karakter.',
             'nama_jurusan.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
+
             'keterangan.string'     => ':attribute harus berupa teks.',
         ];
     }

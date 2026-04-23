@@ -8,7 +8,7 @@
             </div>
             <div>
                 <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">
-                    Trash — Bagian
+                    Trash — Jam Belajar
                 </h2>
                 <p class="text-[11px] text-slate-400 mt-0.5 tracking-widest uppercase">Data Terhapus Sementara</p>
             </div>
@@ -24,7 +24,7 @@
                 <span class="text-slate-300">/</span>
                 <span>Master Data</span>
                 <span class="text-slate-300">/</span>
-                <a href="{{ route('bagian.index') }}" class="hover:text-[#1B3A6B] transition">Bagian</a>
+                <a href="{{ route('jambelajar.index') }}" class="hover:text-[#1B3A6B] transition">Jam Belajar</a>
                 <span class="text-slate-300">/</span>
                 <span class="text-slate-600 font-semibold">Trash</span>
             </nav>
@@ -62,10 +62,10 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4
                             border-b border-slate-100 bg-gradient-to-r from-[#6B1A1A] to-[#B91C1C]">
                     <div>
-                        <h3 class="text-white font-semibold text-sm tracking-wide">Data Bagian Terhapus</h3>
+                        <h3 class="text-white font-semibold text-sm tracking-wide">Data Jam Belajar Terhapus</h3>
                         <p class="text-red-200 text-xs mt-0.5">Daftar record yang telah dipindahkan ke trash</p>
                     </div>
-                    <a href="{{ route('bagian.index') }}"
+                    <a href="{{ route('jambelajar.index') }}"
                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20
                               text-white text-xs font-medium rounded-lg border border-white/20 transition">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -81,37 +81,37 @@
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200">
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest w-12">#</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Nama Bagian</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Deskripsi</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jam Mulai</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jam Selesai</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Dihapus Pada</th>
                                 <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-52">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            @forelse ($bagians as $bagian)
+                            @forelse ($jamBelajars as $jamBelajar)
                                 <tr class="hover:bg-red-50/40 transition group">
                                     {{-- No --}}
                                     <td class="px-6 py-4 text-slate-400 text-xs font-mono">
-                                        {{ str_pad($loop->iteration + ($bagians->currentPage() - 1) * $bagians->perPage(), 3, '0', STR_PAD_LEFT) }}
+                                        {{ str_pad($loop->iteration + ($jamBelajars->currentPage() - 1) * $jamBelajars->perPage(), 3, '0', STR_PAD_LEFT) }}
                                     </td>
 
-                                    {{-- Nama --}}
+                                    {{-- Jam Mulai --}}
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-7 h-7 rounded-md bg-red-100 flex items-center justify-center flex-shrink-0">
                                                 <span class="text-red-400 text-[10px] font-bold uppercase">
-                                                    {{ substr($bagian->nama_bagian, 0, 2) }}
+                                                    {{ substr($jamBelajar->jam_mulai, 0, 2) }}
                                                 </span>
                                             </div>
                                             <span class="font-semibold text-slate-500 text-sm line-through decoration-red-300">
-                                                {{ $bagian->nama_bagian }}
+                                                {{ $jamBelajar->jam_mulai }}
                                             </span>
                                         </div>
                                     </td>
 
-                                    {{-- Deskripsi --}}
+                                    {{-- Jam Selesai --}}
                                     <td class="px-6 py-4 text-slate-400 text-sm max-w-xs truncate">
-                                        {{ $bagian->deskripsi ?? '—' }}
+                                        {{ $jamBelajar->jam_selesai }}
                                     </td>
 
                                     {{-- Deleted At --}}
@@ -122,7 +122,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                             <span class="text-red-500 text-[11px] font-medium whitespace-nowrap">
-                                                {{ $bagian->deleted_at->format('d M Y, H:i') }}
+                                                {{ $jamBelajar->deleted_at->format('d M Y, H:i') }}
                                             </span>
                                         </div>
                                     </td>
@@ -131,7 +131,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             {{-- Restore --}}
-                                            <form action="{{ route('bagian.restore', $bagian->id) }}" method="POST">
+                                            <form action="{{ route('jambelajar.restore', $jamBelajar->id) }}" method="POST">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
@@ -147,7 +147,7 @@
                                             </form>
 
                                             {{-- Force Delete --}}
-                                            <form action="{{ route('bagian.force-delete', $bagian->id) }}" method="POST"
+                                            <form action="{{ route('jambelajar.force-delete', $jamBelajar->id) }}" method="POST"
                                                   onsubmit="return confirm('Hapus permanen? Data tidak bisa dipulihkan!')">
                                                 @csrf
                                                 @method('DELETE')
@@ -175,7 +175,7 @@
                                                 </svg>
                                             </div>
                                             <p class="text-slate-400 text-sm font-medium">Trash kosong</p>
-                                            <p class="text-slate-300 text-xs">Tidak ada data yang dihapus sementara</p>
+                                            <p class="text-slate-300 text-xs">Tidak ada data jam belajar yang dihapus sementara</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -185,16 +185,16 @@
                 </div>
 
                 {{-- Pagination --}}
-                @if ($bagians->hasPages())
+                @if ($jamBelajars->hasPages())
                     <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4">
                         <p class="text-xs text-slate-500">
                             Menampilkan
-                            <span class="font-semibold text-slate-700">{{ $bagians->firstItem() }}–{{ $bagians->lastItem() }}</span>
+                            <span class="font-semibold text-slate-700">{{ $jamBelajars->firstItem() }}–{{ $jamBelajars->lastItem() }}</span>
                             dari
-                            <span class="font-semibold text-slate-700">{{ $bagians->total() }}</span>
+                            <span class="font-semibold text-slate-700">{{ $jamBelajars->total() }}</span>
                             entri
                         </p>
-                        {{ $bagians->links() }}
+                        {{ $jamBelajars->links() }}
                     </div>
                 @endif
 

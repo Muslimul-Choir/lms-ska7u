@@ -16,6 +16,7 @@ class TahunAjaran extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'nama_tahun',
+        'is_aktif',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon

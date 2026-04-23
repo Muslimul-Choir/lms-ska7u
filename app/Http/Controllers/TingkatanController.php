@@ -11,9 +11,16 @@ class TingkatanController extends Controller
 {
     public function index(): View
     {
-        $tingkatans = Tingkatan::latest()->paginate(5);
+        $search = request('search');
 
-        return view('tingkatan.index', compact('tingkatans'));
+        $tingkatans = Tingkatan::when($search, function ($query, $search) {
+                return $query->where('nama_tingkatan', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('tingkatan.index', compact('tingkatans', 'search'));
     }
 
     public function create(): View

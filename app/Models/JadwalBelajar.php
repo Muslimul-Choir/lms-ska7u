@@ -15,6 +15,7 @@ class JadwalBelajar extends Model
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
+        'id_guru_mapel',
         'id_jam',
         'id_kelas',
         'hari',
@@ -35,5 +36,10 @@ class JadwalBelajar extends Model
      public function Kelas()
     {
         return $this->belongsTo(Kelas::class, 'id_kelas');
+    }
+
+     public function GuruMapel()
+    {
+        return $this->belongsTo(GuruMapel::class, 'id_guru_mapel');
     }
 }

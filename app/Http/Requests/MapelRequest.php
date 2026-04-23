@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class MapelRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'kode_mapel' => $this->cleanString($this->kode_mapel),
+            'nama_mapel' => $this->cleanString($this->nama_mapel),
+            'deskripsi'  => $this->cleanString($this->deskripsi),
+        ]);
+    }
+
+    // helper sanitasi
+    private function cleanString($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        return trim(
+            preg_replace('/\s+/', ' ', strip_tags($value))
+        );
+    }
+
+    public function rules(): array
+    {
+        $mapelId = $this->route('mapel')?->id;
+
+        return [
+            'kode_mapel' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('mapel', 'kode_mapel')
+                    ->ignore($mapelId)
+                    ->whereNull('deleted_at'),
+            ],
+            'nama_mapel' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('mapel', 'nama_mapel')
+                    ->ignore($mapelId)
+                    ->whereNull('deleted_at'),
+            ],
+            'deskripsi' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'kode_mapel' => 'Kode Mapel',
+            'nama_mapel' => 'Nama Mapel',
+            'deskripsi'  => 'Deskripsi',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'kode_mapel.required' => ':attribute wajib diisi.',
+            'kode_mapel.string'   => ':attribute harus berupa teks.',
+            'kode_mapel.max'      => ':attribute tidak boleh lebih dari :max karakter.',
+            'kode_mapel.unique'   => ':attribute sudah digunakan, gunakan kode lain.',
+
+            'nama_mapel.required' => ':attribute wajib diisi.',
+            'nama_mapel.string'   => ':attribute harus berupa teks.',
+            'nama_mapel.max'      => ':attribute tidak boleh lebih dari :max karakter.',
+            'nama_mapel.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
+
+            'deskripsi.string'    => ':attribute harus berupa teks.',
+            'deskripsi.max'       => ':attribute tidak boleh lebih dari :max karakter.',
+        ];
+    }
+}

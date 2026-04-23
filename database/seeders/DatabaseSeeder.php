@@ -29,5 +29,11 @@ class DatabaseSeeder extends Seeder
             TahunAjaranSeeder::class,
             GuruSeeder::class,
         ]);
+
+        $this->call([
+            TahunAjaranSeeder::class,
+            SemesterSeeder::class,
+            // Tambahkan seeder lainnya jika diperlukan
+        ]);
     }
 }

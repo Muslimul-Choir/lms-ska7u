@@ -12,9 +12,16 @@ class JurusanController extends Controller
     
     public function index(): View
     {
-        $jurusans = Jurusan::latest()->paginate(5);
+        $search = request('search');
 
-        return view('jurusan.index', compact('jurusans'));
+        $jurusans = Jurusan::when($search, function ($query, $search) {
+                return $query->where('nama_jurusan', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('jurusan.index', compact('jurusans', 'search'));
     }
 
     public function create(): View
