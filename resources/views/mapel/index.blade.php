@@ -168,21 +168,32 @@
     @include('mapel.modal-edit')
 
     {{-- Script --}}
-    <script>
-        const modalCreate = document.getElementById('modalCreate');
-        const modalEdit = document.getElementById('modalEdit');
+    {{-- Script --}}
+<script>
+    const modalCreate = document.getElementById('modalCreate');
+    const modalEdit = document.getElementById('modalEdit');
 
-        document.getElementById('btnTambahMapel').onclick = () => modalCreate.style.display = 'block';
+    // Buka modal create
+    document.getElementById('btnTambahMapel').onclick = () => modalCreate.style.display = 'block';
 
-        document.querySelectorAll('.btn-edit').forEach(btn => {
-            btn.onclick = () => {
-                document.getElementById('editKodeMapel').value = btn.dataset.kode;
-                document.getElementById('editNamaMapel').value = btn.dataset.nama;
-                document.getElementById('editDeskripsi').value = btn.dataset.deskripsi;
-                document.getElementById('formEdit').action = `/mapel/${btn.dataset.id}`;
-                modalEdit.style.display = 'block';
-            };
-        });
-    </script>
+    // Tutup modal create
+    document.getElementById('cancelCreate').onclick = () => modalCreate.style.display = 'none';
+    document.getElementById('overlayCreate').onclick = () => modalCreate.style.display = 'none';
+
+    // Buka modal edit
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.onclick = () => {
+            document.getElementById('editKodeMapel').value = btn.dataset.kode;
+            document.getElementById('editNamaMapel').value = btn.dataset.nama;
+            document.getElementById('editDeskripsi').value = btn.dataset.deskripsi;
+            document.getElementById('formEdit').action = `/mapel/${btn.dataset.id}`;
+            modalEdit.style.display = 'block';
+        };
+    });
+
+    // Tutup modal edit (sesuaikan id tombol batal di modal-edit)
+    document.getElementById('cancelEdit').onclick = () => modalEdit.style.display = 'none';
+    document.getElementById('overlayEdit').onclick = () => modalEdit.style.display = 'none';
+</script>
 
 </x-app-layout>
