@@ -44,6 +44,14 @@ class SemesterRequest extends FormRequest
                     ->ignore($semesterId)
                     ->whereNull('deleted_at'),
             ],
+            'id_tahun_ajaran' => [
+                'required',
+                'exists:tahun_ajaran,id',
+            ],
+            'is_aktif' => [
+                'nullable',
+                'boolean',
+            ],
         ];
     }
 
@@ -51,6 +59,8 @@ class SemesterRequest extends FormRequest
     {
         return [
             'nama_semester' => 'Nama Semester',
+            'id_tahun_ajaran' => 'Tahun Ajaran',
+            'is_aktif' => 'Status Aktif',
         ];
     }
 
@@ -61,6 +71,9 @@ class SemesterRequest extends FormRequest
             'nama_semester.string'   => ':attribute harus berupa teks.',
             'nama_semester.max'      => ':attribute tidak boleh lebih dari :max karakter.',
             'nama_semester.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
+            'id_tahun_ajaran.required' => ':attribute wajib dipilih.',
+            'id_tahun_ajaran.exists'   => ':attribute tidak valid.',
+            'is_aktif.boolean'         => ':attribute harus berupa true atau false.',
         ];
     }
 }

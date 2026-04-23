@@ -10,16 +10,17 @@ class TahunAjaranSeeder extends Seeder
     public function run(): void
     {
         $tahunAjarans = [
-            ['nama_tahun' => '2022/2023'],
-            ['nama_tahun' => '2023/2024'],
-            ['nama_tahun' => '2024/2025'],
-            ['nama_tahun' => '2025/2026'],
-            ['nama_tahun' => '2026/2027'],
+            ['nama_tahun' => '2022/2023', 'is_aktif' => false],
+            ['nama_tahun' => '2023/2024', 'is_aktif' => false],
+            ['nama_tahun' => '2024/2025', 'is_aktif' => false],
+            ['nama_tahun' => '2025/2026', 'is_aktif' => false],
+            ['nama_tahun' => '2026/2027', 'is_aktif' => true],
         ];
 
         foreach ($tahunAjarans as $tahun) {
             TahunAjaran::firstOrCreate(
-                ['nama_tahun' => $tahun['nama_tahun']]
+                ['nama_tahun' => $tahun['nama_tahun']],
+                ['is_aktif' => $tahun['is_aktif']]
             );
         }
 

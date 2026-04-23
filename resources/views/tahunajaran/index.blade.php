@@ -92,6 +92,7 @@
                             <tr class="bg-slate-50 border-b border-slate-200">
                                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase w-12">#</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Nama Tahun</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 uppercase w-24">Status</th>
                                 <th class="px-6 py-3 text-center text-xs font-bold text-slate-500 uppercase w-40">Aksi</th>
                             </tr>
                         </thead>
@@ -118,12 +119,32 @@
                                         </div>
                                     </td>
 
+                                    {{-- Status --}}
+                                    <td class="px-6 py-4 text-center">
+                                        @if($tahun->is_aktif)
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[10px] font-semibold rounded-full">
+                                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 text-slate-500 border border-slate-200 text-[10px] font-semibold rounded-full">
+                                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Nonaktif
+                                            </span>
+                                        @endif
+                                    </td>
+
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4">
                                         <div class="flex justify-center gap-2">
                                             <button type="button"
                                                 data-id="{{ $tahun->id }}"
                                                 data-nama="{{ $tahun->nama_tahun }}"
+                                                data-is_aktif="{{ $tahun->is_aktif }}"
                                                 class="btn-edit px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg">
                                                 Edit
                                             </button>
@@ -141,7 +162,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-6 py-16 text-center text-slate-400">
+                                    <td colspan="4" class="px-6 py-16 text-center text-slate-400">
                                         Belum ada data tahun ajaran
                                     </td>
                                 </tr>
@@ -185,6 +206,7 @@
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.onclick = function () {
                 document.getElementById('editNamaTahun').value = this.dataset.nama;
+                document.getElementById('editIsAktif').checked = this.dataset.is_aktif == '1';
                 document.getElementById('formEdit').action = `/tahunajaran/${this.dataset.id}`;
                 modalEdit.style.display = 'block';
             };

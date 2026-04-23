@@ -59,6 +59,26 @@
                     @enderror
                 </div>
 
+                {{-- Status Aktif --}}
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox"
+                               name="is_aktif"
+                               value="1"
+                               {{ old('is_aktif') ? 'checked' : '' }}
+                               class="rounded border-slate-300 text-[#1B3A6B] focus:ring-[#1B3A6B]/30">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Tahun Ajaran Aktif</span>
+                    </label>
+                    @error('is_aktif')
+                        <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
                 <div class="border-t border-slate-100"></div>
 
                 {{-- Actions --}}

@@ -19,8 +19,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-white font-semibold text-sm tracking-wide">Edit Jurusan</h3>
-                        <p class="text-amber-100 text-[11px]">Perbarui data program studi</p>
+                        <h3 class="text-white font-semibold text-sm tracking-wide">Edit Tahun Ajaran</h3>
+                        <p class="text-amber-100 text-[11px]">Perbarui data tahun akademik</p>
                     </div>
                 </div>
                 <button type="button" id="closeEdit"
@@ -59,6 +59,18 @@
                            class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700
                                   placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30
                                   focus:border-[#1B3A6B] transition">
+                </div>
+
+                {{-- Status Aktif --}}
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox"
+                               id="editIsAktif"
+                               name="is_aktif"
+                               value="1"
+                               class="rounded border-slate-300 text-[#C8992A] focus:ring-[#C8992A]/30">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Tahun Ajaran Aktif</span>
+                    </label>
                 </div>
 
                 <div class="border-t border-slate-100"></div>
