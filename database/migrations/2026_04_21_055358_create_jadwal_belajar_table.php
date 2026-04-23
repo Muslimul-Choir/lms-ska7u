@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('jadwal_belajar', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_guru_mapel')->constrained('guru_mapel')
+                  ->onUpdate('cascade')->onDelete('cascade');
             $table->enum('hari', ['Senin','Selasa','Rabu','Kamis','Jumat']);
             $table->foreignId('id_jam')->constrained('jam_belajar')
                   ->onUpdate('cascade')->onDelete('cascade');

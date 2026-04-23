@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Guru;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -19,7 +20,7 @@ class Kelas extends Model
         'id_jurusan',
         'id_bagian',
         'id_tahun_ajaran',
-        'id_semester',
+        'id_wali_kelas',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -49,8 +50,13 @@ class Kelas extends Model
         return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
     }
 
-     public function Semester()
+     public function WaliKelas()
     {
-        return $this->belongsTo(Semester::class, 'id_semester');
+        return $this->belongsTo(Guru::class, 'id_wali_kelas');
     }
+     public function Siswa()
+    {
+        return $this->hasMany(Siswa::class, 'id_kelas');
+    }
+
 }

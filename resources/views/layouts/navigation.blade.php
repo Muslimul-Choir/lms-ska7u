@@ -30,6 +30,10 @@
                     <x-nav-link :href="route('tingkatan.index')" :active="request()->routeIs('tingkatan.*')">
                         {{ __('Tingkatan') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('kelas.index')" :active="request()->routeIs('kelas.*')">
+                        {{ __('Kelas') }}
+                    </x-nav-link>
                 </div>
             </div>
 

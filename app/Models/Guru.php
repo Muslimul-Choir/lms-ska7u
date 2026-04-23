@@ -29,8 +29,12 @@ class Guru extends Model
         'deleted_at',
     ];
 
-     public function User()
+    public function User()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function Kelas()
+    {
+        return $this->hasMany(Kelas::class, 'id_wali_kelas');
     }
 }

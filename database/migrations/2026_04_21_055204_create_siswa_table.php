@@ -19,7 +19,6 @@ return new class extends Migration
                 'Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'
             ]);
             $table->foreignId('id_kelas')->constrained('kelas')->onUpdate('cascade');
-            $table->foreignId('id_guru')->constrained('guru')->onUpdate('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

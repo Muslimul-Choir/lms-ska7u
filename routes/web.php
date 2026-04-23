@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BagianController;
 use App\Http\Controllers\JurusanController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\MapelController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
@@ -16,7 +18,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -50,6 +52,23 @@ Route::middleware('auth')->group(function () {
     Route::patch('tingkatan/trash/{id}/restore', [TingkatanController::class, 'restore'])->name('tingkatan.restore');
     Route::delete('tingkatan/trash/{id}/force-delete', [TingkatanController::class, 'forceDelete'])->name('tingkatan.force-delete');
     Route::resource('tingkatan', TingkatanController::class);
+
+    // mapel 
+    Route::resource('mapel', MapelController::class);
+
+    // kelas
+    Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {
+    Route::get('/',          [KelasController::class, 'index'])->name('index');
+    Route::post('/',         [KelasController::class, 'store'])->name('store');
+    Route::get('/{kelas}/edit', [KelasController::class, 'edit'])->name('edit');   
+    Route::put('/{kelas}',   [KelasController::class, 'update'])->name('update');
+    Route::delete('/{kelas}',[KelasController::class, 'destroy'])->name('destroy');
+ 
+    // trash routes
+    Route::get('/trash',           [KelasController::class, 'trash'])->name('trash');
+    Route::patch('/{id}/restore',  [KelasController::class, 'restore'])->name('restore');
+    Route::delete('/{id}/force',   [KelasController::class, 'forceDelete'])->name('force-delete');
+    });
 });
 
 require __DIR__.'/auth.php';
