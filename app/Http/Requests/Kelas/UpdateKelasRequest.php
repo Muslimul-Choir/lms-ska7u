@@ -60,14 +60,4 @@ class UpdateKelasRequest extends FormRequest
         ];
     }
  
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'id_tingkatan'    => (int) $this->id_tingkatan,
-            'id_jurusan'      => (int) $this->id_jurusan,
-            'id_bagian'       => (int) $this->id_bagian,
-            'id_tahun_ajaran' => (int) $this->id_tahun_ajaran,
-            'id_wali_kelas'   => (int) $this->id_wali_kelas,
-        ]);
-    }
 }
