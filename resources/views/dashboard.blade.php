@@ -30,7 +30,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-sm text-gray-600">Total Guru & Siswa</div>
-                                    <div class="mt-2 text-3xl font-bold text-green-900">{{ $counts['guru'] + $counts['siswa'] }}</div>
+                                    <div class="mt-2 text-3xl font-bold text-green-900">{{ $metrics['total_users_and_students'] }}</div>
                                 </div>
                                 <div class="p-3 bg-green-200 rounded-full">
                                     <svg class="w-6 h-6 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-sm text-gray-600">Total Kelas & Mapel</div>
-                                    <div class="mt-2 text-3xl font-bold text-purple-900">{{ $counts['kelas'] + $counts['mapel'] }}</div>
+                                    <div class="mt-2 text-3xl font-bold text-purple-900">{{ $metrics['total_classes_and_subjects'] }}</div>
                                 </div>
                                 <div class="p-3 bg-purple-200 rounded-full">
                                     <svg class="w-6 h-6 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-sm text-gray-600">Aktivitas Belajar</div>
-                                    <div class="mt-2 text-3xl font-bold text-orange-900">{{ $counts['materi'] + $counts['tugas'] }}</div>
+                                    <div class="mt-2 text-3xl font-bold text-orange-900">{{ $metrics['learning_activities'] }}</div>
                                 </div>
                                 <div class="p-3 bg-orange-200 rounded-full">
                                     <svg class="w-6 h-6 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,16 +385,89 @@
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Total Data</span>
-                                    <span class="font-semibold text-gray-900">{{ array_sum($counts) }}</span>
+                                    <span class="font-semibold text-gray-900">{{ number_format($metrics['total_data']) }}</span>
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Kategori</span>
-                                    <span class="font-semibold text-gray-900">{{ count($counts) }}</span>
+                                    <span class="font-semibold text-gray-900">{{ $metrics['total_categories'] }}</span>
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Aktif</span>
                                     <span class="font-semibold text-green-600">Online</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Metrics -->
+                    <div class="mt-8 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
+                        <div class="flex items-center mb-6">
+                            <div class="p-3 bg-gray-200 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Metrik Lanjutan</h3>
+                                <p class="text-sm text-gray-600">Analisis performa dan rasio sistem</p>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <!-- Class Ratio -->
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-sm font-medium text-gray-600">Rasio Kelas</div>
+                                    <div class="p-2 bg-blue-100 rounded-lg">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-2xl font-bold text-blue-900">{{ $metrics['class_ratio'] }}</div>
+                                <div class="text-xs text-gray-500 mt-1">siswa per kelas</div>
+                            </div>
+
+                            <!-- Assessment Ratio -->
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-sm font-medium text-gray-600">Tingkat Penilaian</div>
+                                    <div class="p-2 bg-green-100 rounded-lg">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-2xl font-bold text-green-900">{{ $metrics['assessment_ratio'] }}%</div>
+                                <div class="text-xs text-gray-500 mt-1">tugas dinilai</div>
+                            </div>
+
+                            <!-- Total Data -->
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-sm font-medium text-gray-600">Total Data</div>
+                                    <div class="p-2 bg-purple-100 rounded-lg">
+                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-2xl font-bold text-purple-900">{{ number_format($metrics['total_data']) }}</div>
+                                <div class="text-xs text-gray-500 mt-1">record dalam sistem</div>
+                            </div>
+
+                            <!-- Categories Count -->
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-sm font-medium text-gray-600">Kategori Data</div>
+                                    <div class="p-2 bg-orange-100 rounded-lg">
+                                        <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-2xl font-bold text-orange-900">{{ $metrics['total_categories'] }}</div>
+                                <div class="text-xs text-gray-500 mt-1">jenis data</div>
                             </div>
                         </div>
                     </div>
