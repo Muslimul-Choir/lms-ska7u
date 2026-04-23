@@ -25,12 +25,10 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display the dashboard with comprehensive statistics
-     */
+
     public function index()
     {
-        // Collect all data counts for dashboard
+  
         $counts = [
             'users' => User::count(),
             'bagian' => Bagian::count(),
@@ -53,7 +51,6 @@ class DashboardController extends Controller
             'jadwal_belajar' => JadwalBelajar::count(),
         ];
 
-        // Calculate additional metrics
         $metrics = [
             'total_users_and_students' => $counts['users'] + $counts['siswa'],
             'total_classes_and_subjects' => $counts['kelas'] + $counts['mapel'],
