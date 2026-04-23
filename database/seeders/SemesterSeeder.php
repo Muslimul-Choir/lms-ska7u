@@ -9,6 +9,7 @@ class SemesterSeeder extends Seeder
 {
     public function run(): void
     {
+
         // Pastikan TahunAjaranSeeder sudah dijalankan
         $tahunAjaranAktif = \App\Models\TahunAjaran::where('is_aktif', true)->first();
 
@@ -36,5 +37,6 @@ class SemesterSeeder extends Seeder
         }
 
         $this->command->info('SemesterSeeder: ' . count($semesters) . ' data berhasil di-seed.');
+
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
 use App\Http\Controllers\MapelController;
 use App\Http\Controllers\JamBelajarController;
+use App\Http\Controllers\KelasController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('jambelajar/trash/{id}/restore', [JamBelajarController::class, 'restore'])->name('jambelajar.restore');
     Route::delete('jambelajar/trash/{id}/force-delete', [JamBelajarController::class, 'forceDelete'])->name('jambelajar.force-delete');
     Route::resource('jambelajar', JamBelajarController::class);
+  
+   // kelas
+    Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {
+        Route::get('/',          [KelasController::class, 'index'])->name('index');
+        Route::post('/',         [KelasController::class, 'store'])->name('store');
+        Route::get('/{kelas}/edit', [KelasController::class, 'edit'])->name('edit');
+        Route::put('/{kelas}',   [KelasController::class, 'update'])->name('update');
+        Route::delete('/{kelas}', [KelasController::class, 'destroy'])->name('destroy');
+
+        // trash routes
+        Route::get('/trash',           [KelasController::class, 'trash'])->name('trash');
+        Route::patch('/{id}/restore',  [KelasController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force',   [KelasController::class, 'forceDelete'])->name('force-delete');
+    });
 });
 
 require __DIR__.'/auth.php';
+  

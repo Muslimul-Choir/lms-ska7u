@@ -15,15 +15,32 @@
         </button>
     </div>
 
-    <!-- Navigation Links -->
-    <div class="flex-1 overflow-y-auto px-4 py-6">
-        <div class="space-y-2">
-            <a href="{{ route('dashboard') }}" class="block px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-gray-800 text-white' : 'text-gray-300 hover:bg-gray-800' }}">
-                <svg class="inline-block w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 11l4-4m0 0l4 4m-4-4v4m0-11l-4-2m4 2l4-2"></path>
-                </svg>
-                {{ __('Dashboard') }}
-            </a>
+                <!-- Navigation Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('bagian.index')" :active="request()->routeIs('bagian.*')">
+                        {{ __('Bagian') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('jurusan.index')" :active="request()->routeIs('jurusan.*')">
+                        {{ __('Jurusan') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('semester.index')" :active="request()->routeIs('semester.*')">
+                        {{ __('Semester') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('tahunajaran.index')" :active="request()->routeIs('tahunajaran.*')">
+                        {{ __('Tahun Ajaran') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('tingkatan.index')" :active="request()->routeIs('tingkatan.*')">
+                        {{ __('Tingkatan') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('kelas.index')" :active="request()->routeIs('kelas.*')">
+                        {{ __('Kelas') }}
+                    </x-nav-link>
+                </div>
+            </div>
 
             <a href="{{ route('bagian.index') }}" class="block px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('bagian.*') ? 'bg-gray-800 text-white' : 'text-gray-300 hover:bg-gray-800' }}">
                 <svg class="inline-block w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

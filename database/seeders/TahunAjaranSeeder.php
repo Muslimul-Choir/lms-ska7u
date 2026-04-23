@@ -9,6 +9,7 @@ class TahunAjaranSeeder extends Seeder
 {
     public function run(): void
     {
+
         $tahunAjarans = [
             ['nama_tahun' => '2022/2023', 'is_aktif' => false],
             ['nama_tahun' => '2023/2024', 'is_aktif' => false],
@@ -25,5 +26,6 @@ class TahunAjaranSeeder extends Seeder
         }
 
         $this->command->info('TahunAjaranSeeder: ' . count($tahunAjarans) . ' data berhasil di-seed.');
+
     }
 }

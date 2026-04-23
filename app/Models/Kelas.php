@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Guru;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -49,8 +50,14 @@ class Kelas extends Model
         return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
     }
 
-     public function Guru()
-    {
-        return $this->belongsTo(Guru::class, 'id_wali_kelas');
+     public function WaliKelas()
+     {
+       return $this->belongsTo(Guru::class, 'id_wali_kelas');
     }
+
+     public function Siswa()
+    {
+        return $this->hasMany(Siswa::class, 'id_kelas');
+    }
+
 }
