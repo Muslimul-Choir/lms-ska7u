@@ -12,7 +12,8 @@
     aria-modal="true">
 
     {{-- Backdrop --}}
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"></div>
+    <div onclick="closeEditModal()"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"></div>
 
     {{-- Panel --}}
     <div class="flex min-h-full items-center justify-center p-4">

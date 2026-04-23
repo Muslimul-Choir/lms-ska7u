@@ -58,17 +58,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // kelas
     Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {
-    Route::get('/',          [KelasController::class, 'index'])->name('index');
-    Route::post('/',         [KelasController::class, 'store'])->name('store');
-    Route::get('/{kelas}/edit', [KelasController::class, 'edit'])->name('edit');   
-    Route::put('/{kelas}',   [KelasController::class, 'update'])->name('update');
-    Route::delete('/{kelas}',[KelasController::class, 'destroy'])->name('destroy');
- 
-    // trash routes
-    Route::get('/trash',           [KelasController::class, 'trash'])->name('trash');
-    Route::patch('/{id}/restore',  [KelasController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/force',   [KelasController::class, 'forceDelete'])->name('force-delete');
+        Route::get('/',          [KelasController::class, 'index'])->name('index');
+        Route::post('/',         [KelasController::class, 'store'])->name('store');
+        Route::get('/{kelas}/edit', [KelasController::class, 'edit'])->name('edit');
+        Route::put('/{kelas}',   [KelasController::class, 'update'])->name('update');
+        Route::delete('/{kelas}', [KelasController::class, 'destroy'])->name('destroy');
+
+        // trash routes
+        Route::get('/trash',           [KelasController::class, 'trash'])->name('trash');
+        Route::patch('/{id}/restore',  [KelasController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force',   [KelasController::class, 'forceDelete'])->name('force-delete');
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

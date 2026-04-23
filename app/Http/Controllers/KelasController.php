@@ -21,14 +21,16 @@ class KelasController extends Controller
     public function index(Request $request)
     {
         $query = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian', 'TahunAjaran', 'WaliKelas'])
-            ->withCount('Siswa'); 
+            ->withCount('Siswa');
 
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('Tingkatan', fn($q) => $q->where('nama_tingkatan', 'like', "%{$search}%"))
-                ->orWhereHas('Jurusan', fn($q) => $q->where('nama_jurusan', 'like', "%{$search}%"))
-                ->orWhereHas('Bagian', fn($q) => $q->where('nama_bagian', 'like', "%{$search}%"));
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('Tingkatan', fn($q) => $q->where('nama_tingkatan', 'like', "%{$search}%"))
+                    ->orWhereHas('Jurusan',   fn($q) => $q->where('nama_jurusan',   'like', "%{$search}%"))
+                    ->orWhereHas('Bagian',    fn($q) => $q->where('nama_bagian',    'like', "%{$search}%"));
+            });
         }
 
         // Filter tahun ajaran
@@ -118,7 +120,7 @@ class KelasController extends Controller
     public function destroy(Kelas $kelas)
     {
         // Pastikan tidak ada relasi aktif sebelum hapus
-        if ($kelas->siswa()->exists()) {
+        if ($kelas->Siswa()->exists()) {
             return redirect()->route('kelas.index')
                 ->with('error', 'Kelas tidak dapat dihapus karena masih memiliki siswa terdaftar.');
         }
