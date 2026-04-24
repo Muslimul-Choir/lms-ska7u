@@ -18,7 +18,7 @@
             </div>
 
             {{-- Body --}}
-            <form id="formEdit" method="POST">
+            <form id="formEdit" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -43,6 +43,19 @@
                         <label style="font-size:12px; font-weight:600;">Deskripsi</label>
                         <textarea id="editDeskripsi" name="deskripsi"
                                   style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:8px;"></textarea>
+                    </div>
+
+                    {{-- Foto --}}
+                    <div>
+                        <label style="font-size:12px; font-weight:600;">Foto</label>
+                        @if(isset($mapel) && $mapel->foto)
+                            <div style="margin-bottom:8px;">
+                                <img src="{{ asset('storage/' . $mapel->foto) }}" alt="Foto Mapel" style="width:100px; height:100px; object-fit:cover; border-radius:8px;">
+                            </div>
+                        @endif
+                        <input type="file" name="foto" accept="image/*"
+                               style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">
+                        <small style="color:#64748b; font-size:11px;">Format: JPG, PNG, GIF. Max: 2MB. Kosongkan jika tidak ingin mengubah.</small>
                     </div>
 
                 </div>

@@ -4,15 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\JamBelajar;
 use App\Http\Requests\JamBelajarRequest;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class JamBelajarController extends Controller
 {
-        public function index(): View
+    public function index(Request $request)
     {
-        $jamBelajars = JamBelajar::latest()->paginate(5);
+        $search = $request->get('search');
 
-        return view('jambelajar.index', compact('jamBelajars'));
+        $jamBelajars = JamBelajar::when($search, function ($query, $search) {
+                return $query->where('jam_mulai', 'like', '%' . $search . '%')
+                             ->orWhere('jam_selesai', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(5)
+            ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'jamBelajars' => $jamBelajars->items(),
+                'pagination' => [
+                    'current_page' => $jamBelajars->currentPage(),
+                    'last_page' => $jamBelajars->lastPage(),
+                    'per_page' => $jamBelajars->perPage(),
+                    'total' => $jamBelajars->total(),
+                ]
+            ]);
+        }
+
+        return view('jambelajar.index', compact('jamBelajars', 'search'));
     }
 
     public function create()
@@ -56,17 +78,17 @@ class JamBelajarController extends Controller
         return view('jambelajar.trash', compact('trash'));
     }
 
-    public function restore($id)
+    public function restore(JamBelajar $jambelajar): RedirectResponse
     {
-        JamBelajar::onlyTrashed()->where('id', $id)->restore();
+        $jambelajar->restore();
 
         return redirect()->route('jambelajar.trash')
             ->with('success', 'Data berhasil direstore');
     }
 
-    public function forceDelete($id)
+    public function forceDelete(JamBelajar $jambelajar): RedirectResponse
     {
-        JamBelajar::onlyTrashed()->where('id', $id)->forceDelete();
+        $jambelajar->forceDelete();
 
         return redirect()->route('jambelajar.trash')
             ->with('success', 'Data berhasil dihapus permanen');

@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\JurusanRequest;
 use App\Models\Jurusan;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class JurusanController extends Controller
 {
     
-    public function index(): View
+    public function index(Request $request)
     {
-        $search = request('search');
+        $search = $request->get('search');
 
         $jurusans = Jurusan::when($search, function ($query, $search) {
                 return $query->where('nama_jurusan', 'like', '%' . $search . '%');
@@ -20,6 +21,14 @@ class JurusanController extends Controller
             ->latest()
             ->paginate(5)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'jurusans' => $jurusans->items(),
+                'pagination' => $jurusans->links()->toHtml(),
+                'total' => $jurusans->total()
+            ]);
+        }
 
         return view('jurusan.index', compact('jurusans', 'search'));
     }
@@ -73,9 +82,8 @@ class JurusanController extends Controller
         return view('jurusan.trash', compact('jurusans'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Jurusan $jurusan): RedirectResponse
     {
-        $jurusan = Jurusan::onlyTrashed()->findOrFail($id);
         $jurusan->restore();
 
         return redirect()
@@ -83,9 +91,8 @@ class JurusanController extends Controller
             ->with('success', 'Jurusan berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(Jurusan $jurusan): RedirectResponse
     {
-        $jurusan = Jurusan::onlyTrashed()->findOrFail($id);
         $jurusan->forceDelete();
 
         return redirect()

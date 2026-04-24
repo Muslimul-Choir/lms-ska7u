@@ -59,6 +59,12 @@ class MapelRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'foto' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif',
+                'max:2048', // 2MB
+            ],
         ];
     }
 
@@ -68,6 +74,7 @@ class MapelRequest extends FormRequest
             'kode_mapel' => 'Kode Mapel',
             'nama_mapel' => 'Nama Mapel',
             'deskripsi'  => 'Deskripsi',
+            'foto'       => 'Foto',
         ];
     }
 
@@ -86,6 +93,10 @@ class MapelRequest extends FormRequest
 
             'deskripsi.string'    => ':attribute harus berupa teks.',
             'deskripsi.max'       => ':attribute tidak boleh lebih dari :max karakter.',
+
+            'foto.image'          => ':attribute harus berupa gambar.',
+            'foto.mimes'          => ':attribute harus berformat jpeg, png, jpg, atau gif.',
+            'foto.max'            => ':attribute tidak boleh lebih dari 2MB.',
         ];
     }
 }
