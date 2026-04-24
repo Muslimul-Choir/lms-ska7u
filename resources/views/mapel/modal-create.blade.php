@@ -18,7 +18,7 @@
             </div>
 
             {{-- Body --}}
-            <form action="{{ route('mapel.store') }}" method="POST">
+            <form action="{{ route('mapel.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div style="padding:18px; display:flex; flex-direction:column; gap:12px;">
@@ -51,6 +51,14 @@
                         <textarea name="deskripsi"
                                   style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:8px;"
                                   placeholder="Deskripsi mapel"></textarea>
+                    </div>
+
+                    {{-- Foto --}}
+                    <div>
+                        <label style="font-size:12px; font-weight:600;">Foto</label>
+                        <input type="file" name="foto" accept="image/*"
+                               style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">
+                        <small style="color:#64748b; font-size:11px;">Format: JPG, PNG, GIF. Max: 2MB</small>
                     </div>
 
                 </div>

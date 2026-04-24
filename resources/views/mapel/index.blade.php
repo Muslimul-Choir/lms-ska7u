@@ -95,6 +95,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-bold">Kode</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold">Nama Mapel</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold">Deskripsi</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold">Foto</th>
                                 <th class="px-6 py-3 text-center text-xs font-bold">Aksi</th>
                             </tr>
                         </thead>
@@ -118,6 +119,14 @@
                                         {{ $mapel->deskripsi ?? '-' }}
                                     </td>
 
+                                    <td class="px-6 py-4 text-center">
+                                        @if($mapel->foto)
+                                            <img src="{{ asset('storage/' . $mapel->foto) }}" alt="Foto {{ $mapel->nama_mapel }}" class="w-12 h-12 object-cover rounded-lg mx-auto">
+                                        @else
+                                            <span class="text-slate-400 text-xs">-</span>
+                                        @endif
+                                    </td>
+
                                     <td class="px-6 py-4">
                                         <div class="flex justify-center gap-2">
 
@@ -126,7 +135,8 @@
                                                 data-id="{{ $mapel->id }}"
                                                 data-kode="{{ $mapel->kode_mapel }}"
                                                 data-nama="{{ $mapel->nama_mapel }}"
-                                                data-deskripsi="{{ $mapel->deskripsi }}">
+                                                data-deskripsi="{{ $mapel->deskripsi }}"
+                                                data-foto="{{ $mapel->foto }}">
                                                 Edit
                                             </button>
 
@@ -145,7 +155,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-10 text-slate-400">
+                                    <td colspan="6" class="text-center py-10 text-slate-400">
                                         Data mapel belum ada
                                     </td>
                                 </tr>

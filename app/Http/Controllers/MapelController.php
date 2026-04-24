@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mapel;
+use App\Http\Requests\MapelRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class MapelController extends Controller
 {
@@ -29,15 +31,15 @@ class MapelController extends Controller
         return view('mapel.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(MapelRequest $request): RedirectResponse
     {
-        $request->validate([
-            'kode_mapel' => 'required|string|max:50|unique:mapel,kode_mapel',
-            'nama_mapel' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
-        ]);
+        $data = $request->validated();
 
-        Mapel::create($request->all());
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('mapel', 'public');
+        }
+
+        Mapel::create($data);
 
         return redirect()
             ->route('mapel.index')
@@ -54,15 +56,19 @@ class MapelController extends Controller
         return view('mapel.edit', compact('mapel'));
     }
 
-    public function update(Request $request, Mapel $mapel): RedirectResponse
+    public function update(MapelRequest $request, Mapel $mapel): RedirectResponse
     {
-        $request->validate([
-            'kode_mapel' => 'required|string|max:50|unique:mapel,kode_mapel,' . $mapel->id,
-            'nama_mapel' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
-        ]);
+        $data = $request->validated();
 
-        $mapel->update($request->all());
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
+            if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
+                Storage::disk('public')->delete($mapel->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('mapel', 'public');
+        }
+
+        $mapel->update($data);
 
         return redirect()
             ->route('mapel.index')
@@ -98,6 +104,12 @@ class MapelController extends Controller
     public function forceDelete(int $id): RedirectResponse
     {
         $mapel = Mapel::onlyTrashed()->findOrFail($id);
+
+        // Hapus foto jika ada
+        if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
+            Storage::disk('public')->delete($mapel->foto);
+        }
+
         $mapel->forceDelete();
 
         return redirect()

@@ -18,6 +18,7 @@ class Mapel extends Model
         'kode_mapel',
         'nama_mapel',
         'deskripsi',
+        'foto',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
