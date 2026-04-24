@@ -86,82 +86,75 @@
                     </form>
                 </div>
 
-                {{-- Table --}}
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-slate-50 border-b">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold">#</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold">Kode</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold">Nama Mapel</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold">Deskripsi</th>
-                                <th class="px-6 py-3 text-center text-xs font-bold">Foto</th>
-                                <th class="px-6 py-3 text-center text-xs font-bold">Aksi</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="divide-y">
-                            @forelse ($mapels as $mapel)
-                                <tr class="hover:bg-slate-50">
-                                    <td class="px-6 py-4 text-xs text-slate-400">
-                                        {{ $loop->iteration }}
-                                    </td>
-
-                                    <td class="px-6 py-4 font-bold text-[#1B3A6B]">
-                                        {{ $mapel->kode_mapel }}
-                                    </td>
-
-                                    <td class="px-6 py-4 font-semibold">
-                                        {{ $mapel->nama_mapel }}
-                                    </td>
-
-                                    <td class="px-6 py-4 text-slate-500">
-                                        {{ $mapel->deskripsi ?? '-' }}
-                                    </td>
-
-                                    <td class="px-6 py-4 text-center">
-                                        @if($mapel->foto)
-                                            <img src="{{ asset('storage/' . $mapel->foto) }}" alt="Foto {{ $mapel->nama_mapel }}" class="w-12 h-12 object-cover rounded-lg mx-auto">
-                                        @else
-                                            <span class="text-slate-400 text-xs">-</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-6 py-4">
-                                        <div class="flex justify-center gap-2">
-
-                                            <button
-                                                class="btn-edit px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs"
-                                                data-id="{{ $mapel->id }}"
-                                                data-kode="{{ $mapel->kode_mapel }}"
-                                                data-nama="{{ $mapel->nama_mapel }}"
-                                                data-deskripsi="{{ $mapel->deskripsi }}"
-                                                data-foto="{{ $mapel->foto }}">
-                                                Edit
-                                            </button>
-
-                                            <form action="{{ route('mapel.destroy', $mapel) }}" method="POST"
-                                                onsubmit="return confirm('Hapus mapel ini?')">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs">
-                                                    Hapus
-                                                </button>
-                                            </form>
-
+                {{-- Cards --}}
+                <div class="px-6 py-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        @forelse ($mapels as $mapel)
+                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                                {{-- Foto --}}
+                                <div class="aspect-square bg-slate-100 flex items-center justify-center p-4">
+                                    @if($mapel->foto)
+                                        <img src="{{ asset('storage/' . $mapel->foto) }}" alt="Foto {{ $mapel->nama_mapel }}" class="w-full h-full object-cover rounded-lg">
+                                    @else
+                                        <div class="w-16 h-16 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
+                                            </svg>
                                         </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-10 text-slate-400">
-                                        Data mapel belum ada
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                    @endif
+                                </div>
+
+                                {{-- Content --}}
+                                <div class="p-4">
+                                    <div class="mb-2">
+                                        <span class="inline-block px-2 py-1 bg-[#1B3A6B]/10 text-[#1B3A6B] text-xs font-bold rounded">
+                                            {{ $mapel->kode_mapel }}
+                                        </span>
+                                    </div>
+
+                                    <h3 class="font-semibold text-[#0F2145] text-sm mb-1 line-clamp-2">
+                                        {{ $mapel->nama_mapel }}
+                                    </h3>
+
+                                    <p class="text-slate-500 text-xs mb-4 line-clamp-2">
+                                        {{ $mapel->deskripsi ?? 'Tidak ada deskripsi' }}
+                                    </p>
+
+                                    {{-- Aksi --}}
+                                    <div class="flex gap-2">
+                                        <button
+                                            class="btn-edit flex-1 px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-medium rounded-lg transition"
+                                            data-id="{{ $mapel->id }}"
+                                            data-kode="{{ $mapel->kode_mapel }}"
+                                            data-nama="{{ $mapel->nama_mapel }}"
+                                            data-deskripsi="{{ $mapel->deskripsi }}"
+                                            data-foto="{{ $mapel->foto }}">
+                                            Edit
+                                        </button>
+
+                                        <form action="{{ route('mapel.destroy', $mapel) }}" method="POST" class="flex-1"
+                                              onsubmit="return confirm('Hapus mapel ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-medium rounded-lg transition">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full flex flex-col items-center justify-center py-16">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
+                                    </svg>
+                                </div>
+                                <p class="text-slate-400 text-sm font-medium">Belum ada data mapel</p>
+                                <p class="text-slate-300 text-xs">Klik <span class="font-semibold text-slate-400">Tambah Mapel</span> untuk mulai menambahkan data</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
 
                 {{-- Pagination --}}

@@ -20,7 +20,7 @@ class MapelController extends Controller
                              ->orWhere('kode_mapel', 'like', '%' . $search . '%');
             })
             ->latest()
-            ->paginate(5)
+            ->paginate(4)
             ->withQueryString();
 
         return view('mapel.index', compact('mapels', 'search'));
