@@ -4,22 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BagianRequest;
 use App\Models\Bagian;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class BagianController extends Controller
 {
    
-    public function index(): View
+    public function index(Request $request)
     {
-        $search = request('search');
+        $search = $request->get('search');
 
         $bagians = Bagian::when($search, function ($query, $search) {
                 return $query->where('nama_bagian', 'like', '%' . $search . '%');
             })
             ->latest()
             ->paginate(5)
-            ->withQueryString(); // biar search tidak hilang saat pagination
+            ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'bagians' => $bagians->items(),
+                'pagination' => $bagians->links()->toHtml(),
+                'total' => $bagians->total()
+            ]);
+        }
 
         return view('bagian.index', compact('bagians', 'search'));
     }
@@ -73,9 +82,8 @@ class BagianController extends Controller
         return view('bagian.trash', compact('bagians'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Bagian $bagian): RedirectResponse
     {
-        $bagian = Bagian::onlyTrashed()->findOrFail($id);
         $bagian->restore();
 
         return redirect()
@@ -83,9 +91,8 @@ class BagianController extends Controller
             ->with('success', 'Bagian berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(Bagian $bagian): RedirectResponse
     {
-        $bagian = Bagian::onlyTrashed()->findOrFail($id);
         $bagian->forceDelete();
 
         return redirect()

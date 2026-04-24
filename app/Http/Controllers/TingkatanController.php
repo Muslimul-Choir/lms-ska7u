@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TingkatanRequest;
 use App\Models\Tingkatan;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class TingkatanController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
-        $search = request('search');
+        $search = $request->get('search');
 
         $tingkatans = Tingkatan::when($search, function ($query, $search) {
                 return $query->where('nama_tingkatan', 'like', '%' . $search . '%');
@@ -19,6 +20,18 @@ class TingkatanController extends Controller
             ->latest()
             ->paginate(5)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'tingkatans' => $tingkatans->items(),
+                'pagination' => [
+                    'current_page' => $tingkatans->currentPage(),
+                    'last_page' => $tingkatans->lastPage(),
+                    'per_page' => $tingkatans->perPage(),
+                    'total' => $tingkatans->total(),
+                ]
+            ]);
+        }
 
         return view('tingkatan.index', compact('tingkatans', 'search'));
     }
@@ -72,9 +85,8 @@ class TingkatanController extends Controller
         return view('tingkatan.trash', compact('tingkatans'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Tingkatan $tingkatan): RedirectResponse
     {
-        $tingkatan = Tingkatan::onlyTrashed()->findOrFail($id);
         $tingkatan->restore();
 
         return redirect()
@@ -82,9 +94,8 @@ class TingkatanController extends Controller
             ->with('success', 'Tingkatan berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(Tingkatan $tingkatan): RedirectResponse
     {
-        $tingkatan = Tingkatan::onlyTrashed()->findOrFail($id);
         $tingkatan->forceDelete();
 
         return redirect()

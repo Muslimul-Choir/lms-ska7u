@@ -12,7 +12,7 @@ class GuruSeeder extends Seeder
     {
         Guru::insert([
             [
-                'id_user' => 1, // user pertama
+                'id_user' => 1,
                 'nama_lengkap' => 'Wali Kelas Utama',
                 'status_pengajar' => 'walikelas',
             ]

@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TahunAjaranRequest;
 use App\Models\TahunAjaran;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class TahunAjaranController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
-        $search = request('search');
+        $search = $request->get('search');
 
         $tahunAjarans = TahunAjaran::when($search, function ($query, $search) {
                 return $query->where('nama_tahun', 'like', '%' . $search . '%');
@@ -19,6 +20,14 @@ class TahunAjaranController extends Controller
             ->latest()
             ->paginate(5)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'tahunAjarans' => $tahunAjarans->items(),
+                'pagination' => $tahunAjarans->links()->toHtml(),
+                'total' => $tahunAjarans->total()
+            ]);
+        }
 
         return view('tahunajaran.index', compact('tahunAjarans', 'search'));
     }
@@ -72,9 +81,8 @@ class TahunAjaranController extends Controller
         return view('tahunajaran.trash', compact('tahunAjarans'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(TahunAjaran $tahunajaran): RedirectResponse
     {
-        $tahunajaran = TahunAjaran::onlyTrashed()->findOrFail($id);
         $tahunajaran->restore();
 
         return redirect()
@@ -82,9 +90,8 @@ class TahunAjaranController extends Controller
             ->with('success', 'Tahun ajaran berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(TahunAjaran $tahunajaran): RedirectResponse
     {
-        $tahunajaran = TahunAjaran::onlyTrashed()->findOrFail($id);
         $tahunajaran->forceDelete();
 
         return redirect()
