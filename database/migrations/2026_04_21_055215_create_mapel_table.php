@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('kode_mapel', 20)->nullable()->unique();
             $table->string('nama_mapel', 100);
             $table->text('deskripsi')->nullable();
+            $table->string('foto')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -73,7 +73,7 @@
 
                 {{-- Search Bar --}}
                 <div class="px-6 py-3 bg-slate-50 border-b border-slate-100">
-                    <form action="{{ route('semester.index') }}" method="GET" class="flex items-center gap-2 max-w-md">
+                    <form action="{{ route('semester.index') }}" method="GET" class="flex items-center gap-2 max-w-2xl">
                         <div class="relative flex-1">
                             <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -88,11 +88,26 @@
                                 class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition"
                             >
                         </div>
+                        <div class="relative">
+                            <select name="tahun_ajaran" class="pl-3 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition appearance-none">
+                                <option value="">Semua Tahun Ajaran</option>
+                                @foreach($tahunAjarans as $tahunAjaran)
+                                    <option value="{{ $tahunAjaran->id }}" {{ request('tahun_ajaran') == $tahunAjaran->id ? 'selected' : '' }}>
+                                        {{ $tahunAjaran->nama_tahun }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </div>
                         <button type="submit"
                                 class="px-4 py-2 bg-[#1B3A6B] hover:bg-[#0F2145] text-white text-sm font-medium rounded-lg transition">
                             Cari
                         </button>
-                        @if(request('search'))
+                        @if(request('search') || request('tahun_ajaran'))
                             <a href="{{ route('semester.index') }}"
                                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition">
                                 Reset
