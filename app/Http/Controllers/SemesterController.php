@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SemesterRequest;
 use App\Models\Semester;
+use App\Models\TahunAjaran;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -12,16 +13,22 @@ class SemesterController extends Controller
     public function index(): View
     {
         $search = request('search');
+        $tahun_ajaran_filter = request('tahun_ajaran');
 
         $semesters = Semester::with('tahunAjaran')
             ->when($search, function ($query, $search) {
                 return $query->where('nama_semester', 'like', '%' . $search . '%');
             })
+            ->when($tahun_ajaran_filter, function ($query, $tahun_ajaran_filter) {
+                return $query->where('id_tahun_ajaran', $tahun_ajaran_filter);
+            })
             ->latest()
             ->paginate(5)
             ->withQueryString();
 
-        return view('semester.index', compact('semesters', 'search'));
+        $tahunAjarans = TahunAjaran::all();
+
+        return view('semester.index', compact('semesters', 'search', 'tahunAjarans', 'tahun_ajaran_filter'));
     }
 
     public function create(): View
