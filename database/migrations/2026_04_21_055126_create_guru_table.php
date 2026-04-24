@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('id_user')->constrained('users')
                   ->onUpdate('cascade')->onDelete('cascade');
             $table->string('nama_lengkap', 150);
+            $table->string('email', 150)->unique();
             $table->enum('status_pengajar', ['pengajar', 'walikelas', 'keduanya'])
                   ->default('pengajar');
             $table->timestamps();
