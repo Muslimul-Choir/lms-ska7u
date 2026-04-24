@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SemesterRequest;
 use App\Models\Semester;
 use App\Models\TahunAjaran;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class SemesterController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
-        $search = request('search');
-        $tahun_ajaran_filter = request('tahun_ajaran');
+        $search = $request->get('search');
+        $tahun_ajaran_filter = $request->get('tahun_ajaran');
 
         $semesters = Semester::with('tahunAjaran')
             ->when($search, function ($query, $search) {
@@ -25,6 +26,14 @@ class SemesterController extends Controller
             ->latest()
             ->paginate(5)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'semesters' => $semesters->items(),
+                'pagination' => $semesters->links()->toHtml(),
+                'total' => $semesters->total()
+            ]);
+        }
 
         $tahunAjarans = TahunAjaran::all();
 

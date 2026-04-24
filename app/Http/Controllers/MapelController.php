@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Storage;
 
 class MapelController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
-        $search = request('search');
+        $search = $request->get('search');
 
         $mapels = Mapel::when($search, function ($query, $search) {
                 return $query->where('nama_mapel', 'like', '%' . $search . '%')
@@ -22,6 +22,14 @@ class MapelController extends Controller
             ->latest()
             ->paginate(4)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'mapels' => $mapels->items(),
+                'pagination' => $mapels->links()->toHtml(),
+                'total' => $mapels->total()
+            ]);
+        }
 
         return view('mapel.index', compact('mapels', 'search'));
     }

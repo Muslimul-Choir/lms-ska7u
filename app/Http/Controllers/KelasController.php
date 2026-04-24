@@ -51,6 +51,18 @@ class KelasController extends Controller
 
         $kelasList = $query->latest()->paginate(10)->withQueryString();
 
+        if ($request->ajax()) {
+            return response()->json([
+                'kelasList' => $kelasList->items(),
+                'pagination' => [
+                    'current_page' => $kelasList->currentPage(),
+                    'last_page' => $kelasList->lastPage(),
+                    'per_page' => $kelasList->perPage(),
+                    'total' => $kelasList->total(),
+                ]
+            ]);
+        }
+
         // Data untuk dropdown form
         $tingkatanList  = Tingkatan::orderBy('nama_tingkatan')->get();
         $jurusanList    = Jurusan::orderBy('nama_jurusan')->get();
