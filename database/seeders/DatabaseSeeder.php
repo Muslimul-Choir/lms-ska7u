@@ -27,13 +27,7 @@ class DatabaseSeeder extends Seeder
             TingkatanSeeder::class,
             JurusanSeeder::class,
             TahunAjaranSeeder::class,
-            GuruSeeder::class,
-        ]);
-
-        $this->call([
-            TahunAjaranSeeder::class,
-            SemesterSeeder::class,
-            // Tambahkan seeder lainnya jika diperlukan
+            // GuruSeeder::class,
         ]);
     }
 }

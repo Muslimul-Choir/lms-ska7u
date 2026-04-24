@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\GuruMapel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -15,10 +16,9 @@ class Guru extends Model
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
-        'user_id',
+        'id_user',
         'email',
         'nama_lengkap',
-        'tahun_tanggal_lahir',
         'status_pengajar',
     ];
 
@@ -29,12 +29,17 @@ class Guru extends Model
         'deleted_at',
     ];
 
-    public function User()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'id_user');
     }
-    public function Kelas()
+    public function kelas()
     {
         return $this->hasMany(Kelas::class, 'id_wali_kelas');
+    }
+
+    public function guruMapel()
+    {
+        return $this->hasMany(GuruMapel::class, 'id_guru');
     }
 }
