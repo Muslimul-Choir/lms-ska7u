@@ -1,0 +1,238 @@
+<x-app-layout>
+    @include('guru.modal-create')
+    @include('guru.modal-edit')
+    @include('guru.import')
+    <x-slot name="header">
+        <div class="flex items-center gap-3">
+            {{-- Icon --}}
+            <div class="w-8 h-8 rounded bg-[#1B3A6B] flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">
+                    Data Guru
+                </h2>
+                <p class="text-[11px] text-slate-400 mt-0.5 tracking-widest uppercase">Manajemen Data Jam Belajar</p>
+            </div>
+        </div>
+    </x-slot>
+    <div class="container mx-auto px-4 py-6">
+
+        {{-- Header --}}
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Data Guru</h1>
+            <div class="flex gap-2">
+
+                <a href="{{ route('guru.trash') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition">
+                    🗑 Trash
+                    @if ($trashCount > 0)
+                        <span
+                            class="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{{ $trashCount }}</span>
+                    @endif
+                </a>
+
+                {{-- Tombol Send Email Semua --}}
+                <form action="{{ route('guru.sendEmailAll') }}" method="POST"
+                    onsubmit="return confirm('Kirim email akun ke SEMUA guru? Password mereka akan direset.')">
+                    @csrf
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Kirim Email Semua
+                    </button>
+                </form>
+
+                {{-- Export --}}
+                <a href="{{ route('guru.export') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg>
+                    Export Excel
+                </a>
+
+                {{-- Import --}}
+                <button onclick="openImportGuruModal()"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition">
+                    Import Excel
+                </button>
+                {{-- Tambah --}}
+                <button onclick="openCreateGuruModal()"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">
+                    Tambah Guru
+                </button>
+            </div>
+        </div>
+
+        {{-- Alert --}}
+        @if (session('success'))
+            <div class="mb-4 px-4 py-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        {{-- Tabel --}}
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">#</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Nama Lengkap</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
+                        <th class="px-4 py-3 text-center font-semibold text-gray-600">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($gurus as $guru)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3 text-gray-500">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-800">{{ $guru->nama_lengkap }}</td>
+                            <td class="px-4 py-3 text-gray-600">{{ $guru->email }}</td>
+                            <td class="px-4 py-3">
+                                @php
+                                    $badge =
+                                        [
+                                            'pengajar' => 'bg-blue-100 text-blue-700',
+                                            'walikelas' => 'bg-purple-100 text-purple-700',
+                                            'keduanya' => 'bg-green-100 text-green-700',
+                                        ][$guru->status_pengajar] ?? 'bg-gray-100 text-gray-600';
+                                @endphp
+                                <span class="px-2 py-1 rounded-full text-xs font-medium {{ $badge }}">
+                                    {{ ucfirst($guru->status_pengajar) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-center gap-2">
+
+                                    {{-- Send Email (satu guru) --}}
+                                    <form action="{{ route('guru.sendEmail', $guru->id) }}" method="POST"
+                                        onsubmit="return confirm('Kirim email akun ke {{ $guru->nama_lengkap }}? Password akan direset.')">
+                                        @csrf
+                                        <button type="submit"
+                                            class="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-medium transition"
+                                            title="Kirim Email Akun">
+                                            Send Email
+                                        </button>
+                                    </form>
+
+                                    {{-- Edit --}}
+                                    <button onclick="openEditGuruModal(this)" data-id="{{ $guru->id }}"
+                                        data-nama="{{ $guru->nama_lengkap }}" data-email="{{ $guru->email }}"
+                                        data-status="{{ $guru->status_pengajar }}"
+                                        class="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-xs font-medium transition">
+                                        Edit
+                                    </button>
+
+                                    {{-- Hapus --}}
+                                    <form action="{{ route('guru.destroy', $guru->id) }}" method="POST"
+                                        onsubmit="return confirm('Hapus data guru {{ $guru->nama_lengkap }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-medium transition">
+                                            Hapus
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-4 py-8 text-center text-gray-400">Belum ada data guru.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            {{-- Pagination --}}
+            <div class="px-4 py-3 border-t border-gray-100">
+                {{ $gurus->links() }}
+            </div>
+        </div>
+
+    </div>
+
+    @push('scripts')
+        <script>
+            function openCreateGuruModal() {
+                document.getElementById('modalCreateGuru').classList.remove('hidden');
+            }
+
+            function closeCreateGuruModal() {
+                document.getElementById('modalCreateGuru').classList.add('hidden');
+            }
+
+            function openEditGuruModal(button) {
+                const modal = document.getElementById('modalEditGuru');
+
+                const d = button.dataset;
+                
+                document.getElementById('editGuruForm').action       = `/guru/${d.id}`;
+                document.getElementById('edit_guru_id').value = d.id;
+                document.getElementById('edit_nama_lengkap').value = d.nama;
+                document.getElementById('edit_email').value = d.email;
+                document.getElementById('edit_status_pengajar').value = d.status;
+
+                console.log(`/guru/${d.id}`);
+
+                modal.classList.remove('hidden');
+            }
+
+            function closeEditGuruModal() {
+                document.getElementById('modalEditGuru').classList.add('hidden');
+            }
+
+            function openImportGuruModal() {
+                document.getElementById('modalImportGuru').classList.remove('hidden');
+            }
+
+            function closeImportGuruModal() {
+                document.getElementById('modalImportGuru').classList.add('hidden');
+            }
+
+            function openEditGuruModalFromOld() {
+                const modal = document.getElementById('modalEditGuru');
+
+                document.getElementById('edit_guru_id').value = "{{ old('edit_id') }}";
+                document.getElementById('edit_nama_lengkap').value = "{{ old('nama_lengkap') }}";
+                document.getElementById('edit_email').value = "{{ old('email') }}";
+                document.getElementById('edit_status_pengajar').value = "{{ old('status_pengajar') }}";
+
+                const form = document.getElementById('editGuruForm');
+                form.action = `/guru/{{ old('edit_id') }}`;
+
+                modal.classList.remove('hidden');
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+
+                @if ($errors->any())
+                    const modalType = @json(old('_modal'));
+
+                    const modalHandlers = {
+                        create: () => openCreateGuruModal(),
+                        edit: () => openEditGuruModalFromOld(),
+                        import: () => openImportGuruModal(),
+                    };
+
+                    if (modalHandlers[modalType]) {
+                        modalHandlers[modalType]();
+                    }
+                @endif
+
+            });
+        </script>
+    @endpush
+</x-app-layout>
