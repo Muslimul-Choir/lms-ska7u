@@ -11,6 +11,7 @@ use App\Models\Kelas;
 use App\Models\TahunAjaran;
 use App\Models\Tingkatan;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
 class KelasController extends Controller
@@ -152,9 +153,8 @@ class KelasController extends Controller
     /**
      * Restore kelas dari trash.
      */
-    public function restore(int $id)
+    public function restore(Kelas $kelas): RedirectResponse
     {
-        $kelas = Kelas::onlyTrashed()->findOrFail($id);
         $kelas->restore();
         return redirect()->route('kelas.trash')
             ->with('success', 'Kelas berhasil dipulihkan.');
@@ -163,9 +163,8 @@ class KelasController extends Controller
     /**
      * Hapus permanen.
      */
-    public function forceDelete(int $id)
+    public function forceDelete(Kelas $kelas): RedirectResponse
     {
-        $kelas = Kelas::onlyTrashed()->findOrFail($id);
         $kelas->forceDelete();
         return redirect()->route('kelas.trash')
             ->with('success', 'Kelas berhasil dihapus secara permanen.');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JamBelajar;
 use App\Http\Requests\JamBelajarRequest;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class JamBelajarController extends Controller
 {
@@ -56,17 +57,17 @@ class JamBelajarController extends Controller
         return view('jambelajar.trash', compact('trash'));
     }
 
-    public function restore($id)
+    public function restore(JamBelajar $jambelajar): RedirectResponse
     {
-        JamBelajar::onlyTrashed()->where('id', $id)->restore();
+        $jambelajar->restore();
 
         return redirect()->route('jambelajar.trash')
             ->with('success', 'Data berhasil direstore');
     }
 
-    public function forceDelete($id)
+    public function forceDelete(JamBelajar $jambelajar): RedirectResponse
     {
-        JamBelajar::onlyTrashed()->where('id', $id)->forceDelete();
+        $jambelajar->forceDelete();
 
         return redirect()->route('jambelajar.trash')
             ->with('success', 'Data berhasil dihapus permanen');

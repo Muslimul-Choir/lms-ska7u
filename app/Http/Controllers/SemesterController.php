@@ -80,9 +80,8 @@ class SemesterController extends Controller
         return view('semester.trash', compact('semesters'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Semester $semester): RedirectResponse
     {
-        $semester = Semester::onlyTrashed()->findOrFail($id);
         $semester->restore();
 
         return redirect()
@@ -90,9 +89,8 @@ class SemesterController extends Controller
             ->with('success', 'Semester berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(Semester $semester): RedirectResponse
     {
-        $semester = Semester::onlyTrashed()->findOrFail($id);
         $semester->forceDelete();
 
         return redirect()

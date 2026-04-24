@@ -91,9 +91,8 @@ class MapelController extends Controller
         return view('mapel.trash', compact('mapels'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Mapel $mapel): RedirectResponse
     {
-        $mapel = Mapel::onlyTrashed()->findOrFail($id);
         $mapel->restore();
 
         return redirect()
@@ -101,10 +100,8 @@ class MapelController extends Controller
             ->with('success', 'Mata pelajaran berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(Mapel $mapel): RedirectResponse
     {
-        $mapel = Mapel::onlyTrashed()->findOrFail($id);
-
         // Hapus foto jika ada
         if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
             Storage::disk('public')->delete($mapel->foto);

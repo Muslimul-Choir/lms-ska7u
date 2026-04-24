@@ -72,9 +72,8 @@ class TingkatanController extends Controller
         return view('tingkatan.trash', compact('tingkatans'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Tingkatan $tingkatan): RedirectResponse
     {
-        $tingkatan = Tingkatan::onlyTrashed()->findOrFail($id);
         $tingkatan->restore();
 
         return redirect()
@@ -82,9 +81,8 @@ class TingkatanController extends Controller
             ->with('success', 'Tingkatan berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete(Tingkatan $tingkatan): RedirectResponse
     {
-        $tingkatan = Tingkatan::onlyTrashed()->findOrFail($id);
         $tingkatan->forceDelete();
 
         return redirect()
