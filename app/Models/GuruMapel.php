@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Gurumapel extends Model
+class GuruMapel extends Model
 {
     use SoftDeletes; // Mengaktifkan deleted_at
 
@@ -15,7 +15,7 @@ class Gurumapel extends Model
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
-        'id_,mapel',
+        'id_mapel',
         'id_guru',
         'id_kelas',
         'id_semester',

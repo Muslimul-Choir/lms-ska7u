@@ -14,8 +14,17 @@ class GuruSeeder extends Seeder
             [
                 'id_user' => 1,
                 'nama_lengkap' => 'Wali Kelas Utama',
+                'email' => 'walikelas@example.com',
                 'status_pengajar' => 'walikelas',
+            ],
+            [
+                'id_user' => 2,
+                'nama_lengkap' => 'Guru Matematika',
+                'email' => 'guru.mtk@example.com',
+                'status_pengajar' => 'pengajar',
             ]
         ]);
+
+        $this->command->info(count(Guru::all()) . ' data guru berhasil di-seed.');
     }
 }

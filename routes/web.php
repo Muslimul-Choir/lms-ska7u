@@ -3,6 +3,7 @@
 use App\Http\Controllers\BagianController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuruController;
+use App\Http\Controllers\GuruMapelController;
 use App\Http\Controllers\JamBelajarController;
 use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KelasController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
 use App\Models\Bagian;
+use App\Models\GuruMapel;
 use App\Models\JamBelajar;
 use App\Models\Jurusan;
 use App\Models\Mapel;
@@ -28,6 +30,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 
 // Route::bind() harus di luar middleware group agar terdaftar secara global
 Route::bind('bagian',      fn($v) => Bagian::withTrashed()->findOrFail($v));
+Route::bind('guru_mapel',  fn($v) => GuruMapel::withTrashed()->findOrFail($v));
 Route::bind('jurusan',     fn($v) => Jurusan::withTrashed()->findOrFail($v));
 Route::bind('semester',    fn($v) => Semester::withTrashed()->findOrFail($v));
 Route::bind('tahunajaran', fn($v) => TahunAjaran::withTrashed()->findOrFail($v));
@@ -87,6 +90,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('jambelajar/trash/{jambelajar}/restore', [JamBelajarController::class, 'restore'])->name('jambelajar.restore');
     Route::delete('jambelajar/trash/{jambelajar}/force-delete', [JamBelajarController::class, 'forceDelete'])->name('jambelajar.force-delete');
     Route::resource('jambelajar', JamBelajarController::class);
+
+    // Guru Mapel Routes
+    Route::get('guru_mapel/trash', [GuruMapelController::class, 'trash'])->name('guru_mapel.trash');
+    Route::patch('guru_mapel/trash/{guru_mapel}/restore', [GuruMapelController::class, 'restore'])->name('guru_mapel.restore');
+    Route::delete('guru_mapel/trash/{guru_mapel}/force-delete', [GuruMapelController::class, 'forceDelete'])->name('guru_mapel.force-delete');
+    Route::resource('guru_mapel', GuruMapelController::class);
 
     // Kelas Routes
     Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {
