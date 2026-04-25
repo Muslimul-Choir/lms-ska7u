@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\TingkatanRequest;
+use App\Http\Requests\Tingkatan\StoreTingkatanRequest;
+use App\Http\Requests\Tingkatan\UpdateTingkatanRequest;
 use App\Models\Tingkatan;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +42,7 @@ class TingkatanController extends Controller
         return view('tingkatan.create');
     }
 
-    public function store(TingkatanRequest $request): RedirectResponse
+    public function store(StoreTingkatanRequest $request): RedirectResponse
     {
         Tingkatan::create($request->validated());
 
@@ -60,7 +61,7 @@ class TingkatanController extends Controller
         return view('tingkatan.edit', compact('tingkatan'));
     }
 
-    public function update(TingkatanRequest $request, Tingkatan $tingkatan): RedirectResponse
+    public function update(UpdateTingkatanRequest $request, Tingkatan $tingkatan): RedirectResponse
     {
         $tingkatan->update($request->validated());
 

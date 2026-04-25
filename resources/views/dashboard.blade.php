@@ -157,7 +157,7 @@
                             @php
                                 $right = [
                                     ['label' => 'Guru Mapel',          'val' => $counts['guru_mapel'],     'max' => max($counts['guru'], 1),   'color' => '#C8992A'],
-                                    ['label' => 'Jadwal Belajar',      'val' => $counts['jadwal_belajar'], 'max' => max($counts['kelas'], 1),  'color' => '#DC2626'],
+                                    ['label' => 'Jadwal Belajar',      'val' => $counts['jadwalbelajar'], 'max' => max($counts['kelas'], 1),  'color' => '#DC2626'],
                                     ['label' => 'Materi Pembelajaran', 'val' => $counts['materi'],         'max' => max($counts['mapel'], 1),  'color' => '#0891B2'],
                                 ];
                             @endphp
@@ -280,7 +280,7 @@
                                     'rows'  => [
                                         ['Jam Belajar',    $counts['jam_belajar']],
                                         ['Pertemuan',      $counts['pertemuan']],
-                                        ['Jadwal Belajar', $counts['jadwal_belajar']],
+                                        ['Jadwal Belajar', $counts['jadwalbelajar']],
                                     ],
                                     'border' => 'border-yellow-200',
                                     'dot'    => 'bg-yellow-400',

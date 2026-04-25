@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\JurusanRequest;
+use App\Http\Requests\Jurusan\StoreJurusanRequest;
+use App\Http\Requests\Jurusan\UpdateJurusanRequest;
 use App\Models\Jurusan;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,7 @@ class JurusanController extends Controller
         return view('jurusan.create');
     }
 
-    public function store(JurusanRequest $request): RedirectResponse
+    public function store(StoreJurusanRequest $request): RedirectResponse
     {
         Jurusan::create($request->validated());
 
@@ -57,7 +58,7 @@ class JurusanController extends Controller
         return view('jurusan.edit', compact('jurusan'));
     }
 
-    public function update(JurusanRequest $request, Jurusan $jurusan): RedirectResponse
+    public function update(UpdateJurusanRequest $request, Jurusan $jurusan): RedirectResponse
     {
         $jurusan->update($request->validated());
 

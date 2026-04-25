@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\JamBelajar;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class JamBelajarRequest extends FormRequest
+class UpdateJamBelajarRequest extends FormRequest
 {
     public function authorize(): bool
     {

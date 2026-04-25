@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\BagianRequest;
+use App\Http\Requests\Bagian\StoreBagianRequest;
+use App\Http\Requests\Bagian\UpdateBagianRequest;
 use App\Models\Bagian;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,7 @@ class BagianController extends Controller
         return view('bagian.create');
     }
 
-    public function store(BagianRequest $request): RedirectResponse
+    public function store(StoreBagianRequest $request): RedirectResponse
     {
         Bagian::create($request->validated());
 
@@ -57,7 +58,7 @@ class BagianController extends Controller
         return view('bagian.edit', compact('bagian'));
     }
 
-    public function update(BagianRequest $request, Bagian $bagian): RedirectResponse
+    public function update(UpdateBagianRequest $request, Bagian $bagian): RedirectResponse
     {
         $bagian->update($request->validated());
 
