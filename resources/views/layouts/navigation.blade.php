@@ -104,6 +104,22 @@
                 {{ __('Guru') }}
             </a>
 
+            {{-- Guru Mapel --}}
+            <a href="{{ route('guru_mapel.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('guru_mapel.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.833 5.083 8.5 4.5 6 5v13c2.5-.5 4.833.083 6 1.253m0-13C13.167 5.083 15.5 4.5 18 5v13c-2.5-.5-4.833.083-6 1.253"/>
+                </svg>
+                {{ __('Guru Mapel') }}
+            </a>
+
+             {{-- Jadwal Belajar --}}
+            <a href="{{ route('jadwalbelajar.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('jadwalbelajar.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.833 5.083 8.5 4.5 6 5v13c2.5-.5 4.833.083 6 1.253m0-13C13.167 5.083 15.5 4.5 18 5v13c-2.5-.5-4.833.083-6 1.253"/>
+                </svg>
+                {{ __('Jadwal Belajar') }}
+            </a>
+
         </div>
 
         <!-- User Profile Section (Fixed / tidak scroll) -->

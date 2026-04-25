@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\TahunAjaranRequest;
+use App\Http\Requests\TahunAjaran\StoreTahunAjaranRequest;
+use App\Http\Requests\TahunAjaran\UpdateTahunAjaranRequest;
 use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,7 @@ class TahunAjaranController extends Controller
         return view('tahunajaran.create');
     }
 
-    public function store(TahunAjaranRequest $request): RedirectResponse
+    public function store(StoreTahunAjaranRequest $request): RedirectResponse
     {
         TahunAjaran::create($request->validated());
 
@@ -56,7 +57,7 @@ class TahunAjaranController extends Controller
         return view('tahunajaran.edit', compact('tahunajaran'));
     }
 
-    public function update(TahunAjaranRequest $request, TahunAjaran $tahunajaran): RedirectResponse
+    public function update(UpdateTahunAjaranRequest $request, TahunAjaran $tahunajaran): RedirectResponse
     {
         $tahunajaran->update($request->validated());
 

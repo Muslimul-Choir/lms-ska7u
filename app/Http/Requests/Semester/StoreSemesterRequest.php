@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Semester;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SemesterRequest extends FormRequest
+class StoreSemesterRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -33,15 +33,12 @@ class SemesterRequest extends FormRequest
 
     public function rules(): array
     {
-        $semesterId = $this->route('semester')?->id;
-
         return [
             'nama_semester' => [
                 'required',
                 'string',
                 'max:50',
                 Rule::unique('semester', 'nama_semester')
-                    ->ignore($semesterId)
                     ->whereNull('deleted_at'),
             ],
             'id_tahun_ajaran' => [
