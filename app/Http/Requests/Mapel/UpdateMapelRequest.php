@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Mapel;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class MapelRequest extends FormRequest
+class UpdateMapelRequest extends FormRequest
 {
     public function authorize(): bool
     {

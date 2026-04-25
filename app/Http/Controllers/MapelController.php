@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mapel;
-use App\Http\Requests\MapelRequest;
+use App\Http\Requests\Mapel\StoreMapelRequest;
+use App\Http\Requests\Mapel\UpdateMapelRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -39,7 +40,7 @@ class MapelController extends Controller
         return view('mapel.create');
     }
 
-    public function store(MapelRequest $request): RedirectResponse
+    public function store(StoreMapelRequest $request): RedirectResponse
     {
         $data = $request->validated();
 
@@ -64,7 +65,7 @@ class MapelController extends Controller
         return view('mapel.edit', compact('mapel'));
     }
 
-    public function update(MapelRequest $request, Mapel $mapel): RedirectResponse
+    public function update(UpdateMapelRequest $request, Mapel $mapel): RedirectResponse
     {
         $data = $request->validated();
 

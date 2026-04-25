@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\TahunAjaran;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class TahunAjaranRequest extends FormRequest
+class StoreTahunAjaranRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -34,15 +34,12 @@ class TahunAjaranRequest extends FormRequest
 
     public function rules(): array
     {
-        $tahunAjaranId = $this->route('tahunajaran')?->id;
-
         return [
             'nama_tahun' => [
                 'required',
                 'string',
                 'max:20',
                 Rule::unique('tahun_ajaran', 'nama_tahun')
-                    ->ignore($tahunAjaranId)
                     ->whereNull('deleted_at'),
             ],
             'is_aktif' => [

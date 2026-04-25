@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Tingkatan;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class TingkatanRequest extends FormRequest
+class UpdateTingkatanRequest extends FormRequest
 {
     public function authorize(): bool
     {

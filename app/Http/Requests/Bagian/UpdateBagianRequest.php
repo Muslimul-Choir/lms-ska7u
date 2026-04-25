@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Bagian;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class BagianRequest extends FormRequest
+class UpdateBagianRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -46,19 +46,6 @@ class BagianRequest extends FormRequest
         return [
             'nama_bagian' => 'Nama Bagian',
             'deskripsi'   => 'Deskripsi',
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'nama_bagian.required' => ':attribute wajib diisi.',
-            'nama_bagian.string'   => ':attribute harus berupa teks.',
-            'nama_bagian.max'      => ':attribute tidak boleh lebih dari :max karakter.',
-            'nama_bagian.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
-
-            'deskripsi.string'     => ':attribute harus berupa teks.',
-            'deskripsi.max'        => ':attribute tidak boleh lebih dari :max karakter.',
         ];
     }
 }
