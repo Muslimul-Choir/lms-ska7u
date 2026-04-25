@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -133,10 +134,20 @@ class GuruController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2048'],
         ]);
 
-        Excel::import(new GuruImport, $request->file('file'));
+        try {
+            $import = new GuruImport();
+            Excel::import($import, $request->file('file'));
 
-        return redirect()->route('guru.index')
-            ->with('success', 'Import data guru berhasil.');
+            $importedCount = count($import->imported);
+
+            return redirect()->route('guru.index')
+                ->with('success', "Import data guru berhasil. {$importedCount} data baru berhasil diimpor.");
+        } catch (\Exception $e) {
+            Log::error('Import Guru Error: ' . $e->getMessage());
+
+            return redirect()->route('guru.index')
+                ->with('error', 'Terjadi kesalahan saat mengimpor data guru. Silakan periksa file dan coba lagi.');
+        }
     }
 
     // ── TRASH ────────────────────────────────────────────────

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Jurusan;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class JurusanRequest extends FormRequest
+class UpdateJurusanRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -45,18 +45,6 @@ class JurusanRequest extends FormRequest
         return [
             'nama_jurusan' => 'Nama Jurusan',
             'keterangan'   => 'Keterangan',
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'nama_jurusan.required' => ':attribute wajib diisi.',
-            'nama_jurusan.string'   => ':attribute harus berupa teks.',
-            'nama_jurusan.max'      => ':attribute tidak boleh lebih dari :max karakter.',
-            'nama_jurusan.unique'   => ':attribute sudah digunakan, gunakan nama lain.',
-
-            'keterangan.string'     => ':attribute harus berupa teks.',
         ];
     }
 }

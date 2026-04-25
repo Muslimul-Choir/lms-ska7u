@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SemesterRequest;
+use App\Http\Requests\Semester\StoreSemesterRequest;
+use App\Http\Requests\Semester\UpdateSemesterRequest;
 use App\Models\Semester;
 use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class SemesterController extends Controller
         return view('semester.create');
     }
 
-    public function store(SemesterRequest $request): RedirectResponse
+    public function store(StoreSemesterRequest $request): RedirectResponse
     {
         Semester::create($request->validated());
 
@@ -64,7 +65,7 @@ class SemesterController extends Controller
         return view('semester.edit', compact('semester'));
     }
 
-    public function update(SemesterRequest $request, Semester $semester): RedirectResponse
+    public function update(UpdateSemesterRequest $request, Semester $semester): RedirectResponse
     {
         $semester->update($request->validated());
 

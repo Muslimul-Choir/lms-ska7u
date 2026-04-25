@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\JamBelajar;
-use App\Http\Requests\JamBelajarRequest;
+use App\Http\Requests\JamBelajar\StoreJamBelajarRequest;
+use App\Http\Requests\JamBelajar\UpdateJamBelajarRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +43,7 @@ class JamBelajarController extends Controller
         return view('jambelajar.create');
     }
 
-    public function store(JamBelajarRequest $request)
+    public function store(StoreJamBelajarRequest $request)
     {
         JamBelajar::create($request->validated());
 
@@ -55,7 +56,7 @@ class JamBelajarController extends Controller
         return view('jambelajar.edit', compact('jambelajar'));
     }
 
-    public function update(JamBelajarRequest $request, JamBelajar $jambelajar)
+    public function update(UpdateJamBelajarRequest $request, JamBelajar $jambelajar)
     {
         $jambelajar->update($request->validated());
 

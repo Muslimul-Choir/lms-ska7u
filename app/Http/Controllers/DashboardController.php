@@ -48,7 +48,7 @@ class DashboardController extends Controller
             'penilaian' => Penilaian::count(),
             'absensi' => Absensi::count(),
             'guru_mapel' => GuruMapel::count(),
-            'jadwal_belajar' => JadwalBelajar::count(),
+            'jadwalbelajar' => JadwalBelajar::count(),
         ];
 
         $metrics = [
