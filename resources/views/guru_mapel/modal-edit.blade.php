@@ -81,7 +81,7 @@
                         <option value="">Pilih Guru</option>
                         @foreach($gurus as $guru)
                             <option value="{{ $guru->id }}">
-                                {{ $guru->nama_guru }}
+                                {{ $guru->nama_lengkap }}
                             </option>
                         @endforeach
                     </select>
@@ -100,17 +100,18 @@
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
                         Kelas <span class="text-red-400">*</span>
                     </label>
-                    <select id="editIdKelas" name="id_kelas"
-                            class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700
-                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]
-                                   transition
-                                   @error('id_kelas') border-red-400 bg-red-50 @else border-slate-200 @enderror">
+                    <select id="editIdKelas" name="id_kelas" class="w-full rounded-lg border px-3 py-2.5 text-sm">
                         <option value="">Pilih Kelas</option>
-                        @foreach($kelas as $kls)
+
+                        @forelse($kelas as $kls)
                             <option value="{{ $kls->id }}">
-                                {{ $kls->nama_kelas }}
+                                {{ $kls->Tingkatan->nama_tingkatan ?? '' }} -
+                                {{ $kls->Jurusan->nama_jurusan ?? '' }} -
+                                {{ $kls->Bagian->nama_bagian ?? '' }}
                             </option>
-                        @endforeach
+                        @empty
+                            <option disabled>Tidak ada data kelas</option>
+                        @endforelse
                     </select>
                     @error('id_kelas')
                         <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">

@@ -4,6 +4,7 @@ use App\Http\Controllers\BagianController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\GuruMapelController;
+use App\Http\Controllers\JadwalBelajarController;
 use App\Http\Controllers\JamBelajarController;
 use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KelasController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
 use App\Models\Bagian;
 use App\Models\GuruMapel;
+use App\Models\JadwalBelajar;
 use App\Models\JamBelajar;
 use App\Models\Jurusan;
 use App\Models\Mapel;
@@ -29,14 +31,15 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 // Route::bind() harus di luar middleware group agar terdaftar secara global
-Route::bind('bagian',      fn($v) => Bagian::withTrashed()->findOrFail($v));
-Route::bind('guru_mapel',  fn($v) => GuruMapel::withTrashed()->findOrFail($v));
-Route::bind('jurusan',     fn($v) => Jurusan::withTrashed()->findOrFail($v));
-Route::bind('semester',    fn($v) => Semester::withTrashed()->findOrFail($v));
-Route::bind('tahunajaran', fn($v) => TahunAjaran::withTrashed()->findOrFail($v));
-Route::bind('tingkatan',   fn($v) => Tingkatan::withTrashed()->findOrFail($v));
-Route::bind('mapel',       fn($v) => Mapel::withTrashed()->findOrFail($v));
-Route::bind('jambelajar',  fn($v) => JamBelajar::withTrashed()->findOrFail($v));
+Route::bind('bagian',         fn($v) => Bagian::withTrashed()->findOrFail($v));
+Route::bind('guru_mapel',     fn($v) => GuruMapel::withTrashed()->findOrFail($v));
+Route::bind('jurusan',        fn($v) => Jurusan::withTrashed()->findOrFail($v));
+Route::bind('semester',       fn($v) => Semester::withTrashed()->findOrFail($v));
+Route::bind('tahunajaran',    fn($v) => TahunAjaran::withTrashed()->findOrFail($v));
+Route::bind('tingkatan',      fn($v) => Tingkatan::withTrashed()->findOrFail($v));
+Route::bind('mapel',          fn($v) => Mapel::withTrashed()->findOrFail($v));
+Route::bind('jambelajar',     fn($v) => JamBelajar::withTrashed()->findOrFail($v));
+Route::bind('jadwalbelajar', fn($v) => JadwalBelajar::withTrashed()->findOrFail($v));
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -127,6 +130,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{guru}',                  'update')->name('update');
         Route::delete('/{guru}',               'destroy')->name('destroy');
         Route::post('/{guru}/send-email',      'sendEmail')->name('sendEmail');
+    });
+
+    // Jadwal Belajar Routes
+    Route::prefix('jadwalbelajar')->name('jadwalbelajar.')->controller(JadwalBelajarController::class)->group(function () {
+        Route::get('/trash',                    'trash')->name('trash');
+        Route::patch('/trash/{id}/restore',     'restore')->name('restore');
+        Route::delete('/trash/{id}/force',      'forceDelete')->name('force-delete');
+
+        Route::get('/',                         'index')->name('index');
+        Route::post('/',                        'store')->name('store');
+        Route::get('/{jadwalbelajar}/edit',    'edit')->name('edit');
+        Route::put('/{jadwalbelajar}',         'update')->name('update');
+        Route::delete('/{jadwalbelajar}',      'destroy')->name('destroy');
     });
 
 });
