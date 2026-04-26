@@ -7,15 +7,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Model
 {
-    use SoftDeletes; // Mengaktifkan deleted_at
+    use SoftDeletes;
 
-    // Nama tabel
     protected $table = 'siswa';
     protected $primaryKey = 'id';
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_user',
+        'nama_lengkap',
+        'email',
         'agama',
         'id_kelas',
     ];
@@ -29,7 +30,7 @@ class Siswa extends Model
 
      public function User()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'id_user');
     }
 
      public function Kelas()

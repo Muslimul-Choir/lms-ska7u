@@ -26,6 +26,44 @@
             <h1 class="text-2xl font-bold text-gray-800">Data Guru</h1>
             <div class="flex gap-2">
 
+                <form method="GET" action="{{ route('guru.index') }}" class="mb-4">
+    <div class="flex flex-wrap gap-3 items-center">
+
+        {{-- Search --}}
+        <input type="text" name="search" value="{{ request('search') }}"
+            placeholder="Cari nama atau email..."
+            class="border rounded-lg px-3 py-2 text-sm w-64 focus:ring focus:ring-blue-200">
+
+        {{-- Filter Status --}}
+        <select name="status_pengajar"
+            class="border rounded-lg px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+            <option value="">Semua Status</option>
+            <option value="pengajar" {{ request('status_pengajar') == 'pengajar' ? 'selected' : '' }}>
+                Pengajar
+            </option>
+            <option value="walikelas" {{ request('status_pengajar') == 'walikelas' ? 'selected' : '' }}>
+                Wali Kelas
+            </option>
+            <option value="keduanya" {{ request('status_pengajar') == 'keduanya' ? 'selected' : '' }}>
+                Keduanya
+            </option>
+        </select>
+
+        {{-- Tombol Filter --}}
+        <button type="submit"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+            Filter
+        </button>
+
+        {{-- Reset --}}
+        <a href="{{ route('guru.index') }}"
+            class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm">
+            Reset
+        </a>
+
+    </div>
+</form>
+
                 <a href="{{ route('guru.trash') }}"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition">
                     🗑 Trash
