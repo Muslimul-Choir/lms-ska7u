@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\BagianController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuruController;
@@ -25,6 +26,7 @@ use App\Models\Semester;
 use App\Models\TahunAjaran;
 use App\Models\Tingkatan;
 use App\Models\Pertemuan;
+use App\Models\Absensi;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +46,7 @@ Route::bind('mapel',          fn($v) => Mapel::withTrashed()->findOrFail($v));
 Route::bind('jambelajar',     fn($v) => JamBelajar::withTrashed()->findOrFail($v));
 Route::bind('jadwalbelajar', fn($v) => JadwalBelajar::withTrashed()->findOrFail($v));
 Route::bind('pertemuan', fn($v) => Pertemuan::withTrashed()->findOrFail($v));
+Route::bind('absensi', fn($v) => Absensi::withTrashed()->findOrFail($v));
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -181,6 +184,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{pertemuan}/edit',          'edit')->name('edit');
         Route::put('/{pertemuan}',               'update')->name('update');
         Route::delete('/{pertemuan}',            'destroy')->name('destroy');
+    });
+
+    // Absensi Routes
+    Route::prefix('absensi')->name('absensi.')->controller(AbsensiController::class)->group(function () {
+        Route::get('/trash',                     'trash')->name('trash');
+        Route::patch('/trash/{id}/restore',      'restore')->name('restore');
+        Route::delete('/trash/{id}/force',       'forceDelete')->name('force-delete');
+
+        Route::get('/',                          'index')->name('index');
+        Route::post('/',                         'store')->name('store');
+        Route::get('/{absensi}/edit',          'edit')->name('edit');
+        Route::put('/{absensi}',               'update')->name('update');
+        Route::delete('/{absensi}',            'destroy')->name('destroy');
     });
 });
 
