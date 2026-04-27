@@ -14,6 +14,7 @@ use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
+use App\Http\Controllers\PertemuanController;
 use App\Models\Bagian;
 use App\Models\GuruMapel;
 use App\Models\JadwalBelajar;
@@ -23,6 +24,7 @@ use App\Models\Mapel;
 use App\Models\Semester;
 use App\Models\TahunAjaran;
 use App\Models\Tingkatan;
+use App\Models\Pertemuan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -41,6 +43,7 @@ Route::bind('tingkatan',      fn($v) => Tingkatan::withTrashed()->findOrFail($v)
 Route::bind('mapel',          fn($v) => Mapel::withTrashed()->findOrFail($v));
 Route::bind('jambelajar',     fn($v) => JamBelajar::withTrashed()->findOrFail($v));
 Route::bind('jadwalbelajar', fn($v) => JadwalBelajar::withTrashed()->findOrFail($v));
+Route::bind('pertemuan', fn($v) => Pertemuan::withTrashed()->findOrFail($v));
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -165,6 +168,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{jadwalbelajar}/edit',    'edit')->name('edit');
         Route::put('/{jadwalbelajar}',         'update')->name('update');
         Route::delete('/{jadwalbelajar}',      'destroy')->name('destroy');
+    });
+
+    // Pertemuan Routes
+    Route::prefix('pertemuan')->name('pertemuan.')->controller(PertemuanController::class)->group(function () {
+        Route::get('/trash',                     'trash')->name('trash');
+        Route::patch('/trash/{id}/restore',      'restore')->name('restore');
+        Route::delete('/trash/{id}/force',       'forceDelete')->name('force-delete');
+
+        Route::get('/',                          'index')->name('index');
+        Route::post('/',                         'store')->name('store');
+        Route::get('/{pertemuan}/edit',          'edit')->name('edit');
+        Route::put('/{pertemuan}',               'update')->name('update');
+        Route::delete('/{pertemuan}',            'destroy')->name('destroy');
     });
 });
 
