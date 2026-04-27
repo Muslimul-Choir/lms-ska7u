@@ -21,9 +21,23 @@ use Maatwebsite\Excel\Facades\Excel;
 class GuruController extends Controller
 {
     // ── INDEX ────────────────────────────────────────────────
-    public function index()
+    public function index(Request $request)
     {
-        $gurus = Guru::latest()->paginate(15);
+        $query = Guru::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status_pengajar')) {
+            $query->where('status_pengajar', $request->status_pengajar);
+        }
+
+        $gurus = $query->latest()->paginate(15)->withQueryString();
         $trashCount = Guru::onlyTrashed()->count();
         return view('guru.index', compact('gurus', 'trashCount'));
     }
@@ -141,7 +155,7 @@ class GuruController extends Controller
             $importedCount = count($import->imported);
 
             return redirect()->route('guru.index')
-                ->with('success', "Import data guru berhasil. {$importedCount} data baru berhasil diimpor.");
+                ->with('success', "{$importedCount} data diimpor.");
         } catch (\Exception $e) {
             Log::error('Import Guru Error: ' . $e->getMessage());
 
