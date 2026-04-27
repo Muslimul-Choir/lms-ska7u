@@ -30,6 +30,15 @@
                 {{ __('Dashboard') }}
             </a>
 
+            {{-- Absensi — check circle --}}
+            <a href="{{ route('absensi.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('absensi.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" stroke-width="2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+                </svg>
+                {{ __('Absensi') }}
+            </a>
+
             {{-- Bagian — office/building --}}
             <a href="{{ route('bagian.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('bagian.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,16 +163,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M9 16h4"/>
                 </svg>
                 {{ __('Pertemuan') }}
-            </a>
-
-             {{-- Pertemuan — clipboard with list --}}
-            <a href="{{ route('absensi.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('absensi.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
-                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-                    <rect x="9" y="3" width="6" height="4" rx="1" stroke-width="2"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M9 16h4"/>
-                </svg>
-                {{ __('Absensi') }}
             </a>
 
         </div>
