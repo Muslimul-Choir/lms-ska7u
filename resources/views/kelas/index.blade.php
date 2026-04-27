@@ -165,8 +165,8 @@
                             <tr class="bg-slate-50 border-b border-slate-200">
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest w-12">#</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Kelas</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jurusan</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tahun Ajaran</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tingkatan</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Wali Kelas</th>
                                 <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-40">Aksi</th>
                             </tr>
@@ -192,16 +192,6 @@
                                             </span>
                                         </div>
                                     </td>
-                                    {{-- Jurusan --}}
-                                    <td class="px-6 py-4">
-                                        @if ($kelas->Jurusan)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-[#1B3A6B] border border-blue-100">
-                                                {{ $kelas->Jurusan->nama_jurusan }}
-                                            </span>
-                                        @else
-                                            <span class="text-slate-400 text-sm">—</span>
-                                        @endif
-                                    </td>
                                     {{-- Tahun Ajaran --}}
                                     <td class="px-6 py-4">
                                         @if ($kelas->TahunAjaran)
@@ -210,6 +200,16 @@
                                                 @if ($kelas->TahunAjaran->is_aktif)
                                                     <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                                                 @endif
+                                            </span>
+                                        @else
+                                            <span class="text-slate-400 text-sm">—</span>
+                                        @endif
+                                    </td>
+                                    {{-- Jurusan --}}
+                                    <td class="px-6 py-4">
+                                        @if ($kelas->Jurusan)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-[#1B3A6B] border border-blue-100">
+                                                {{ $kelas->Jurusan->nama_jurusan }}
                                             </span>
                                         @else
                                             <span class="text-slate-400 text-sm">—</span>
@@ -387,9 +387,6 @@
                         </td>
                         <td class="px-6 py-4 text-slate-600 text-sm">
                             ${kelas.tingkatan.nama_tingkatan}
-                        </td>
-                        <td class="px-6 py-4 text-slate-600 text-sm">
-                            ${kelas.jurusan.nama_jurusan}
                         </td>
                         <td class="px-6 py-4 text-slate-600 text-sm">
                             ${waliKelas}

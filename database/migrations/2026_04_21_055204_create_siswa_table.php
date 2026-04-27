@@ -13,12 +13,24 @@ return new class extends Migration
     {
         Schema::create('siswa', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('id_user')->constrained('users')
-                  ->onUpdate('cascade')->onDelete('cascade');
+                ->onUpdate('cascade')->onDelete('cascade');
+
+            $table->string('nama_lengkap', 150);
+            $table->string('email', 150)->unique();
+
             $table->enum('agama', [
-                'Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'
+                'Islam',
+                'Kristen',
+                'Katolik',
+                'Hindu',
+                'Buddha',
+                'Konghucu'
             ]);
+
             $table->foreignId('id_kelas')->constrained('kelas')->onUpdate('cascade');
+
             $table->timestamps();
             $table->softDeletes();
         });

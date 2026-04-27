@@ -15,7 +15,7 @@ class StoreJurusanRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'nama_jurusan' => ucwords(strtolower(trim($this->nama_jurusan))),
+            'nama_jurusan' => strtoupper(trim($this->nama_jurusan)),
             'keterangan'   => $this->keterangan ? trim($this->keterangan) : null,
         ]);
     }
