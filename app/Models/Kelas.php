@@ -23,6 +23,9 @@ class Kelas extends Model
         'id_wali_kelas',
     ];
 
+    // Accessor yang di-include dalam JSON serialization
+    protected $appends = ['nama_kelas'];
+
     // Kolom tanggal yang otomatis diubah menjadi Carbon
     protected $dates = [
         'created_at',
@@ -31,33 +34,44 @@ class Kelas extends Model
     ];
 
     public function Tingkatan()
-        {
-            return $this->belongsTo(Tingkatan::class, 'id_tingkatan');
-        }    
+    {
+        return $this->belongsTo(Tingkatan::class, 'id_tingkatan');
+    }
 
-     public function Jurusan()
+    public function Jurusan()
     {
         return $this->belongsTo(Jurusan::class, 'id_jurusan');
     }
 
-     public function Bagian()
+    public function Bagian()
     {
         return $this->belongsTo(Bagian::class, 'id_bagian');
     }
 
-     public function TahunAjaran()
+    public function TahunAjaran()
     {
         return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
     }
 
-     public function WaliKelas()
-     {
-       return $this->belongsTo(Guru::class, 'id_wali_kelas');
+    public function WaliKelas()
+    {
+        return $this->belongsTo(Guru::class, 'id_wali_kelas');
     }
 
-     public function Siswa()
+    public function Siswa()
     {
         return $this->hasMany(Siswa::class, 'id_kelas');
     }
 
+    /**
+     * Accessor untuk mendapatkan nama kelas berdasarkan relasi
+     */
+    public function getNamaKelasAttribute()
+    {
+        $tingkatan = $this->Tingkatan?->nama_tingkatan ?? '';
+        $jurusan = $this->Jurusan?->nama_jurusan ?? '';
+        $bagian = $this->Bagian?->nama_bagian ?? '';
+
+        return trim("{$tingkatan} {$jurusan} {$bagian}");
+    }
 }

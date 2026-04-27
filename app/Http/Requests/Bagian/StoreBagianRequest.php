@@ -15,7 +15,7 @@ class StoreBagianRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'nama_bagian' => trim($this->nama_bagian),
+            'nama_bagian' => strtoupper(trim($this->nama_bagian)),
             'deskripsi'   => $this->deskripsi ? trim($this->deskripsi) : null,
         ]);
     }

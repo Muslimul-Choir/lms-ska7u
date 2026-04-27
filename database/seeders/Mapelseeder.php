@@ -21,7 +21,7 @@ class MapelSeeder extends Seeder
                 'deskripsi'   => 'Mempelajari tata bahasa, menulis, membaca, dan sastra Indonesia.',
             ],
             [
-                'kode_mapel' => 'BIG',
+                'kode_mapel' => 'BING',
                 'nama_mapel'  => 'Bahasa Inggris',
                 'deskripsi'   => 'Mempelajari grammar, speaking, reading, dan writing dalam bahasa Inggris.',
             ],

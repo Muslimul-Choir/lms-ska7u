@@ -11,6 +11,7 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\MapelController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SemesterController;
+use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
 use App\Models\Bagian;
@@ -132,6 +133,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{guru}/send-email',      'sendEmail')->name('sendEmail');
     });
 
+    Route::prefix('siswa')->name('siswa.')->controller(SiswaController::class)->group(function () {
+
+        Route::get('/',                        'index')->name('index');
+        Route::post('/',                       'store')->name('store');
+        Route::get('/export',                  'export')->name('export');
+        Route::post('/import',                 'import')->name('import');
+        Route::post('/send-email-all',         'sendEmailAll')->name('sendEmailAll');
+
+        // Trash
+        Route::get('/trash',                   'trash')->name('trash');
+        Route::post('/trash/restore-all',      'restoreAll')->name('restoreAll');
+        Route::post('/trash/force-delete-all', 'forceDeleteAll')->name('forceDeleteAll');
+        Route::post('/trash/{id}/restore',     'restore')->name('restore');
+        Route::delete('/trash/{id}/force',     'forceDelete')->name('forceDelete');
+
+        // Wildcard (model binding) — paling bawah
+        Route::put('/{siswa}',                 'update')->name('update');
+        Route::delete('/{siswa}',              'destroy')->name('destroy');
+        Route::post('/{siswa}/send-email',     'sendEmail')->name('sendEmail');
+    });
+
     // Jadwal Belajar Routes
     Route::prefix('jadwalbelajar')->name('jadwalbelajar.')->controller(JadwalBelajarController::class)->group(function () {
         Route::get('/trash',                    'trash')->name('trash');
@@ -144,7 +166,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{jadwalbelajar}',         'update')->name('update');
         Route::delete('/{jadwalbelajar}',      'destroy')->name('destroy');
     });
-
 });
 
 require __DIR__ . '/auth.php';

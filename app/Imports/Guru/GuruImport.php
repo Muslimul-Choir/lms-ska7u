@@ -41,7 +41,7 @@ class GuruImport implements ToCollection, WithHeadingRow, SkipsOnError
                     ? $statusPengajar
                     : 'pengajar';
 
-                // ── Cek apakah email sudah ada (aktif atau di trash) ──────
+                // ── Cek apakah email sudah ada (aktif atau di trash) 
                 $existingGuru = Guru::withTrashed()->where('email', $email)->first();
 
                 if ($existingGuru) {
