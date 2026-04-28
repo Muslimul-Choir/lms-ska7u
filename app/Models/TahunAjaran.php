@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Kelas;
+use App\Models\Semester;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -25,4 +27,13 @@ class TahunAjaran extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function Kelas()
+    {
+        return $this->hasMany(Kelas::class, 'id_tahun_ajaran');
+    }
+
+    public function Semester() {
+        return $this->hasMany(Semester::class, 'id_tahun_ajaran');
+    }
 }
