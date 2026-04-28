@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Kelas;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -25,4 +26,9 @@ class Tingkatan extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function Kelas()
+    {
+        return $this->hasMany(Kelas::class, 'id_tingkatan');
+    }
 }

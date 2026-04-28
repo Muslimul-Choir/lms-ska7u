@@ -165,8 +165,10 @@
                                     </form>
 
                                     {{-- Edit --}}
-                                    <button onclick="openEditGuruModal(this)" data-id="{{ $guru->id }}"
-                                        data-nama="{{ $guru->nama_lengkap }}" data-email="{{ $guru->email }}"
+                                    <button onclick="openEditGuruModal(this)" 
+                                        data-id="{{ $guru->id }}"
+                                        data-nama="{{ $guru->nama_lengkap }}" 
+                                        data-email="{{ $guru->email }}"
                                         data-status="{{ $guru->status_pengajar }}"
                                         class="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-xs font-medium transition">
                                         Edit
@@ -222,9 +224,7 @@
                 document.getElementById('edit_nama_lengkap').value = d.nama;
                 document.getElementById('edit_email').value = d.email;
                 document.getElementById('edit_status_pengajar').value = d.status;
-
-                console.log(`/guru/${d.id}`);
-
+                
                 modal.classList.remove('hidden');
             }
 
