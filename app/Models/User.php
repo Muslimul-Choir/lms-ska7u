@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\ActivityLog;
+use App\Models\Guru;
+use App\Models\Siswa;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -43,4 +46,16 @@ class User extends Authenticatable implements MustVerifyEmail
         'updated_at',
         'deleted_at',
     ];
+
+    public function guru() {
+        return $this->hasOne(Guru::class, 'id_user');
+    }
+
+    public function siswa() {
+        return $this->hasOne(Siswa::class, 'id_user');
+    }
+
+    public function log() {
+        return $this->hasMany(ActivityLog::class, 'id_user');
+    }
 }
