@@ -14,6 +14,7 @@ use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
+use App\Http\Controllers\UserController;
 use App\Models\Bagian;
 use App\Models\GuruMapel;
 use App\Models\JadwalBelajar;
@@ -48,10 +49,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // =========================================================
-    // PENTING: Rute /trash harus didaftarkan SEBELUM resource()
-    // agar Laravel tidak menganggap "trash" sebagai {id}
-    // =========================================================
+    // users
+    Route::get('users/trash',                [UserController::class, 'trash'])->name('users.trash');
+    Route::patch('users/restore-all',        [UserController::class, 'restoreAll'])->name('users.restoreAll');
+    Route::delete('users/force-delete-all',  [UserController::class, 'forceDeleteAll'])->name('users.forceDeleteAll');
+
+    Route::resource('users', UserController::class)
+        ->only(['index', 'store', 'update', 'destroy']);
+
+    Route::patch('users/{id}/restore',       [UserController::class, 'restore'])->name('users.restore');
+    Route::delete('users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('users.forceDelete');
 
     // Bagian Routes
     Route::get('bagian/trash', [BagianController::class, 'trash'])->name('bagian.trash');
