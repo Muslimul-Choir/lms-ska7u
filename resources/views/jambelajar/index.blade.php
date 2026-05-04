@@ -1,7 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            {{-- Icon --}}
             <div class="w-8 h-8 rounded bg-[#1B3A6B] flex items-center justify-center">
                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -16,11 +15,10 @@
         </div>
     </x-slot>
 
-    {{-- ── Page Body ── --}}
-    <div class="py-8 bg-slate-50 min-h-screen">
+    <div class="py-8 bg-[#f0f4f8] min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
-            {{-- ── Breadcrumb ── --}}
+            {{-- Breadcrumb --}}
             <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide">
                 <span class="text-[#1B3A6B]">Dashboard</span>
                 <span class="text-slate-300">/</span>
@@ -29,7 +27,7 @@
                 <span class="text-slate-600 font-semibold">Jam Belajar</span>
             </nav>
 
-            {{-- ── Alert Success ── --}}
+            {{-- Alert Success --}}
             @if (session('success'))
                 <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
                     <div class="flex items-center gap-2">
@@ -39,140 +37,171 @@
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
                     <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700 transition">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
                     </button>
                 </div>
             @endif
 
-            {{-- ── Main Card ── --}}
+            {{-- Main Card --}}
             <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
 
                 {{-- Card Header --}}
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
-                    <div>
-                        <h3 class="text-white font-semibold text-sm tracking-wide">Daftar Jam Belajar</h3>
-                        <p class="text-blue-200 text-xs mt-0.5">Kelola data jam belajar</p>
-                    </div>
-                    <div class="flex items-center gap-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-base font-bold text-[#0F2145]">Daftar Jam Belajar</h3>
+
+                    <div class="flex flex-wrap items-center gap-2">
+
+                        {{-- Filter Tingkatan --}}
+                        <form method="GET" action="{{ route('jambelajar.index') }}" class="flex items-center gap-2">
+                            <div class="relative">
+                                <select name="tingkatan"
+                                        onchange="this.form.submit()"
+                                        class="appearance-none pl-3 pr-8 py-2 text-xs font-medium border rounded-lg
+                                               focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]
+                                               transition cursor-pointer
+                                               {{ $filterTingkatan ? 'border-[#1B3A6B] bg-[#1B3A6B]/5 text-[#1B3A6B]' : 'border-slate-200 bg-white text-slate-600' }}">
+                                    <option value="">Semua Tingkatan</option>
+                                    @foreach($tingkatanList as $tingkatan)
+                                        <option value="{{ $tingkatan->id }}"
+                                            {{ $filterTingkatan == $tingkatan->id ? 'selected' : '' }}>
+                                            {{ $tingkatan->nama_tingkatan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {{-- Reset filter --}}
+                            @if($filterTingkatan)
+                                <a href="{{ route('jambelajar.index') }}"
+                                   class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium
+                                          bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg transition"
+                                   title="Reset filter">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </a>
+                            @endif
+                        </form>
+
+                        {{-- Trash --}}
                         <a href="{{ route('jambelajar.trash') }}"
-                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg border border-white/20 transition backdrop-blur-sm">
+                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-lg transition">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                             Trash
                         </a>
+
+                        {{-- Tambah --}}
                         <button type="button" id="btnTambahJamBelajar"
-                                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs font-semibold rounded-lg transition shadow-md shadow-amber-900/20">
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#e05a2b] hover:bg-[#c94e22] text-white text-xs font-semibold rounded-lg transition shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                             </svg>
                             Tambah Jam Belajar
                         </button>
+
                     </div>
                 </div>
 
-                {{-- Search Bar --}}
-                <div class="px-6 py-3 bg-slate-50 border-b border-slate-100">
-                    <div class="flex items-center gap-2 max-w-md">
-                        <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
-                            <input
-                                type="text"
-                                id="searchInput"
-                                value="{{ request('search') }}"
-                                placeholder="Cari jam mulai..."
-                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition"
-                            >
-                        </div>
-                        <button type="button" id="btnSearch"
-                                class="px-4 py-2 bg-[#1B3A6B] hover:bg-[#0F2145] text-white text-sm font-medium rounded-lg transition">
-                            Cari
-                        </button>
-                        @if(request('search'))
-                            <button type="button" id="btnReset"
-                               class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition">
-                                Reset
-                            </button>
-                        @endif
+                {{-- Filter badge info --}}
+                @if($filterTingkatan)
+                    @php $namaTingkatanFilter = $tingkatanList->firstWhere('id', $filterTingkatan)?->nama_tingkatan; @endphp
+                    <div class="px-6 py-2.5 bg-[#1B3A6B]/5 border-b border-[#1B3A6B]/10 flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+                        </svg>
+                        <span class="text-xs text-[#1B3A6B] font-medium">
+                            Menampilkan tingkatan: <span class="font-bold">{{ $namaTingkatanFilter }}</span>
+                        </span>
                     </div>
-                </div>
+                @endif
 
                 {{-- Table --}}
                 <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
+                    <table class="min-w-full text-sm border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200">
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest w-12">#</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jam Mulai</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jam Selesai</th>
-                                <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-40">Aksi</th>
+                            <tr class="border-b-2 border-[#e05a2b]">
+                                <th class="px-6 py-3 text-left text-[13px] font-bold text-[#e05a2b] w-44 whitespace-nowrap">
+                                    Tingkatan
+                                </th>
+                                @foreach($jamKe as $ke => $label)
+                                    <th class="px-4 py-3 text-center text-[13px] font-bold text-[#e05a2b] whitespace-nowrap border-l border-slate-100">
+                                        {{ $label }}
+                                    </th>
+                                @endforeach
                             </tr>
                         </thead>
-                        <tbody id="jamBelajarTableBody" class="divide-y divide-slate-100">
-                            @forelse ($jamBelajars as $jamBelajar)
-                                <tr class="hover:bg-slate-50/70 transition group">
-                                    {{-- No --}}
-                                    <td class="px-6 py-4 text-slate-400 text-xs font-mono">
-                                        {{ str_pad($loop->iteration + ($jamBelajars->currentPage() - 1) * $jamBelajars->perPage(), 3, '0', STR_PAD_LEFT) }}
+                        <tbody>
+                            @forelse ($groupedJamBelajar as $tingkatanNama => $rowJams)
+                                <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition">
+
+                                    {{-- Tingkatan --}}
+                                    <td class="px-6 py-4 align-middle">
+                                        <div class="text-xs text-slate-400 font-medium leading-none mb-1">({{ $tahunAktif }})</div>
+                                        <div class="text-sm font-bold text-[#1e293b]">{{ $tingkatanNama }}</div>
                                     </td>
-                                    {{-- Jam Mulai --}}
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2.5">
-                                            <div class="w-7 h-7 rounded-md bg-[#1B3A6B]/10 flex items-center justify-center flex-shrink-0">
-                                                <span class="text-[#1B3A6B] text-[10px] font-bold uppercase">
-                                                    {{ substr($jamBelajar->jam_mulai, 0, 2) }}
-                                                </span>
-                                            </div>
-                                            <span class="font-semibold text-[#0F2145] text-sm">{{ $jamBelajar->jam_mulai }}</span>
-                                        </div>
-                                    </td>
-                                    {{-- Jam Selesai --}}
-                                    <td class="px-6 py-4 text-slate-500 text-sm max-w-xs truncate">
-                                        {{ $jamBelajar->jam_selesai }}
-                                    </td>
-                                    {{-- Aksi --}}
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <button type="button"
-                                                data-id="{{ $jamBelajar->id }}"
-                                                data-jam_mulai="{{ $jamBelajar->jam_mulai }}"
-                                                data-jam_selesai="{{ $jamBelajar->jam_selesai }}"
-                                                class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
-                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                                Edit
-                                            </button>
-                                            <form action="{{ route('jambelajar.destroy', $jamBelajar) }}" method="POST"
-                                                  onsubmit="return confirm('Yakin ingin menghapus jam belajar ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                    </svg>
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+
+                                    {{-- Jam Cells --}}
+                                    @foreach($jamKe as $ke => $label)
+                                        <td class="px-4 py-3 text-center border-l border-slate-100 align-middle">
+                                            @if(isset($rowJams[$ke]))
+                                                @php $jam = $rowJams[$ke]; @endphp
+                                                <div class="text-sm font-medium text-slate-700 mb-2">
+                                                    {{ \Carbon\Carbon::parse($jam->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($jam->jam_selesai)->format('H:i') }}
+                                                </div>
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <button type="button"
+                                                        data-id="{{ $jam->id }}"
+                                                        data-id_tingkatan="{{ $jam->id_tingkatan }}"
+                                                        data-jam_mulai="{{ \Carbon\Carbon::parse($jam->jam_mulai)->format('H:i') }}"
+                                                        data-jam_selesai="{{ \Carbon\Carbon::parse($jam->jam_selesai)->format('H:i') }}"
+                                                        class="btn-edit p-1.5 rounded-md hover:bg-green-50 text-green-500 hover:text-green-600 transition">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                        </svg>
+                                                    </button>
+                                                    <form action="{{ route('jambelajar.destroy', $jam) }}" method="POST"
+                                                          onsubmit="return confirm('Yakin ingin menghapus jam belajar ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="p-1.5 rounded-md hover:bg-red-50 text-red-500 hover:text-red-600 transition">
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @else
+                                                <span class="text-slate-300 text-xs">—</span>
+                                            @endif
+                                        </td>
+                                    @endforeach
+
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-16 text-center">
+                                    <td colspan="{{ count($jamKe) + 1 }}" class="px-6 py-16 text-center">
                                         <div class="flex flex-col items-center gap-3">
                                             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </div>
-                                            <p class="text-slate-400 text-sm font-medium">Belum ada data jam belajar</p>
-                                            <p class="text-slate-300 text-xs">Klik <span class="font-semibold text-slate-400">Tambah Jam Belajar</span> untuk mulai menambahkan data</p>
+                                            <p class="text-slate-400 text-sm font-medium">
+                                                {{ $filterTingkatan ? 'Tidak ada jam belajar untuk tingkatan ini' : 'Belum ada data jam belajar' }}
+                                            </p>
+                                            <p class="text-slate-300 text-xs">
+                                                {{ $filterTingkatan ? 'Coba pilih tingkatan lain atau reset filter' : 'Klik Tambah Jam Belajar untuk mulai menambahkan data' }}
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>
@@ -181,174 +210,37 @@
                     </table>
                 </div>
 
-                {{-- Pagination --}}
-                @if ($jamBelajars->hasPages())
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4">
-                        <p class="text-xs text-slate-500">
-                            Menampilkan
-                            <span class="font-semibold text-slate-700">{{ $jamBelajars->firstItem() }}–{{ $jamBelajars->lastItem() }}</span>
-                            dari
-                            <span class="font-semibold text-slate-700">{{ $jamBelajars->total() }}</span>
-                            entri
-                        </p>
-                        {{ $jamBelajars->links() }}
-                    </div>
-                @endif
-            </div>
+            </div>{{-- end card --}}
 
         </div>
     </div>
 
-    {{-- ── Modals ── --}}
+    {{-- Modals --}}
     @include('jambelajar.modal-create')
     @include('jambelajar.modal-edit')
 
-    {{-- ── Script ── --}}
     <script>
         const modalCreate = document.getElementById('modalCreate');
         const modalEdit   = document.getElementById('modalEdit');
-        const searchInput = document.getElementById('searchInput');
-        const btnSearch   = document.getElementById('btnSearch');
-        const btnReset    = document.getElementById('btnReset');
-        const tableBody   = document.getElementById('jamBelajarTableBody');
 
-        let currentPage = 1;
-        let currentSearch = '{{ $search }}';
-
-        // Function to load data
-        function loadData(search = '', page = 1) {
-            fetch(`{{ route('jambelajar.index') }}?search=${encodeURIComponent(search)}&page=${page}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                renderTable(data.jamBelajars, page);
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Function to render table
-        function renderTable(jamBelajars, currentPage) {
-            if (jamBelajars.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="px-6 py-16 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                                <p class="text-slate-400 text-sm font-medium">Belum ada data jam belajar</p>
-                                <p class="text-slate-300 text-xs">Klik <span class="font-semibold text-slate-400">Tambah Jam Belajar</span> untuk mulai menambahkan data</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tableBody.innerHTML = jamBelajars.map((jamBelajar, index) => {
-                const no = String((currentPage - 1) * 5 + index + 1).padStart(3, '0');
-                return `
-                    <tr class="hover:bg-slate-50/70 transition group">
-                        <td class="px-6 py-4 text-slate-400 text-xs font-mono">${no}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-md bg-[#1B3A6B]/10 flex items-center justify-center flex-shrink-0">
-                                    <span class="text-[#1B3A6B] text-[10px] font-bold uppercase">
-                                        ${jamBelajar.jam_mulai.substring(0, 2)}
-                                    </span>
-                                </div>
-                                <span class="font-semibold text-[#0F2145] text-sm">${jamBelajar.jam_mulai} - ${jamBelajar.jam_selesai}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600 text-sm">
-                            ${jamBelajar.keterangan || '-'}
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button"
-                                    data-id="${jamBelajar.id}"
-                                    data-jam_mulai="${jamBelajar.jam_mulai}"
-                                    data-jam_selesai="${jamBelajar.jam_selesai}"
-                                    data-keterangan="${jamBelajar.keterangan || ''}"
-                                    class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                    Edit
-                                </button>
-                                <form action="/jambelajar/${jamBelajar.id}" method="POST" onsubmit="return confirm('Yakin ingin menghapus jam belajar ini?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            bindEditButtons();
-        }
-
-        // Function to bind edit buttons
-        function bindEditButtons() {
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.getElementById('editJamMulai').value = this.dataset.jam_mulai;
-                    document.getElementById('editJamSelesai').value = this.dataset.jam_selesai;
-                    document.getElementById('formEdit').action = `/jambelajar/${this.dataset.id}`;
-                    modalEdit.style.display = 'block';
-                });
-            });
-        }
-
-        // Event listeners
-        searchInput.addEventListener('input', function() {
-            currentSearch = this.value;
-            currentPage = 1;
-            loadData(currentSearch, currentPage);
-        });
-
-        btnSearch.addEventListener('click', function() {
-            currentSearch = searchInput.value;
-            currentPage = 1;
-            loadData(currentSearch, currentPage);
-        });
-
-        if (btnReset) {
-            btnReset.addEventListener('click', function() {
-                searchInput.value = '';
-                currentSearch = '';
-                currentPage = 1;
-                loadData('', 1);
-            });
-        }
-
-        // Initial load if no search
-        if (!currentSearch) {
-            loadData('', 1);
-        }
-
-        // Modal events
         document.getElementById('btnTambahJamBelajar').addEventListener('click', () => modalCreate.style.display = 'block');
-        document.getElementById('closeCreate').addEventListener('click',     () => modalCreate.style.display = 'none');
-        document.getElementById('cancelCreate').addEventListener('click',    () => modalCreate.style.display = 'none');
-        document.getElementById('overlayCreate').addEventListener('click',   () => modalCreate.style.display = 'none');
+        document.getElementById('closeCreate').addEventListener('click',   () => modalCreate.style.display = 'none');
+        document.getElementById('cancelCreate').addEventListener('click',  () => modalCreate.style.display = 'none');
+        document.getElementById('overlayCreate').addEventListener('click', () => modalCreate.style.display = 'none');
 
-        document.getElementById('closeEdit').addEventListener('click',       () => modalEdit.style.display = 'none');
-        document.getElementById('cancelEdit').addEventListener('click',      () => modalEdit.style.display = 'none');
-        document.getElementById('overlayEdit').addEventListener('click',     () => modalEdit.style.display = 'none');
+        document.getElementById('closeEdit').addEventListener('click',     () => modalEdit.style.display = 'none');
+        document.getElementById('cancelEdit').addEventListener('click',    () => modalEdit.style.display = 'none');
+        document.getElementById('overlayEdit').addEventListener('click',   () => modalEdit.style.display = 'none');
+
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('editIdTingkatan').value = this.dataset.id_tingkatan;
+                document.getElementById('editJamMulai').value    = this.dataset.jam_mulai;
+                document.getElementById('editJamSelesai').value  = this.dataset.jam_selesai;
+                document.getElementById('formEdit').action       = `/jambelajar/${this.dataset.id}`;
+                modalEdit.style.display = 'block';
+            });
+        });
 
         @if ($errors->any())
             modalCreate.style.display = 'block';
