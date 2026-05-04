@@ -6,30 +6,49 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('jadwal_belajar', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_guru_mapel')->constrained('guru_mapel')
-                  ->onUpdate('cascade')->onDelete('cascade');
-            $table->enum('hari', ['Senin','Selasa','Rabu','Kamis','Jumat']);
-            $table->foreignId('id_jam')->constrained('jam_belajar')
-                  ->onUpdate('cascade')->onDelete('cascade');
+
+            // Nullable karena bisa jadi kegiatan (Istirahat, Upacara) bukan mapel
+            $table->foreignId('id_guru_mapel')
+                  ->nullable()
+                  ->constrained('guru_mapel')
+                  ->onUpdate('cascade')
+                  ->onDelete('cascade');
+
+            // Relasi langsung ke mapel (opsional, untuk ambil nama mapel tanpa lewat guru_mapel)
+            $table->foreignId('id_mapel')
+                  ->nullable()
+                  ->constrained('mapel')
+                  ->onUpdate('cascade')
+                  ->onDelete('set null');
+
+            $table->enum('hari', [
+                'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'
+            ]);
+
+            $table->foreignId('id_jam')
+                  ->constrained('jam_belajar')
+                  ->onUpdate('cascade')
+                  ->onDelete('cascade');
+
             $table->foreignId('id_kelas')
-                  ->constrained('kelas')->onUpdate('cascade');
+                  ->constrained('kelas')
+                  ->onUpdate('cascade')
+                  ->onDelete('cascade');
+
+            // Untuk kegiatan non-mapel seperti "Istirahat", "Upacara"
+            $table->string('nama_kegiatan')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('jadwalbelajar');
+        Schema::dropIfExists('jadwal_belajar');
     }
 };

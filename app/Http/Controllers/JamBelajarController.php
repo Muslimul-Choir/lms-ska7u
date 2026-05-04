@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JamBelajar;
+use App\Models\Tingkatan;
 use App\Http\Requests\JamBelajar\StoreJamBelajarRequest;
 use App\Http\Requests\JamBelajar\UpdateJamBelajarRequest;
 use Illuminate\Http\Request;
@@ -11,39 +12,37 @@ use Illuminate\Http\RedirectResponse;
 
 class JamBelajarController extends Controller
 {
-    public function index(Request $request)
-    {
-        $search = $request->get('search');
+    public function index(Request $request): View
+{
+    $tingkatanList = Tingkatan::orderBy('nama_tingkatan')->get();
+    $filterTingkatan = $request->get('tingkatan');
 
-        $jamBelajars = JamBelajar::when($search, function ($query, $search) {
-                return $query->where('jam_mulai', 'like', '%' . $search . '%')
-                             ->orWhere('jam_selesai', 'like', '%' . $search . '%');
-            })
-            ->latest()
-            ->paginate(5)
-            ->withQueryString();
+    $jamBelajars = JamBelajar::with('tingkatan')
+        ->when($filterTingkatan, fn($q) => $q->where('id_tingkatan', $filterTingkatan))
+        ->orderBy('id_tingkatan')
+        ->orderBy('jam_mulai')
+        ->get();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'jamBelajars' => $jamBelajars->items(),
-                'pagination' => [
-                    'current_page' => $jamBelajars->currentPage(),
-                    'last_page' => $jamBelajars->lastPage(),
-                    'per_page' => $jamBelajars->perPage(),
-                    'total' => $jamBelajars->total(),
-                ]
-            ]);
-        }
+    $groupedJamBelajar = $jamBelajars
+        ->groupBy(fn($item) => $item->tingkatan?->nama_tingkatan ?? 'Tanpa Tingkatan')
+        ->map(fn($items) => $items->values()->mapWithKeys(fn($item, $i) => [$i + 1 => $item]));
 
-        return view('jambelajar.index', compact('jamBelajars', 'search'));
-    }
+    $maxJam = max($groupedJamBelajar->map->count()->max() ?? 0, 5);
+    $jamKe  = collect(range(1, $maxJam))->mapWithKeys(fn($n) => [$n => "Jam ke-{$n}"]);
 
-    public function create()
-    {
-        return view('jambelajar.create');
-    }
+    $tahunAktif = '2025/2026';
 
-    public function store(StoreJamBelajarRequest $request)
+    return view('jambelajar.index', compact(
+        'jamBelajars',
+        'groupedJamBelajar',
+        'jamKe',
+        'tahunAktif',
+        'tingkatanList',
+        'filterTingkatan',
+    ));
+}
+
+    public function store(StoreJamBelajarRequest $request): RedirectResponse
     {
         JamBelajar::create($request->validated());
 
@@ -51,12 +50,7 @@ class JamBelajarController extends Controller
             ->with('success', 'Jam belajar berhasil ditambahkan');
     }
 
-    public function edit(JamBelajar $jambelajar)
-    {
-        return view('jambelajar.edit', compact('jambelajar'));
-    }
-
-    public function update(UpdateJamBelajarRequest $request, JamBelajar $jambelajar)
+    public function update(UpdateJamBelajarRequest $request, JamBelajar $jambelajar): RedirectResponse
     {
         $jambelajar->update($request->validated());
 
@@ -64,7 +58,7 @@ class JamBelajarController extends Controller
             ->with('success', 'Jam belajar berhasil diupdate');
     }
 
-    public function destroy(JamBelajar $jambelajar)
+    public function destroy(JamBelajar $jambelajar): RedirectResponse
     {
         $jambelajar->delete();
 
@@ -72,19 +66,27 @@ class JamBelajarController extends Controller
             ->with('success', 'Jam belajar berhasil dihapus');
     }
 
-    public function trash(): View
-    {
-        $trash = JamBelajar::onlyTrashed()->get();
+    public function trash(Request $request): View
+{
+    $tingkatanList   = Tingkatan::orderBy('nama_tingkatan')->get();
+    $filterTingkatan = $request->get('tingkatan');
 
-        return view('jambelajar.trash', compact('trash'));
-    }
+    $jamBelajars = JamBelajar::onlyTrashed()
+        ->with('tingkatan')
+        ->when($filterTingkatan, fn($q) => $q->where('id_tingkatan', $filterTingkatan))
+        ->orderBy('id_tingkatan')
+        ->orderBy('jam_mulai')
+        ->paginate(10);
+
+    return view('jambelajar.trash', compact('jamBelajars', 'tingkatanList', 'filterTingkatan'));
+}
 
     public function restore(JamBelajar $jambelajar): RedirectResponse
     {
         $jambelajar->restore();
 
         return redirect()->route('jambelajar.trash')
-            ->with('success', 'Data berhasil direstore');
+            ->with('success', 'Data berhasil dipulihkan');
     }
 
     public function forceDelete(JamBelajar $jambelajar): RedirectResponse
