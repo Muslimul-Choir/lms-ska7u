@@ -11,43 +11,24 @@ class UpdateJamBelajarRequest extends FormRequest
         return true;
     }
 
-    // 🔥 Sanitasi input
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'jam_mulai'  => $this->cleanString($this->jam_mulai),
-            'jam_selesai'=> $this->cleanString($this->jam_selesai),
-        ]);
-    }
-
-    private function cleanString($value): ?string
-    {
-        if (is_null($value)) return null;
-
-        return trim(preg_replace('/\s+/', ' ', strip_tags($value)));
-    }
-
     public function rules(): array
     {
         return [
-            'jam_mulai' => ['required', 'string', 'max:10'],
-            'jam_selesai' => ['required', 'string', 'max:10'],
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'jam_mulai' => 'Jam Mulai',
-            'jam_selesai' => 'Jam Selesai',
+            'id_tingkatan' => ['required', 'exists:tingkatan,id'],
+            'jam_mulai'    => ['required', 'date_format:H:i'],
+            'jam_selesai'  => ['required', 'date_format:H:i', 'after:jam_mulai'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'jam_mulai.required' => ':attribute wajib diisi.',
-            'jam_selesai.required' => ':attribute wajib diisi.',
+            'id_tingkatan.required' => 'Tingkatan wajib dipilih.',
+            'id_tingkatan.exists'   => 'Tingkatan tidak valid.',
+            'jam_mulai.required'    => 'Jam mulai wajib diisi.',
+            'jam_mulai.date_format' => 'Format jam mulai tidak valid.',
+            'jam_selesai.required'  => 'Jam selesai wajib diisi.',
+            'jam_selesai.after'     => 'Jam selesai harus setelah jam mulai.',
         ];
     }
 }

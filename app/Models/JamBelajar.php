@@ -17,6 +17,7 @@ class JamBelajar extends Model
     protected $fillable = [
         'jam_mulai',
         'jam_selesai',
+        'id_tingkatan',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
@@ -25,5 +26,10 @@ class JamBelajar extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function Tingkatan()
+    {
+        return $this->belongsTo(Tingkatan::class, 'id_tingkatan');
+    }
 
 }

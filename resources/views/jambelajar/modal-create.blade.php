@@ -1,23 +1,18 @@
 <div id="modalCreate" style="display:none; position:fixed; inset:0; z-index:9999;">
 
-    {{-- Overlay --}}
     <div id="overlayCreate"
          style="position:absolute; inset:0; background:rgba(10,25,60,0.55); backdrop-filter:blur(3px);">
     </div>
 
-    {{-- Dialog wrapper --}}
     <div style="position:relative; z-index:10; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:1rem;">
 
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden
-                    ring-1 ring-slate-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden ring-1 ring-slate-200">
 
-            {{-- Modal Header --}}
-            <div class="flex items-center justify-between px-6 py-4
-                        bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
                 <div class="flex items-center gap-2.5">
                     <div class="w-7 h-7 rounded-md bg-white/15 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2.5">
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
                     </div>
@@ -27,27 +22,51 @@
                     </div>
                 </div>
                 <button type="button" id="closeCreate"
-                        class="w-7 h-7 flex items-center justify-center rounded-lg
-                               bg-white/10 hover:bg-white/25 text-white transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2.5">
+                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/25 text-white transition">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            {{-- Modal Body --}}
+            {{-- Body --}}
             <form action="{{ route('jambelajar.store') }}" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
+
+                {{-- Tingkatan --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                        Tingkatan <span class="text-red-400">*</span>
+                    </label>
+                    <select name="id_tingkatan"
+                            class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700
+                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]
+                                   transition
+                                   @error('id_tingkatan') border-red-400 bg-red-50 @else border-slate-200 @enderror">
+                        <option value="">-- Pilih Tingkatan --</option>
+                        @foreach($tingkatanList as $tingkatan)
+                            <option value="{{ $tingkatan->id }}"
+                                {{ old('id_tingkatan') == $tingkatan->id ? 'selected' : '' }}>
+                                {{ $tingkatan->nama_tingkatan }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('id_tingkatan')
+                        <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
                 {{-- Jam Mulai --}}
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
                         Jam Mulai <span class="text-red-400">*</span>
                     </label>
-                    <input type="time"
-                           name="jam_mulai"
-                           value="{{ old('jam_mulai') }}"
+                    <input type="time" name="jam_mulai" value="{{ old('jam_mulai') }}"
                            class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700
                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]
                                   transition
@@ -67,9 +86,7 @@
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
                         Jam Selesai <span class="text-red-400">*</span>
                     </label>
-                    <input type="time"
-                           name="jam_selesai"
-                           value="{{ old('jam_selesai') }}"
+                    <input type="time" name="jam_selesai" value="{{ old('jam_selesai') }}"
                            class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700
                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]
                                   transition
@@ -84,7 +101,6 @@
                     @enderror
                 </div>
 
-                {{-- Divider --}}
                 <div class="border-t border-slate-100"></div>
 
                 {{-- Actions --}}
