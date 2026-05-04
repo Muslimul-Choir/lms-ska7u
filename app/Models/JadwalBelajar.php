@@ -7,39 +7,68 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JadwalBelajar extends Model
 {
-    use SoftDeletes; // Mengaktifkan deleted_at
+    use SoftDeletes;
 
-    // Nama tabel
     protected $table = 'jadwal_belajar';
     protected $primaryKey = 'id';
 
-    // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_guru_mapel',
+        'id_mapel',       
         'id_jam',
         'id_kelas',
         'hari',
+        'nama_kegiatan',
     ];
 
-    // Kolom tanggal yang otomatis diubah menjadi Carbon
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
+    protected $casts = [
+        'deleted_at' => 'datetime',
     ];
 
-     public function JamBelajar()
+    // ── Relasi ──────────────────────────────────────────
+
+    public function JamBelajar()
     {
         return $this->belongsTo(JamBelajar::class, 'id_jam');
     }
 
-     public function Kelas()
+    public function Kelas()
     {
         return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 
-     public function GuruMapel()
+    public function GuruMapel()
     {
         return $this->belongsTo(GuruMapel::class, 'id_guru_mapel');
+    }
+
+    public function Mapel()
+    {
+        return $this->belongsTo(Mapel::class, 'id_mapel');
+    }
+
+    // ── Accessors ────────────────────────────────────────
+
+    // Nama yang ditampilkan di grid kalender
+    public function getNamaDisplayAttribute(): string
+    {
+        // 1. Kegiatan non-mapel (Istirahat, Upacara, dll)
+        if ($this->nama_kegiatan) {
+            return $this->nama_kegiatan;
+        }
+
+        // 2. Relasi langsung ke mapel (id_mapel)
+        if ($this->Mapel) {
+            return $this->Mapel->nama_mapel;
+        }
+
+        // 3. Fallback lewat guru_mapel → mapel
+        return $this->GuruMapel?->Mapel?->nama_mapel ?? '-';
+    }
+
+    // Nama guru yang ditampilkan di grid kalender
+    public function getNamaGuruAttribute(): string
+    {
+        return $this->GuruMapel?->Guru?->nama_lengkap ?? '';
     }
 }

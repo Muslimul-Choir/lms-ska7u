@@ -2,173 +2,144 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\JadwalBelajar\StoreJadwalBelajarRequest;
-use App\Http\Requests\JadwalBelajar\UpdateJadwalBelajarRequest;
 use App\Models\JadwalBelajar;
-use App\Models\GuruMapel;
 use App\Models\JamBelajar;
 use App\Models\Kelas;
+use App\Models\GuruMapel;
+use App\Models\Mapel;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class JadwalBelajarController extends Controller
 {
     public function index(Request $request)
-    {
-        $search = $request->get('search');
-        $hari   = $request->get('hari');
+{
+    $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
+    $idKelas = $request->get('id_kelas');
+    $tingkat = $request->get('tingkat');
+
+    // Ambil semua jam belajar
+    $jamList = JamBelajar::orderByRaw('COALESCE(urutan, 999), jam_mulai')->get();
+
+    // Ambil tingkatan untuk dropdown
+    $tingkatanList = \App\Models\Tingkatan::orderBy('nama_tingkatan')->get();
+
+    // Ambil SEMUA kelas untuk dropdown (bukan difilter, filter hanya via JS)
+    $kelasList = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
+
+    // Ambil guru mapel & mapel untuk modal
+    $guruMapelList = GuruMapel::with(['Guru', 'Mapel'])->get();
+    $mapelList     = \App\Models\Mapel::orderBy('nama_mapel')->get();
+
+    // Ambil jadwal — wajib ada filter kelas atau tingkat untuk tampil
+    $jadwals = collect();
+
+    if ($idKelas || $tingkat) {
         $jadwals = JadwalBelajar::with([
-                'GuruMapel.Guru',
-                'GuruMapel.Mapel',
-                'JamBelajar',
-                'Kelas.Tingkatan',
-                'Kelas.Jurusan',
-                'Kelas.Bagian',
-            ])
-            ->when($search, function ($query, $search) {
-                return $query->whereHas('GuruMapel.Guru', function ($q) use ($search) {
-                    $q->where('nama_guru', 'like', '%' . $search . '%');
-                })->orWhereHas('Kelas.Jurusan', function ($q) use ($search) {
-                    $q->where('nama_jurusan', 'like', '%' . $search . '%');
-                });
-            })
-            ->when($hari, function ($query, $hari) {
-                return $query->where('hari', $hari);
-            })
-            ->latest()
-            ->paginate(5)
-            ->withQueryString();
-
-        $guruMapels  = GuruMapel::with(['Guru', 'Mapel'])->get();
-        $jamBelajars = JamBelajar::all();
-        $kelas       = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
-        $hariList    = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-
-        if ($request->ajax()) {
-            return response()->json([
-                'jadwals'    => $jadwals->items(),
-                'pagination' => $jadwals->links()->toHtml(),
-                'total'      => $jadwals->total(),
-            ]);
-        }
-
-        return view('jadwalbelajar.index', compact(
-            'jadwals',
-            'search',
-            'hari',
-            'guruMapels',
-            'jamBelajars',
-            'kelas',
-            'hariList'
-        ));
-    }
-
-    public function create(): View
-    {
-        $guruMapels  = GuruMapel::with(['Guru', 'Mapel'])->get();
-        $jamBelajars = JamBelajar::all();
-        $kelas       = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
-        $hariList    = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-
-        return view('jadwalbelajar.create', compact(
-            'guruMapels',
-            'jamBelajars',
-            'kelas',
-            'hariList'
-        ));
-    }
-
-    public function store(StoreJadwalBelajarRequest $request): RedirectResponse
-    {
-        JadwalBelajar::create($request->validated());
-
-        return redirect()
-            ->route('jadwalbelajar.index')
-            ->with('success', 'Jadwal belajar berhasil ditambahkan.');
-    }
-
-    public function show(JadwalBelajar $jadwalBelajar): View
-    {
-        $jadwalBelajar->load([
-            'GuruMapel.Guru',
-            'GuruMapel.Mapel',
             'JamBelajar',
             'Kelas.Tingkatan',
             'Kelas.Jurusan',
             'Kelas.Bagian',
+            'GuruMapel.Guru',
+            'GuruMapel.Mapel',
+            'Mapel',
+        ])
+        ->when($idKelas, fn($q) => $q->where('id_kelas', $idKelas))
+        ->when($tingkat && !$idKelas, fn($q) => $q->whereHas('Kelas.Tingkatan',
+            fn($q2) => $q2->where('tingkatan.id', $tingkat)
+        ))
+        ->get();
+    }
+
+    // Susun grid
+    $grid = [];
+    foreach ($jamList as $jam) {
+        $grid[$jam->id] = [];
+        foreach ($hariList as $hari) {
+            $grid[$jam->id][$hari] = $jadwals->filter(
+                fn($j) => $j->id_jam == $jam->id && $j->hari === $hari
+            )->values();
+        }
+    }
+
+    return view('jadwalbelajar.index', compact(
+        'hariList',
+        'jamList',
+        'tingkatanList',
+        'kelasList',
+        'guruMapelList',
+        'mapelList',
+        'grid',
+        'idKelas',
+        'tingkat',
+    ));
+}
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'hari'          => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'id_jam'        => 'required|exists:jam_belajar,id',
+            'id_kelas'      => 'required|exists:kelas,id',
+            'id_guru_mapel' => 'nullable|exists:guru_mapel,id',
+            'id_mapel'      => 'nullable|exists:mapel,id',
+            'nama_kegiatan' => 'nullable|string|max:100',
         ]);
 
-        return view('jadwalbelajar.show', compact('jadwalBelajar'));
+        // Minimal salah satu harus diisi: guru_mapel, mapel, atau nama_kegiatan
+        if (!$request->id_guru_mapel && !$request->id_mapel && !$request->nama_kegiatan) {
+            return back()->withErrors(['nama_kegiatan' => 'Isi salah satu: Guru Mapel, Mapel, atau Nama Kegiatan.'])->withInput();
+        }
+
+        JadwalBelajar::create($request->only([
+            'hari', 'id_jam', 'id_kelas', 'id_guru_mapel', 'id_mapel', 'nama_kegiatan'
+        ]));
+
+        return back()->with('success', 'Jadwal berhasil ditambahkan.');
     }
 
-    public function edit(JadwalBelajar $jadwalBelajar): View
+    public function update(Request $request, JadwalBelajar $jadwalbelajar)
     {
-        $guruMapels  = GuruMapel::with(['Guru', 'Mapel'])->get();
-        $jamBelajars = JamBelajar::all();
-        $kelas       = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
-        $hariList    = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+        $request->validate([
+            'hari'          => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
+            'id_jam'        => 'required|exists:jam_belajar,id',
+            'id_kelas'      => 'required|exists:kelas,id',
+            'id_guru_mapel' => 'nullable|exists:guru_mapel,id',
+            'id_mapel'      => 'nullable|exists:mapel,id',
+            'nama_kegiatan' => 'nullable|string|max:100',
+        ]);
 
-        return view('jadwalbelajar.edit', compact(
-            'jadwalBelajar',
-            'guruMapels',
-            'jamBelajars',
-            'kelas',
-            'hariList'
-        ));
+        $jadwalbelajar->update($request->only([
+            'hari', 'id_jam', 'id_kelas', 'id_guru_mapel', 'id_mapel', 'nama_kegiatan'
+        ]));
+
+        return back()->with('success', 'Jadwal berhasil diperbarui.');
     }
 
-    public function update(UpdateJadwalBelajarRequest $request, JadwalBelajar $jadwalBelajar): RedirectResponse
+    public function destroy(JadwalBelajar $jadwalbelajar)
     {
-        $jadwalBelajar->update($request->validated());
-
-        return redirect()
-            ->route('jadwalbelajar.index')
-            ->with('success', 'Jadwal belajar berhasil diperbarui.');
+        $jadwalbelajar->delete();
+        return back()->with('success', 'Jadwal berhasil dihapus.');
     }
 
-    public function destroy(JadwalBelajar $jadwalBelajar): RedirectResponse
-    {
-        $jadwalBelajar->delete();
-
-        return redirect()
-            ->route('jadwalbelajar.index')
-            ->with('success', 'Jadwal belajar berhasil dihapus.');
-    }
-
-    public function trash(): View
+    public function trash()
     {
         $jadwals = JadwalBelajar::onlyTrashed()
-            ->with([
-                'GuruMapel.Guru',
-                'GuruMapel.Mapel',
-                'JamBelajar',
-                'Kelas.Tingkatan',
-                'Kelas.Jurusan',
-                'Kelas.Bagian',
-            ])
-            ->latest()
+            ->with(['JamBelajar', 'Kelas', 'GuruMapel.Guru', 'GuruMapel.Mapel', 'Mapel'])
             ->paginate(10);
 
         return view('jadwalbelajar.trash', compact('jadwals'));
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore($id)
     {
         JadwalBelajar::onlyTrashed()->findOrFail($id)->restore();
-
-        return redirect()
-            ->route('jadwalbelajar.trash')
-            ->with('success', 'Jadwal belajar berhasil dipulihkan.');
+        return back()->with('success', 'Jadwal berhasil dipulihkan.');
     }
 
-    public function forceDelete(int $id): RedirectResponse
+    public function forceDelete($id)
     {
         JadwalBelajar::onlyTrashed()->findOrFail($id)->forceDelete();
-
-        return redirect()
-            ->route('jadwalbelajar.trash')
-            ->with('success', 'Jadwal belajar berhasil dihapus permanen.');
+        return back()->with('success', 'Jadwal berhasil dihapus permanen.');
     }
 }
