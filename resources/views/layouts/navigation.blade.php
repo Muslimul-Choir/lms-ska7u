@@ -114,7 +114,7 @@
                 {{ __('Tingkatan') }}
             </a>
 
-            {{-- Kelas — door/classroom --}}
+            {{-- Kelas — classroom door --}}
             <a href="{{ route('kelas.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('kelas.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18"/>
@@ -125,13 +125,12 @@
                 {{ __('Kelas') }}
             </a>
 
-            {{-- Guru — person with chalkboard --}}
+            {{-- Guru — person with plus (tambah/kelola) --}}
             <a href="{{ route('guru.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('guru.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 14a4 4 0 10-8 0"/>
                     <circle cx="12" cy="7" r="3" stroke-width="2"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 18h7m4 0h7"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 18v-3h-2l-3 3-3-3H7v3"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-2a6 6 0 016-6h2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11h6M19 8v6"/>
                 </svg>
                 {{ __('Guru') }}
             </a>
@@ -144,7 +143,7 @@
                 {{ __('Siswa') }}
             </a>
 
-            {{-- Guru Mapel — person with checkmark/assignment --}}
+            {{-- Guru Mapel — person with checkmark --}}
             <a href="{{ route('guru_mapel.index') }}" class="flex items-center px-4 py-2 rounded-lg transition-colors {{ request()->routeIs('guru_mapel.*') ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="9" cy="7" r="3" stroke-width="2"/>
