@@ -12,6 +12,9 @@ class ActivityLog extends Model
     // Nama tabel
     protected $table = 'activity_log';
     protected $primaryKey = 'id';
+    
+    // Disable updated_at since it doesn't exist in the table
+    const UPDATED_AT = null;
 
     // Kolom yang bisa diisi massal
     protected $fillable = [
@@ -22,7 +25,7 @@ class ActivityLog extends Model
         'id_target',
         'deskripsi',
         'status_aksi',
-        'ip_adress',
+        'ip_address',
         'user_agent',
         'session_id',
     ];
@@ -36,6 +39,6 @@ class ActivityLog extends Model
 
      public function User()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'id_user');
     }
 }

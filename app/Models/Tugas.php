@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tugas extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes; // Mengaktifkan deleted_at
 
     // Nama tabel
@@ -16,11 +17,14 @@ class Tugas extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_pertemuan',
+        'id_mapel',
+        'id_guru_mapel',
         'id_guru',
         'judul',
         'deskripsi',
         'file_url',
-        'tipe_materi',
+        'tipe_tugas',
+        'tipe_file',
         'batas_waktu',
         'nilai_maksimal',
         'status',
@@ -34,7 +38,17 @@ class Tugas extends Model
         'deleted_at',
     ];
 
-     public function Pertemuan()
+     public function Mapel()
+    {
+        return $this->belongsTo(Mapel::class, 'id_mapel');
+    }
+
+    public function GuruMapel()
+    {
+        return $this->belongsTo(GuruMapel::class, 'id_guru_mapel');
+    }
+
+    public function Pertemuan()
     {
         return $this->belongsTo(Pertemuan::class, 'id_pertemuan');
     }
@@ -44,3 +58,4 @@ class Tugas extends Model
         return $this->belongsTo(Guru::class, 'id_guru');
     }
 }
+

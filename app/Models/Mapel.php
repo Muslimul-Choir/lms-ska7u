@@ -27,4 +27,19 @@ class Mapel extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function GuruMapel()
+    {
+        return $this->hasMany(GuruMapel::class, 'id_mapel');
+    }
+
+    public function Tugas()
+    {
+        return $this->hasMany(Tugas::class, 'id_mapel');
+    }
+
+    public function JadwalBelajar()
+    {
+        return $this->hasMany(JadwalBelajar::class, 'id_mapel');
+    }
 }

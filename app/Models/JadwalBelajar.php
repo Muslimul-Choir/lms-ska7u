@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JadwalBelajar extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes;
 
     protected $table = 'jadwal_belajar';
