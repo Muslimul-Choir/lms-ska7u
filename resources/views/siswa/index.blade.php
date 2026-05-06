@@ -135,9 +135,10 @@
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left font-semibold text-gray-600">#</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">NO</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Nama Lengkap</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Tanggal Lahir</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Agama</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Kelas</th>
                         <th class="px-4 py-3 text-center font-semibold text-gray-600">Aksi</th>
@@ -149,6 +150,7 @@
                             <td class="px-4 py-3 text-gray-500">{{ $siswas->firstItem() + $loop->index }}</td>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $siswa->nama_lengkap }}</td>
                             <td class="px-4 py-3 text-gray-600">{{ $siswa->email }}</td>
+                            <td class="px-4 py-3 text-gray-600">{{ $siswa->tanggal_lahir ? $siswa->tanggal_lahir->format('d/m/Y') : '-'  }}</td>
                             <td class="px-4 py-3 text-gray-600">{{ $siswa->agama }}</td>
                             <td class="px-4 py-3 text-gray-600">{{ $siswa->Kelas?->nama_kelas ?? '-' }}</td>
                             <td class="px-4 py-3">
@@ -156,7 +158,7 @@
 
                                     {{-- Send Email --}}
                                     <form action="{{ route('siswa.sendEmail', $siswa->id) }}" method="POST"
-                                        onsubmit="return confirm('Kirim email akun ke {{ addslashes($siswa->nama_lengkap) }}? Password akan direset.')">
+                                        onsubmit="return confirm('Kirim email akun ke {{ addslashes($siswa->nama_lengkap) }}?')">
                                         @csrf
                                         <button type="submit"
                                             class="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-medium transition">
@@ -172,6 +174,7 @@
                                         data-email="{{ $siswa->email }}"
                                         data-agama="{{ $siswa->agama }}"
                                         data-kelas="{{ $siswa->id_kelas }}"
+                                        data-tanggal_lahir="{{ $siswa->tanggal_lahir ? $siswa->tanggal_lahir->format('Y-m-d') : '' }}"
                                         class="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-xs font-medium transition">
                                         Edit
                                     </button>
@@ -221,12 +224,13 @@
             const modal = document.getElementById('modalEditSiswa');
             const d     = button.dataset;
 
-            document.getElementById('editSiswaForm').action    = `/siswa/${d.id}`;
-            document.getElementById('edit_siswa_id').value     = d.id;
-            document.getElementById('edit_nama_lengkap').value = d.nama;
-            document.getElementById('edit_email').value        = d.email;
-            document.getElementById('edit_agama').value        = d.agama;
-            document.getElementById('edit_id_kelas').value     = d.kelas;
+            document.getElementById('editSiswaForm').action     = `/siswa/${d.id}`;
+            document.getElementById('edit_siswa_id').value      = d.id;
+            document.getElementById('edit_nama_lengkap').value  = d.nama;
+            document.getElementById('edit_email').value         = d.email;
+            document.getElementById('edit_tanggal_lahir').value = d.tanggal_lahir;
+            document.getElementById('edit_agama').value         = d.agama;
+            document.getElementById('edit_id_kelas').value      = d.kelas;
 
             modal.classList.remove('hidden');
         }
@@ -248,11 +252,12 @@
             const form  = document.getElementById('editSiswaForm');
             const id    = "{{ old('edit_id') }}";
 
-            document.getElementById('edit_siswa_id').value     = id;
-            document.getElementById('edit_nama_lengkap').value = "{{ old('nama_lengkap') }}";
-            document.getElementById('edit_email').value        = "{{ old('email') }}";
-            document.getElementById('edit_agama').value        = "{{ old('agama') }}";
-            document.getElementById('edit_id_kelas').value     = "{{ old('id_kelas') }}";
+            document.getElementById('edit_siswa_id').value      = id;
+            document.getElementById('edit_nama_lengkap').value  = "{{ old('nama_lengkap') }}";
+            document.getElementById('edit_email').value         = "{{ old('email') }}";
+            document.getElementById('edit_tanggal_lahir').value = "{{ old('tanggal_lahir') }}";
+            document.getElementById('edit_agama').value         = "{{ old('agama') }}";
+            document.getElementById('edit_id_kelas').value      = "{{ old('id_kelas') }}";
             form.action = `/siswa/${id}`;
 
             modal.classList.remove('hidden');

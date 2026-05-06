@@ -43,11 +43,13 @@
                     <div class="rounded-lg bg-blue-50 border border-blue-200 p-4 text-xs text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300">
                         <p class="font-semibold mb-2">Format kolom Excel (baris pertama sebagai header):</p>
                         <code class="block bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-200 dark:border-blue-700 font-mono">
-                            NO <span class="italic">(opsional)</span> &nbsp;|&nbsp; Nama Lengkap &nbsp;|&nbsp; Email &nbsp;|&nbsp; Agama &nbsp;|&nbsp; Kelas
+                            NO <span class="italic">(opsional)</span> &nbsp;|&nbsp; Nama Lengkap &nbsp;|&nbsp; Email &nbsp;|&nbsp; Tanggal Lahir &nbsp;|&nbsp; Agama &nbsp;|&nbsp; Kelas
                         </code>
                         <ul class="mt-3 space-y-1 list-disc list-inside">
+                            <li><strong>Tanggal Lahir</strong>: Format DD/MM/YYYY (contoh: 12/03/2005)</li>
                             <li>Nilai <strong>Agama (awalan kapital)</strong>: Islam, Kristen, Katolik, Hindu, Buddha, Konghucu</li>
-                            <li>Nilai <strong>Kelas</strong>: Nama kelas persis seperti di database & <strong>harus huruf kapital</strong></li>
+                            <li>Nilai <strong>Kelas</strong>: Nama kelas persis seperti di database</li>
+                            <li>Password otomatis dibuat dari tanggal lahir (DDMMYYYY)</li>
                             <li>Email yang sudah terdaftar aktif akan dilewati</li>
                             <li>Email yang ada di trash akan di-restore otomatis</li>
                         </ul>

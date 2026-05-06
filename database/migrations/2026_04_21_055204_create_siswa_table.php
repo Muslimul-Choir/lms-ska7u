@@ -19,6 +19,7 @@ return new class extends Migration
 
             $table->string('nama_lengkap', 150);
             $table->string('email', 150)->unique();
+            $table->date('tanggal_lahir');
 
             $table->enum('agama', [
                 'Islam',

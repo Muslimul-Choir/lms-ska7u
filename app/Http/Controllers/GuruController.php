@@ -138,7 +138,7 @@ class GuruController extends Controller
     // ── EXPORT EXCEL ─────────────────────────────────────────
     public function export()
     {
-        return Excel::download(new GuruExport, 'data-guru-' . now()->format('Ymd') . '.xlsx');
+        return Excel::download(new GuruExport, 'data-guru-' . now()->format('dmY') . '.xlsx');
     }
 
 

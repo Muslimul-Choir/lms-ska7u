@@ -18,7 +18,7 @@ class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 
     public function headings(): array
     {
-        return ['No', 'Nama Lengkap', 'Email', 'Agama', 'Kelas', 'Dibuat'];
+        return ['No', 'Nama Lengkap', 'Email', 'Tanggal Lahir', 'Agama', 'Kelas', 'Dibuat'];
     }
 
     public function map($siswa): array
@@ -29,6 +29,7 @@ class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $no,
             $siswa->nama_lengkap,
             $siswa->email,
+            $siswa->tanggal_lahir->format('d/m/Y'),
             $siswa->agama,
             $siswa->Kelas?->nama_kelas ?? '-',
             $siswa->created_at->format('d/m/Y'),

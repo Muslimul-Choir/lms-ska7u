@@ -10,6 +10,7 @@ use App\Mail\Siswa\KirimAkunSiswa;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Traits\GeneratesPasswordFromBirthDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -20,6 +21,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SiswaController extends Controller
 {
+    use GeneratesPasswordFromBirthDate;
+
     // ── INDEX ────────────────────────────────────────────────
     public function index(Request $request)
     {
@@ -41,7 +44,7 @@ class SiswaController extends Controller
             $query->where('agama', $request->agama);
         }
 
-        $siswas     = $query->latest()->paginate(15)->withQueryString();
+        $siswas     = $query->latest()->paginate(10)->withQueryString();
         $kelasList  = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
             ->get()
             ->sortBy('nama_kelas')
@@ -55,7 +58,7 @@ class SiswaController extends Controller
     public function store(StoreSiswaRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $plainPassword = Str::random(6) . rand(100, 999);
+            $plainPassword = $this->generatePasswordFromBirthDate($request->tanggal_lahir);
 
             $user = User::create([
                 'name'              => $request->nama_lengkap,
@@ -66,11 +69,12 @@ class SiswaController extends Controller
             ]);
 
             Siswa::create([
-                'id_user'      => $user->id,
-                'nama_lengkap' => $request->nama_lengkap,
-                'email'        => $request->email,
-                'agama'        => $request->agama,
-                'id_kelas'     => $request->id_kelas,
+                'id_user'       => $user->id,
+                'nama_lengkap'  => $request->nama_lengkap,
+                'email'         => $request->email,
+                'agama'         => $request->agama,
+                'id_kelas'      => $request->id_kelas,
+                'tanggal_lahir' => $request->tanggal_lahir,
             ]);
         });
 
@@ -87,6 +91,7 @@ class SiswaController extends Controller
                 'email'        => $request->email,
                 'agama'        => $request->agama,
                 'id_kelas'     => $request->id_kelas,
+                'tanggal_lahir' => $request->tanggal_lahir,
             ]);
 
             $siswa->User->update([
@@ -114,7 +119,7 @@ class SiswaController extends Controller
     // ── SEND EMAIL satu siswa ─────────────────────────────────
     public function sendEmail(Siswa $siswa)
     {
-        $plainPassword = Str::random(6) . rand(100, 999);
+        $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
         $siswa->User->update(['password' => Hash::make($plainPassword)]);
         Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
 
@@ -127,7 +132,7 @@ class SiswaController extends Controller
         $siswas = Siswa::all();
 
         foreach ($siswas as $siswa) {
-            $plainPassword = Str::random(6) . rand(100, 999);
+            $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
             $siswa->User->update(['password' => Hash::make($plainPassword)]);
             Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
         }
@@ -139,7 +144,7 @@ class SiswaController extends Controller
     // ── EXPORT ───────────────────────────────────────────────
     public function export()
     {
-        return Excel::download(new SiswaExport, 'data-siswa-' . now()->format('Ymd') . '.xlsx');
+        return Excel::download(new SiswaExport, 'data-siswa-' . now()->format('dmY') . '.xlsx');
     }
 
     // ── IMPORT ───────────────────────────────────────────────
