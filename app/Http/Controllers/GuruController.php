@@ -152,10 +152,16 @@ class GuruController extends Controller
             $import = new GuruImport();
             Excel::import($import, $request->file('file'));
 
-            $importedCount = count($import->imported);
+            $importedCount = count($import->imported) - count($import->restored);
+            $restoredCount = count($import->restored);
 
-            return redirect()->route('guru.index')
-                ->with('success', "{$importedCount} data diimpor.");
+            $message = [];
+            if ($importedCount > 0) $message[] = "{$importedCount} data baru diimpor";
+            if ($restoredCount > 0) $message[] = "{$restoredCount} data direstore";
+
+            $finalMessage = !empty($message) ? implode(', ', $message) . '.' : 'Tidak ada data baru.';
+
+            return redirect()->route('guru.index')->with('success', $finalMessage);
         } catch (\Exception $e) {
             Log::error('Import Guru Error: ' . $e->getMessage());
 
