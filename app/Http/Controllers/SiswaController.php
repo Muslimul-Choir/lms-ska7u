@@ -159,9 +159,15 @@ class SiswaController extends Controller
             Excel::import($import, $request->file('file'));
 
             $importedCount = count($import->imported);
+            $restoredCount = count($import->restored);
 
-            return redirect()->route('siswa.index')
-                ->with('success', "{$importedCount} data diimpor.");
+            $message = [];
+            if ($importedCount > 0) $message[] = "{$importedCount} data baru diimpor";
+            if ($restoredCount > 0) $message[] = "{$restoredCount} data direstore";
+
+            $finalMessage = !empty($message) ? implode(', ', $message) . '.' : 'Tidak ada data baru.';
+
+            return redirect()->route('siswa.index')->with('success', $finalMessage);
         } catch (\Exception $e) {
             Log::error('Import Siswa Error: ' . $e->getMessage());
 

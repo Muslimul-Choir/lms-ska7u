@@ -50,7 +50,7 @@
                             <li>Nilai <strong>Agama (awalan kapital)</strong>: Islam, Kristen, Katolik, Hindu, Buddha, Konghucu</li>
                             <li>Nilai <strong>Kelas</strong>: Nama kelas persis seperti di database</li>
                             <li>Password otomatis dibuat dari tanggal lahir (DDMMYYYY)</li>
-                            <li>Email yang sudah terdaftar aktif akan dilewati</li>
+                            <li>Email yang sudah terdaftar akan dilewati</li>
                             <li>Email yang ada di trash akan di-restore otomatis</li>
                         </ul>
                     </div>
