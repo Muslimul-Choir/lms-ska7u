@@ -20,24 +20,24 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide">
+            <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide" aria-label="Breadcrumb">
                 <span class="text-[#1B3A6B]">Dashboard</span>
-                <span class="text-slate-300">/</span>
+                <span class="text-slate-300" aria-hidden="true">/</span>
                 <span>Master Data</span>
-                <span class="text-slate-300">/</span>
+                <span class="text-slate-300" aria-hidden="true">/</span>
                 <span class="text-slate-600 font-semibold">Tahun Ajaran</span>
             </nav>
 
             {{-- Alert --}}
             @if (session('success'))
-                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                <div role="alert" class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
                     <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd"/>
                         </svg>
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
-                    <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700">✕</button>
+                    <button onclick="this.parentElement.remove()" aria-label="Tutup notifikasi" class="text-emerald-400 hover:text-emerald-700 transition">✕</button>
                 </div>
             @endif
 
@@ -52,12 +52,16 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('tahunajaran.trash') }}"
-                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg border border-white/20 transition">
-                            🗑 Trash
+                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg border border-white/20 transition"
+                           title="Lihat data yang dihapus">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Trash
                         </a>
                         <button type="button" id="btnTambahTahun"
-                                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs font-semibold rounded-lg transition shadow-md">
-                            + Tambah Tahun
+                                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs font-semibold rounded-lg transition shadow-md shadow-amber-900/20"
+                                title="Tambah data tahun ajaran baru">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            Tambah Tahun Ajaran
                         </button>
                     </div>
                 </div>
@@ -66,16 +70,17 @@
                 <div class="px-6 py-3 bg-slate-50 border-b border-slate-100">
                     <div class="flex items-center gap-2 max-w-md">
                         <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none" aria-hidden="true">
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
                             <input
-                                type="text"
+                                type="search"
                                 id="searchInput"
                                 value="{{ request('search') }}"
                                 placeholder="Cari tahun ajaran..."
+                                autocomplete="off"
                                 class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition"
                             >
                         </div>
