@@ -129,16 +129,16 @@ class SiswaController extends Controller
     // ── SEND EMAIL SEMUA ─────────────────────────────────────
     public function sendEmailAll()
     {
-        $siswas = Siswa::all();
-
-        foreach ($siswas as $siswa) {
-            $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
-            $siswa->User->update(['password' => Hash::make($plainPassword)]);
-            Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
-        }
+        Siswa::chunk(100, function ($siswas) {
+            foreach ($siswas as $siswa) {
+                $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
+                $siswa->User->update(['password' => Hash::make($plainPassword)]);
+                Mail::to($siswa->email)->queue(new KirimAkunSiswa($siswa, $plainPassword));
+            }
+        });
 
         return redirect()->route('siswa.index')
-            ->with('success', "Email akun berhasil dikirim ke seluruh siswa ({$siswas->count()} siswa).");
+            ->with('success', "Email akun berhasil dikirim ke seluruh siswa.");
     }
 
     // ── EXPORT ───────────────────────────────────────────────
@@ -151,7 +151,7 @@ class SiswaController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2048'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
         ]);
 
         try {
@@ -201,7 +201,10 @@ class SiswaController extends Controller
     public function restoreAll()
     {
         DB::transaction(function () {
-            $siswas = Siswa::onlyTrashed()->get();
+            $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
+                $q->withTrashed();
+            }])->get();
+
             foreach ($siswas as $siswa) {
                 $siswa->restore();
                 $siswa->User()->withTrashed()->restore();
@@ -230,7 +233,9 @@ class SiswaController extends Controller
     public function forceDeleteAll()
     {
         DB::transaction(function () {
-            $siswas = Siswa::onlyTrashed()->get();
+            $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
+                $q->withTrashed();
+            }])->get();
             foreach ($siswas as $siswa) {
                 $siswa->User()->withTrashed()->forceDelete();
                 $siswa->forceDelete();

@@ -7,6 +7,7 @@ use App\Models\Siswa;
 use App\Models\User;
 use App\Traits\GeneratesPasswordFromBirthDate;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
@@ -61,6 +62,10 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
         $tanggalLahir = $this->parseTanggalLahir($row['tanggal_lahir'] ?? null);
         if (!$tanggalLahir) return null; // skip jika tanggal tidak valid
 
+        if (User::where('email', $email)->exists()) {
+            return null;
+        }
+
         // Cek email sudah ada (aktif atau trash)
         $existingSiswa = Siswa::withTrashed()->where('email', $email)->first();
 
@@ -82,41 +87,44 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
 
                 $this->imported[] = [
                     'email'    => $email,
-                    'password' => null, 
+                    'password' => null,
                 ];
 
                 $this->restored[] = [
                     'email' => $email
                 ];
             }
-            // Jika aktif → skip
             return null;
         }
 
         // Buat data baru
-        $plainPassword = $this->generatePasswordFromBirthDate($tanggalLahir);
+        return DB::transaction(function () use ($email, $namaLengkap, $agama, $kelas, $tanggalLahir) {
+            $plainPassword = $this->generatePasswordFromBirthDate($tanggalLahir);
 
-        $user = User::create([
-            'name'              => $namaLengkap,
-            'email'             => $email,
-            'password'          => Hash::make($plainPassword),
-            'role'              => 'siswa',
-            'email_verified_at' => now(),
-        ]);
+            $user = User::create([
+                'name'              => $namaLengkap,
+                'email'             => $email,
+                'password'          => Hash::make($plainPassword),
+                'role'              => 'siswa',
+                'email_verified_at' => now(),
+            ]);
 
-        $this->imported[] = [
-            'email'    => $email,
-            'password' => $plainPassword,
-        ];
+            $siswa = Siswa::create([
+                'id_user'       => $user->id,
+                'nama_lengkap'  => $namaLengkap,
+                'email'         => $email,
+                'agama'         => $agama,
+                'id_kelas'      => $kelas->id,
+                'tanggal_lahir' => $tanggalLahir->toDateString(),
+            ]);
 
-        return new Siswa([
-            'id_user'       => $user->id,
-            'nama_lengkap'  => $namaLengkap,
-            'email'         => $email,
-            'agama'         => $agama,
-            'id_kelas'      => $kelas->id,
-            'tanggal_lahir' => $tanggalLahir->toDateString(),
-        ]);
+            $this->imported[] = [
+                'email'    => $email,
+                'password' => $plainPassword,
+            ];
+
+            return $siswa;
+        });
     }
 
     private function parseTanggalLahir(mixed $value): ?Carbon
@@ -159,14 +167,9 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
     public function rules(): array
     {
         return [
-            // Validasi hanya kolom yang relevan
-            // Kolom lain seperti "no" diabaikan otomatis
             'nama_lengkap' => ['required', 'string'],
             'email'        => ['required', 'email'],
             'kelas'        => ['required', 'string'],
-            // tanggal_lahir tidak divalidasi di sini karena
-            // sudah di-handle manual di model() via parseTanggalLahir()
-            // agar pesan error lebih terkontrol
         ];
     }
 

@@ -52,6 +52,7 @@
                             <li>Password otomatis dibuat dari tanggal lahir (DDMMYYYY)</li>
                             <li>Email yang sudah terdaftar akan dilewati</li>
                             <li>Email yang ada di trash akan di-restore otomatis</li>
+                            
                         </ul>
                     </div>
 
@@ -69,7 +70,7 @@
                         @if ($errors->has('file') && old('_modal') === 'import')
                             <p class="mt-1 text-xs text-red-600">{{ $errors->first('file') }}</p>
                         @endif
-                        <p class="mt-1 text-xs text-gray-400">Format: .xlsx, .xls, .csv — Maks. 2MB</p>
+                        <p class="mt-1 text-xs text-gray-400">Format: .xlsx, .xls, .csv — Maks. 5MB</p>
                     </div>
 
                 </div>
