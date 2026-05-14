@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Guru extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes; // Mengaktifkan deleted_at
 
     // Nama tabel
@@ -42,4 +43,10 @@ class Guru extends Model
     {
         return $this->hasMany(GuruMapel::class, 'id_guru');
     }
+
+    public function Tugas()
+    {
+        return $this->hasMany(Tugas::class, 'id_guru');
+    }
 }
+
