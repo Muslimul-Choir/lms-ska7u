@@ -18,15 +18,15 @@
 
             {{-- Alert Success --}}
             @if (session('success'))
-                <div role="alert" class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm" title="Berhasil disimpan">
+                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm">
                     <span class="font-medium">{{ session('success') }}</span>
-                    <button onclick="this.parentElement.remove()" aria-label="Tutup notifikasi" class="text-emerald-400 hover:text-emerald-700 transition">&times;</button>
+                    <button onclick="this.parentElement.remove()">✕</button>
                 </div>
             @endif
 
             {{-- Alert Error --}}
             @if ($errors->any())
-                <div role="alert" class="px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm" title="Terdapat kesalahan">
+                <div class="px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>

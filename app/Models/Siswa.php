@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes;
 
     protected $table = 'siswa';
@@ -38,3 +39,4 @@ class Siswa extends Model
         return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 }
+
