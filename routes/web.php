@@ -204,6 +204,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{absensi}',               'update')->name('update');
         Route::delete('/{absensi}',            'destroy')->name('destroy');
     });
+
+    // Ruang Belajar (Lesson Viewer) Routes
+    Route::get('/ruang-belajar/{jadwalbelajar}/{materi?}', [\App\Http\Controllers\RuangBelajarController::class, 'show'])->name('ruang-belajar.show');
+    Route::post('/ruang-belajar/{materi}/mark-done', [\App\Http\Controllers\RuangBelajarController::class, 'markAsDone'])->name('ruang-belajar.mark-done');
+
+    // Admin Routes for LMS Features
+    Route::resource('materi', \App\Http\Controllers\MateriController::class);
+    Route::resource('tugas', \App\Http\Controllers\TugasController::class);
+    Route::resource('pengumpulan-tugas', \App\Http\Controllers\PengumpulanTugasController::class)->only(['index']);
+    Route::resource('penilaian', \App\Http\Controllers\PenilaianController::class)->only(['index']);
+    Route::resource('activity-log', \App\Http\Controllers\ActivityLogController::class)->only(['index']);
 });
 
 require __DIR__ . '/auth.php';
