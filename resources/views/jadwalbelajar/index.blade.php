@@ -43,7 +43,7 @@
                     {{-- Tingkat --}}
                     <select name="tingkat" id="filterTingkat"
                             class="py-2 pl-3 pr-8 text-sm bg-white border border-slate-200 rounded-lg text-slate-700
-                                   focus:outline-none focus:ring-2 focus:ring-[#E8734A]/30 focus:border-[#E8734A]">
+                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]">
                         <option value="">Semua Tingkat</option>
                         @foreach ($tingkatanList as $tkt)
                             <option value="{{ $tkt->id }}" {{ $tingkat == $tkt->id ? 'selected' : '' }}>
@@ -55,7 +55,7 @@
                     {{-- Kelas --}}
                     <select name="id_kelas" id="filterKelas"
                             class="py-2 pl-3 pr-8 text-sm bg-white border border-slate-200 rounded-lg text-slate-700
-                                   focus:outline-none focus:ring-2 focus:ring-[#E8734A]/30 focus:border-[#E8734A]">
+                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B]">
                         <option value="">Pilih Kelas</option>
                         @foreach ($kelasList as $kls)
                             @php
@@ -74,7 +74,7 @@
                     </select>
 
                     <button type="submit"
-                            class="px-5 py-2 bg-[#E8734A] hover:bg-[#d4623b] text-white text-sm font-semibold rounded-lg transition">
+                            class="px-5 py-2 bg-[#0F2145] hover:bg-[#0a1529] text-white text-sm font-semibold rounded-lg transition">
                         Cari Jadwal
                     </button>
 
@@ -90,7 +90,7 @@
             {{-- Tombol Print --}}
             <div>
                 <button onclick="window.print()"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium rounded-lg shadow-sm hover:bg-slate-50 transition">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg shadow-sm hover:bg-slate-200 transition">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                     </svg>
@@ -114,15 +114,15 @@
                 </div>
 
             @else
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+                <div class="bg-white rounded-xl border border-slate-300 shadow-sm overflow-x-auto">
                     <table class="min-w-full border-collapse text-sm">
                         <thead>
-                            <tr>
-                                <th class="px-4 py-3 bg-[#E8734A] text-white text-center font-bold text-xs border border-[#e06030] w-32">
+                            <tr class="border-b-2 border-slate-300">
+                                <th class="px-4 py-3 bg-slate-50 text-slate-500 text-center font-bold text-xs uppercase tracking-widest border-2 border-slate-300 w-32">
                                     Jam
                                 </th>
                                 @foreach ($hariList as $hari)
-                                    <th class="px-4 py-3 bg-[#E8734A] text-white text-center font-bold text-xs border border-[#e06030] min-w-[140px]">
+                                    <th class="px-4 py-3 bg-slate-50 text-slate-500 text-center font-bold text-xs uppercase tracking-widest border-2 border-slate-300 min-w-[140px]">
                                         {{ $hari }}
                                     </th>
                                 @endforeach
@@ -130,28 +130,28 @@
                         </thead>
                         <tbody>
                             @foreach ($jamList as $jam)
-                                <tr class="border-b border-slate-200">
+                                <tr class="border-b-2 border-slate-300">
 
                                     {{-- Kolom Jam --}}
-                                    <td class="px-3 py-3 text-center border border-slate-200 bg-slate-50 whitespace-nowrap">
-                                        <span class="text-[#E8734A] font-semibold text-xs">
+                                    <td class="px-3 py-3 text-center border-2 border-slate-300 bg-slate-50 whitespace-nowrap">
+                                        <span class="text-slate-700 font-semibold text-xs">
                                             {{ $jam->jam_mulai }} - {{ $jam->jam_selesai }}
                                         </span>
                                     </td>
 
                                     {{-- Kolom per Hari --}}
                                     @foreach ($hariList as $hari)
-                                        <td class="px-2 py-2 border border-slate-200 align-top">
+                                        <td class="px-2 py-2 border-2 border-slate-300 align-top">
                                             @php
                                                 $cellJadwals = $grid[$jam->id][$hari] ?? collect();
                                             @endphp
 
                                             @if ($cellJadwals->isEmpty())
                                                 {{-- Cell kosong: tampilkan tombol + --}}
-                                                <div class="flex justify-center items-center min-h-[60px]">
+                                                <div class="flex justify-center items-center min-h-[80px]">
                                                     <button type="button"
                                                             onclick="openModalCreate('{{ $hari }}', '{{ $jam->id }}')"
-                                                            class="w-7 h-7 rounded-full bg-[#E8734A] hover:bg-[#d4623b] text-white flex items-center justify-center shadow transition">
+                                                            class="w-8 h-8 rounded-full bg-[#0F2145] hover:bg-[#0a1529] text-white flex items-center justify-center shadow-md transition">
                                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                                                         </svg>
@@ -159,18 +159,18 @@
                                                 </div>
                                             @else
                                                 {{-- Cell sudah ada isi: tampilkan jadwal saja, tanpa tombol + --}}
-                                                <div class="space-y-1.5">
+                                                <div class="space-y-2">
                                                     @foreach ($cellJadwals as $jadwal)
-                                                        <div class="bg-slate-50 rounded-md border border-slate-200 px-2 py-1.5">
-                                                            <p class="font-semibold text-slate-800 text-xs leading-snug">
+                                                        <div class="bg-blue-50 rounded border-2 border-slate-300 px-2 py-2">
+                                                            <p class="font-semibold text-slate-800 text-xs leading-tight">
                                                                 {{ $jadwal->nama_display }}
                                                             </p>
                                                             @if($jadwal->nama_guru)
-                                                                <p class="text-slate-400 text-[11px] mt-0.5">
+                                                                <p class="text-slate-500 text-[10px] mt-1">
                                                                     {{ $jadwal->nama_guru }}
                                                                 </p>
                                                             @endif
-                                                            <div class="flex gap-2 mt-1.5">
+                                                            <div class="flex gap-1.5 mt-2">
                                                                 {{-- Tombol Edit --}}
                                                                 <button type="button"
                                                                         onclick="openModalEdit(
@@ -182,7 +182,7 @@
                                                                             {{ $jadwal->id_mapel ?? 'null' }},
                                                                             '{{ addslashes($jadwal->nama_kegiatan ?? '') }}'
                                                                         )"
-                                                                        class="text-slate-400 hover:text-amber-500 transition">
+                                                                        class="text-slate-500 hover:text-amber-600 transition">
                                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                                     </svg>
@@ -192,7 +192,7 @@
                                                                       method="POST"
                                                                       onsubmit="return confirm('Hapus jadwal ini?')">
                                                                     @csrf @method('DELETE')
-                                                                    <button type="submit" class="text-slate-400 hover:text-red-500 transition">
+                                                                    <button type="submit" class="text-slate-500 hover:text-red-600 transition">
                                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                                         </svg>
@@ -210,6 +210,14 @@
                         </tbody>
                     </table>
                 </div>
+                
+                {{-- Print Styles --}}
+                <style>
+                    @media print {
+                        table { border: 1px solid #000; }
+                        th, td { border: 1px solid #000; }
+                    }
+                </style>
             @endif
 
         </div>

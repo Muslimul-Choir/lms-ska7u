@@ -19,7 +19,7 @@ class JadwalBelajarController extends Controller
     $tingkat = $request->get('tingkat');
 
     // Ambil semua jam belajar
-    $jamList = JamBelajar::orderByRaw('COALESCE(urutan, 999), jam_mulai')->get();
+    $jamList = JamBelajar::orderBy('jam_mulai')->get();
 
     // Ambil tingkatan untuk dropdown
     $tingkatanList = \App\Models\Tingkatan::orderBy('nama_tingkatan')->get();
