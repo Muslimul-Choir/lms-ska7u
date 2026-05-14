@@ -192,7 +192,7 @@ class SiswaController extends Controller
             }
 
             if ($summary['skipped'] > 0) {
-                $messages[] = "{$summary['skipped']} baris dilewati (lihat detail di bawah).";
+                $messages[] = "beberapa baris dilewati (lihat detail di bawah).";
             }
 
             $mainMessage = !empty($messages)

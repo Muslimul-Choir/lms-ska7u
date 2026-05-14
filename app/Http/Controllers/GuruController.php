@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\Failure;
 
 class GuruController extends Controller
 {
@@ -123,16 +124,16 @@ class GuruController extends Controller
     // ── SEND EMAIL SEMUA ─────────────────────────────────────
     public function sendEmailAll()
     {
-        $gurus = Guru::all();
-
-        foreach ($gurus as $guru) {
-            $plainPassword = Str::random(6) . rand(100, 999);
-            $guru->user->update(['password' => Hash::make($plainPassword)]);
-            Mail::to($guru->email)->send(new KirimAkunGuru($guru, $plainPassword));
-        }
+        Guru::chunk(100, function ($gurus) {
+            foreach ($gurus as $guru) {
+                $plainPassword = Str::random(6) . rand(100, 999);
+                $guru->user->update(['password' => Hash::make($plainPassword)]);
+                Mail::to($guru->email)->queue(new KirimAkunGuru($guru, $plainPassword));
+            }
+        });
 
         return redirect()->route('guru.index')
-            ->with('success', "Email akun berhasil dikirim ke seluruh guru (" . $gurus->count() . " guru).");
+            ->with('success', "Email akun berhasil dikirim ke seluruh guru.");
     }
 
     // ── EXPORT EXCEL ─────────────────────────────────────────
@@ -145,28 +146,71 @@ class GuruController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2048'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
         ]);
 
         try {
             $import = new GuruImport();
             Excel::import($import, $request->file('file'));
 
-            $importedCount = count($import->imported) - count($import->restored);
-            $restoredCount = count($import->restored);
+            // ── Gabungkan validation failures dari rules() ke skipped_details ──
+            $validationFailures = collect($import->failures())
+                ->map(fn(Failure $f) => [
+                    'row'    => $f->row(),
+                    'email'  => '-',
+                    'reason' => implode(', ', $f->errors()),
+                ])
+                ->all();
 
-            $message = [];
-            if ($importedCount > 0) $message[] = "{$importedCount} data baru diimpor";
-            if ($restoredCount > 0) $message[] = "{$restoredCount} data direstore";
+            $summary = $import->getSummary();
 
-            $finalMessage = !empty($message) ? implode(', ', $message) . '.' : 'Tidak ada data baru.';
+            if (!empty($validationFailures)) {
+                $summary['skipped_details'] = array_merge(
+                    $validationFailures,
+                    $summary['skipped_details']
+                );
+                $summary['skipped'] = count($summary['skipped_details']);
+            }
 
-            return redirect()->route('guru.index')->with('success', $finalMessage);
-        } catch (\Exception $e) {
-            Log::error('Import Guru Error: ' . $e->getMessage());
+            // ── Buat pesan feedback ─────────────────────────────────────────────
+            $messages = [];
 
-            return redirect()->route('guru.index')
-                ->with('error', 'Terjadi kesalahan saat mengimpor data guru. Silakan periksa file dan coba lagi.');
+            if ($summary['created'] > 0) {
+                $messages[] = "{$summary['created']} guru baru berhasil ditambahkan.";
+            }
+
+            if ($summary['restored'] > 0) {
+                $restoredEmails = array_column($import->restored, 'email');
+                $emailPreview   = implode(', ', array_slice($restoredEmails, 0, 5));
+                $suffix         = count($restoredEmails) > 5 ? ', dan lainnya' : '';
+                $messages[]     = "{$summary['restored']} guru berhasil dipulihkan: {$emailPreview}{$suffix}.";
+            }
+
+            if ($summary['skipped'] > 0) {
+                $messages[] = "beberapa baris dilewati (lihat detail di bawah).";
+            }
+
+            $mainMessage = !empty($messages)
+                ? implode(' | ', $messages)
+                : 'Tidak ada data baru yang diproses.';
+
+            $status         = ($summary['created'] + $summary['restored']) > 0 ? 'success' : 'warning';
+            $skippedDetails = array_slice($summary['skipped_details'], 0, 100);
+
+            return redirect()
+                ->route('guru.index')
+                ->with($status, $mainMessage)
+                ->with('skipped_details', $skippedDetails)
+                ->with('skipped_truncated', $summary['skipped'] > 100);
+        } catch (\Throwable $e) {
+            Log::error('Import Guru Error', [
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->route('guru.index')
+                ->with('error', 'Terjadi kesalahan saat mengimpor data. Silakan periksa file dan coba lagi.');
         }
     }
 
@@ -195,7 +239,9 @@ class GuruController extends Controller
     public function restoreAll()
     {
         DB::transaction(function () {
-            $gurus = Guru::onlyTrashed()->get();
+            $gurus = Guru::onlyTrashed()->with(['user' => function ($q) {
+                $q->withTrashed();
+            }])->get();
             foreach ($gurus as $guru) {
                 $guru->restore();
                 $guru->user()->withTrashed()->restore();
@@ -224,7 +270,9 @@ class GuruController extends Controller
     public function forceDeleteAll()
     {
         DB::transaction(function () {
-            $gurus = Guru::onlyTrashed()->get();
+            $gurus = Guru::onlyTrashed()->with(['user' => function ($q) {
+                $q->withTrashed();
+            }])->get();
             foreach ($gurus as $guru) {
                 $guru->user()->withTrashed()->forceDelete();
                 $guru->forceDelete();
