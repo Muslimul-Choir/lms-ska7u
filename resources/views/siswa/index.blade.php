@@ -132,6 +132,29 @@
                 {{ session('error') }}
             </div>
         @endif
+        @if (session('skipped_details'))
+            <div class="mb-4 px-4 py-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg text-sm">
+                <strong>Baris yang ditolak:</strong>
+                <table class="mt-2 w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th>Baris</th>
+                            <th>Email</th>
+                            <th>Alasan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (session('skipped_details') as $skipped)
+                            <tr>
+                                <td>{{ $skipped['row'] }}</td>
+                                <td>{{ $skipped['email'] }}</td>
+                                <td>{{ $skipped['reason'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
 
         {{-- Tabel --}}
         <div class="bg-white rounded-xl shadow overflow-hidden">
@@ -183,8 +206,7 @@
                                     <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" 
-                                            data-nama="{{ $siswa->nama_lengkap }}"
+                                        <button type="submit" data-nama="{{ $siswa->nama_lengkap }}"
                                             onclick="return confirm('Hapus data siswa ' + this.dataset.nama + '?')"
                                             class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-medium transition">
                                             Hapus

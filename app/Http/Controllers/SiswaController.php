@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\Failure;
 
 class SiswaController extends Controller
 {
@@ -158,20 +158,63 @@ class SiswaController extends Controller
             $import = new SiswaImport();
             Excel::import($import, $request->file('file'));
 
-            $importedCount = count($import->imported);
-            $restoredCount = count($import->restored);
+            // ── Gabungkan validation failures dari rules() ke skipped_details ──
+            $validationFailures = collect($import->failures())
+                ->map(fn(Failure $f) => [
+                    'row'    => $f->row(),
+                    'email'  => '-',
+                    'reason' => implode(', ', $f->errors()),
+                ])
+                ->all();
 
-            $message = [];
-            if ($importedCount > 0) $message[] = "{$importedCount} data baru diimpor";
-            if ($restoredCount > 0) $message[] = "{$restoredCount} data direstore";
+            $summary = $import->getSummary();
 
-            $finalMessage = !empty($message) ? implode(', ', $message) . '.' : 'Tidak ada data baru.';
+            if (!empty($validationFailures)) {
+                $summary['skipped_details'] = array_merge(
+                    $validationFailures,
+                    $summary['skipped_details']
+                );
+                $summary['skipped'] = count($summary['skipped_details']);
+            }
 
-            return redirect()->route('siswa.index')->with('success', $finalMessage);
-        } catch (\Exception $e) {
-            Log::error('Import Siswa Error: ' . $e->getMessage());
+            // ── Buat pesan feedback ─────────────────────────────────────────────
+            $messages = [];
 
-            return redirect()->route('siswa.index')
+            if ($summary['created'] > 0) {
+                $messages[] = "{$summary['created']} siswa baru berhasil ditambahkan.";
+            }
+
+            if ($summary['restored'] > 0) {
+                $restoredEmails = array_column($import->restored, 'email');
+                $emailPreview   = implode(', ', array_slice($restoredEmails, 0, 5));
+                $suffix         = count($restoredEmails) > 5 ? ', dan lainnya' : '';
+                $messages[]     = "{$summary['restored']} siswa berhasil dipulihkan: {$emailPreview}{$suffix}.";
+            }
+
+            if ($summary['skipped'] > 0) {
+                $messages[] = "{$summary['skipped']} baris dilewati (lihat detail di bawah).";
+            }
+
+            $mainMessage = !empty($messages)
+                ? implode(' | ', $messages)
+                : 'Tidak ada data baru yang diproses.';
+
+            $status         = ($summary['created'] + $summary['restored']) > 0 ? 'success' : 'warning';
+            $skippedDetails = array_slice($summary['skipped_details'], 0, 100);
+
+            return redirect()
+                ->route('siswa.index')
+                ->with($status, $mainMessage)
+                ->with('skipped_details', $skippedDetails)
+                ->with('skipped_truncated', $summary['skipped'] > 100);
+        } catch (\Throwable $e) {
+            Log::error('Import Siswa Error', [
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->route('siswa.index')
                 ->with('error', 'Terjadi kesalahan saat mengimpor data. Silakan periksa file dan coba lagi.');
         }
     }
