@@ -161,7 +161,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/trash/{id}/restore',     'restore')->name('restore');
         Route::delete('/trash/{id}/force',     'forceDelete')->name('forceDelete');
 
-        // Wildcard (model binding) — paling bawah
         Route::put('/{siswa}',                 'update')->name('update');
         Route::delete('/{siswa}',              'destroy')->name('destroy');
         Route::post('/{siswa}/send-email',     'sendEmail')->name('sendEmail');
