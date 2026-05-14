@@ -28,23 +28,33 @@ class GuruMapel extends Model
         'deleted_at',
     ];
 
-     public function Mapel()
+    public function Mapel()
     {
         return $this->belongsTo(Mapel::class, 'id_mapel');
     }
 
-     public function Guru()
+    public function Guru()
     {
         return $this->belongsTo(Guru::class, 'id_guru');
     }
 
-     public function Kelas()
+    public function Kelas()
     {
         return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 
-     public function Semester()
+    public function Semester()
     {
         return $this->belongsTo(Semester::class, 'id_semester');
+    }
+
+    public function JadwalBelajar()
+    {
+        return $this->hasMany(JadwalBelajar::class, 'id_guru_mapel');
+    }
+
+    public function Tugas()
+    {
+        return $this->hasMany(Tugas::class, 'id_guru_mapel');
     }
 }

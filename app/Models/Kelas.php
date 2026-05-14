@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kelas extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes; // Mengaktifkan deleted_at
 
     // Nama tabel
@@ -75,3 +76,4 @@ class Kelas extends Model
         return trim("{$tingkatan} {$jurusan} {$bagian}");
     }
 }
+

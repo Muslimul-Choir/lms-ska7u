@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PengumpulanTugas extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes; // Mengaktifkan deleted_at
 
     // Nama tabel
@@ -38,3 +39,4 @@ class PengumpulanTugas extends Model
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 }
+

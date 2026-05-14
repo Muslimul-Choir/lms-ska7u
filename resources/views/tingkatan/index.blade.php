@@ -23,24 +23,19 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide" aria-label="Breadcrumb">
+            <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide">
                 <span class="text-[#1B3A6B]">Dashboard</span>
-                <span class="text-slate-300" aria-hidden="true">/</span>
+                <span class="text-slate-300">/</span>
                 <span>Master Data</span>
-                <span class="text-slate-300" aria-hidden="true">/</span>
+                <span class="text-slate-300">/</span>
                 <span class="text-slate-600 font-semibold">Tingkatan</span>
             </nav>
 
             {{-- Alert --}}
             @if (session('success'))
-                <div role="alert" class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                        <span class="font-medium">{{ session('success') }}</span>
-                    </div>
-                    <button onclick="this.parentElement.remove()" aria-label="Tutup notifikasi" class="text-emerald-400 hover:text-emerald-700 transition">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                    </button>
+                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                    <span class="font-medium">{{ session('success') }}</span>
+                    <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700">&times;</button>
                 </div>
             @endif
 
@@ -60,17 +55,13 @@
 
                     <div class="flex items-center gap-2">
                         <a href="{{ route('tingkatan.trash') }}"
-                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg border border-white/20 transition"
-                           title="Lihat data yang dihapus">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            Trash
+                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg border border-white/20 transition">
+                            🗑 Trash
                         </a>
 
                         <button type="button" id="btnTambahTingkatan"
-                            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs font-semibold rounded-lg transition shadow-md shadow-amber-900/20"
-                            title="Tambah data tingkatan baru">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                            Tambah Tingkatan
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs font-semibold rounded-lg transition">
+                            + Tambah
                         </button>
                     </div>
                 </div>
@@ -79,17 +70,16 @@
                 <div class="px-6 py-3 bg-slate-50 border-b border-slate-100">
                     <div class="flex items-center gap-2 max-w-md">
                         <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none" aria-hidden="true">
+                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
                             <input
-                                type="search"
+                                type="text"
                                 id="searchInput"
                                 value="{{ request('search') }}"
                                 placeholder="Cari tingkatan..."
-                                autocomplete="off"
                                 class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition"
                             >
                         </div>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Model
 {
+    use \App\Traits\LogsActivity;
     use SoftDeletes;
 
     protected $table = 'siswa';
@@ -19,13 +20,15 @@ class Siswa extends Model
         'email',
         'agama',
         'id_kelas',
+        'tanggal_lahir',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
-    protected $dates = [
+    protected $casts = [
         'created_at',
         'updated_at',
         'deleted_at',
+        'tanggal_lahir' => 'date',
     ];
 
      public function User()
@@ -38,3 +41,4 @@ class Siswa extends Model
         return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 }
+
