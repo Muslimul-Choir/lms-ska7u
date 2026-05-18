@@ -265,21 +265,8 @@
         const statusSelect    = document.getElementById('statusSelect');
         const btnSearch       = document.getElementById('btnSearch');
         const btnReset        = document.getElementById('btnReset');
-        const tableBody       = document.getElementById('absensiTableBody');
 
-        let currentSearch    = '{{ request("search") }}';
-        let currentPertemuan = '{{ request("id_pertemuan") }}';
-        let currentStatus    = '{{ request("status") }}';
-        let currentPage      = 1;
-
-        const statusMap = {
-            hadir : ['bg-green-50', 'text-green-700', 'border-green-200', 'Hadir'],
-            izin  : ['bg-blue-50',  'text-blue-700',  'border-blue-200',  'Izin'],
-            sakit : ['bg-amber-50', 'text-amber-700', 'border-amber-200', 'Sakit'],
-            alpha : ['bg-red-50',   'text-red-600',   'border-red-200',   'Alpha'],
-        };
-
-        // ✅ bindEditButtons — set radio button, bukan editStatus
+        // ✅ bindEditButtons — set radio button
         function bindEditButtons() {
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', function () {
@@ -299,126 +286,42 @@
             });
         }
 
-        function loadData(search = '', pertemuan = '', status = '', page = 1) {
-            const params = new URLSearchParams({ search, id_pertemuan: pertemuan, status, page });
-            fetch(`{{ route('absensi.index') }}?${params}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(data => renderTable(data.absensis, page))
-            .catch(err => console.error('Error:', err));
-        }
+        // Event listeners untuk search & filter
+        searchInput.addEventListener('input', function() {
+            const search = encodeURIComponent(searchInput.value);
+            const pertemuan = encodeURIComponent(pertemuanSelect.value);
+            const status = encodeURIComponent(statusSelect.value);
+            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
+        });
 
-        function renderTable(absensis, page) {
-            if (!absensis.length) {
-                tableBody.innerHTML = `
-                    <tr><td colspan="6" class="px-6 py-16 text-center">
-                        <div class="flex flex-col items-center gap-3">
-                            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                </svg>
-                            </div>
-                            <p class="text-slate-400 text-sm font-medium">Belum ada data absensi</p>
-                        </div>
-                    </td></tr>`;
-                return;
-            }
+        pertemuanSelect.addEventListener('change', function() {
+            const search = encodeURIComponent(searchInput.value);
+            const pertemuan = encodeURIComponent(pertemuanSelect.value);
+            const status = encodeURIComponent(statusSelect.value);
+            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
+        });
 
-            tableBody.innerHTML = absensis.map((a, i) => {
-                const no = String((page - 1) * 5 + i + 1).padStart(3, '0');
-                const [bg, text, border, label] = statusMap[a.status] ?? ['bg-slate-50','text-slate-500','border-slate-200', a.status];
+        statusSelect.addEventListener('change', function() {
+            const search = encodeURIComponent(searchInput.value);
+            const pertemuan = encodeURIComponent(pertemuanSelect.value);
+            const status = encodeURIComponent(statusSelect.value);
+            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
+        });
 
-                // ✅ pakai nama_lengkap
-                const namaLengkap = a.siswa?.nama_lengkap ?? 'N/A';
-                const namaAwal    = namaLengkap.substring(0, 2).toUpperCase();
-                const keterangan  = a.keterangan ? a.keterangan.substring(0, 40) + (a.keterangan.length > 40 ? '...' : '') : '-';
-
-                return `
-                <tr class="hover:bg-slate-50/70 transition group">
-                    <td class="px-6 py-4 text-slate-400 text-xs font-mono">${no}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-full bg-[#1B3A6B]/10 flex items-center justify-center flex-shrink-0">
-                                <span class="text-[#1B3A6B] text-[10px] font-bold">${namaAwal}</span>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-[#0F2145] text-sm leading-tight">${namaLengkap}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center gap-1.5 text-slate-600 text-sm">
-                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
-                                ${a.pertemuan?.nomor_pertemuan ?? '-'}
-                            </span>
-                            Pertemuan ke-${a.pertemuan?.nomor_pertemuan ?? '-'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="inline-flex items-center px-2.5 py-1 ${bg} ${text} border ${border} text-[10px] font-bold rounded-full uppercase tracking-wide">
-                            ${label}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-slate-500 text-sm">${keterangan}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center justify-center gap-2">
-                            <button type="button"
-                                data-id="${a.id}"
-                                data-id_pertemuan="${a.id_pertemuan}"
-                                data-id_siswa="${a.id_siswa}"
-                                data-status="${a.status}"
-                                data-keterangan="${a.keterangan ?? ''}"
-                                class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                                Edit
-                            </button>
-                            <form action="/absensi/${a.id}" method="POST" onsubmit="return confirm('Yakin ingin menghapus absensi ini?')">
-                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit"
-                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                    Hapus
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>`;
-            }).join('');
-
-            // ✅ Bind ulang setelah render AJAX
-            bindEditButtons();
-        }
-
-        // Event listeners filter & search
-        searchInput.addEventListener('input',      function () { currentSearch    = this.value; loadData(currentSearch, currentPertemuan, currentStatus, 1); });
-        pertemuanSelect.addEventListener('change', function () { currentPertemuan = this.value; loadData(currentSearch, currentPertemuan, currentStatus, 1); });
-        statusSelect.addEventListener('change',    function () { currentStatus    = this.value; loadData(currentSearch, currentPertemuan, currentStatus, 1); });
-
-        btnSearch.addEventListener('click', function () {
-            currentSearch    = searchInput.value;
-            currentPertemuan = pertemuanSelect.value;
-            currentStatus    = statusSelect.value;
-            currentPage      = 1;
-            loadData(currentSearch, currentPertemuan, currentStatus, 1);
+        btnSearch.addEventListener('click', function() {
+            const search = encodeURIComponent(searchInput.value);
+            const pertemuan = encodeURIComponent(pertemuanSelect.value);
+            const status = encodeURIComponent(statusSelect.value);
+            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
         });
 
         if (btnReset) {
-            btnReset.addEventListener('click', function () {
-                searchInput.value     = '';
-                pertemuanSelect.value = '';
-                statusSelect.value    = '';
-                currentSearch = currentPertemuan = currentStatus = '';
-                loadData('', '', '', 1);
+            btnReset.addEventListener('click', function() {
+                window.location.href = `{{ route('absensi.index') }}`;
             });
         }
 
-        // Modal buka/tutup
+        // Modal events
         document.getElementById('btnTambahAbsensi').addEventListener('click', () => modalCreate.style.display = 'block');
         document.getElementById('closeCreate').addEventListener('click',       () => modalCreate.style.display = 'none');
         document.getElementById('cancelCreate').addEventListener('click',      () => modalCreate.style.display = 'none');
