@@ -84,7 +84,7 @@ class MateriController extends Controller
             'judul' => 'required|string|max:200',
             'deskripsi' => 'nullable|string',
             'tipe_materi' => 'required|in:dokumen,video,link,lainnya',
-            'file_url' => $request->tipe_materi === 'link' ? 'required|url' : 'nullable|file|mimes:pdf,mp4,doc,docx|max:50000',
+            'file_url' => $request->tipe_materi === 'link' ? 'required|url' : ($request->tipe_materi === 'lainnya' ? 'nullable' : 'required|file|mimes:pdf,mp4,doc,docx|max:102400'),
         ]);
 
         if ($request->hasFile('file_url') && $request->tipe_materi !== 'link') {
@@ -110,7 +110,7 @@ class MateriController extends Controller
             'judul' => 'required|string|max:200',
             'deskripsi' => 'nullable|string',
             'tipe_materi' => 'required|in:dokumen,video,link,lainnya',
-            'file_url' => $request->tipe_materi === 'link' ? 'required|url' : 'nullable|file|mimes:pdf,mp4,doc,docx|max:50000',
+            'file_url' => $request->tipe_materi === 'link' ? 'required|url' : ($request->tipe_materi === 'lainnya' ? 'nullable' : 'required_if:tipe_materi,dokumen,video|file|mimes:pdf,mp4,doc,docx|max:102400'),
         ]);
 
         if ($request->hasFile('file_url') && $request->tipe_materi !== 'link') {
