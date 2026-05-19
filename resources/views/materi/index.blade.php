@@ -284,9 +284,25 @@
                                                         @if($item->is_tugas)
                                                             <div class="flex items-center gap-1.5 mb-1.5">
                                                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-amber-50 text-amber-700 border-amber-200">Tugas</span>
-                                                                <span class="text-[9px] font-bold uppercase text-slate-400">{{ $item->tipe_tugas ?? 'File' }}</span>
+                                                                <span class="text-[9px] font-bold uppercase text-slate-400">{{ $item->tipe_tugas ?? 'individu' }}</span>
                                                             </div>
-                                                            <div>
+                                                            @php
+                                                                $tipeFile = $item->tipe_file ?? 'tanpa';
+                                                                $fileColors = match($tipeFile) {
+                                                                    'dokumen' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                                    'video'   => 'bg-purple-50 text-purple-700 border-purple-200',
+                                                                    'link'    => 'bg-cyan-50 text-cyan-700 border-cyan-200',
+                                                                    default   => 'bg-slate-100 text-slate-500 border-slate-200',
+                                                                };
+                                                                $fileLabel = match($tipeFile) {
+                                                                    'dokumen' => '📄 Dokumen',
+                                                                    'video'   => '🎬 Video',
+                                                                    'link'    => '🔗 Link',
+                                                                    default   => 'Tanpa File',
+                                                                };
+                                                            @endphp
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border {{ $fileColors }}">{{ $fileLabel }}</span>
+                                                            <div class="mt-1.5">
                                                                 @if($item->status == 'published')
                                                                     <span class="inline-block px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold uppercase">Published</span>
                                                                 @else
@@ -525,14 +541,14 @@
                  class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden ring-1 ring-slate-200 z-10">
                 <form id="formEditMateri" method="POST" enctype="multipart/form-data" class="flex flex-col">
                     @csrf @method('PUT')
-                    <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600">
+                    <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-amber-300">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </div>
                             <div>
                                 <h3 class="text-white font-bold text-[15px] tracking-wide">Edit Materi</h3>
-                                <p class="text-amber-100 text-[11px] uppercase tracking-wider">Perbarui data bahan ajar</p>
+                                <p class="text-blue-200 text-[11px] uppercase tracking-wider">Perbarui data bahan ajar</p>
                             </div>
                         </div>
                         <button type="button" @click="modalEditMateri = false" class="text-white/70 hover:text-white transition bg-white/5 hover:bg-white/20 p-1.5 rounded-lg">
@@ -583,18 +599,26 @@
                         
                         <div x-show="tipeMateriEdit === 'dokumen' || tipeMateriEdit === 'video'" x-data="{ fileNameEdit: '' }">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Timpa File Lama <span class="text-slate-400 font-normal normal-case">(Opsional)</span></label>
+                            {{-- Preview file saat ini --}}
+                            <div x-show="editMateriData.file_url" class="mb-2 flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                <span class="text-xs text-slate-500">File saat ini:</span>
+                                <a :href="editMateriData.file_url && editMateriData.file_url.startsWith('http') ? editMateriData.file_url : '/storage/' + editMateriData.file_url"
+                                   target="_blank"
+                                   class="text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline truncate max-w-[200px]"
+                                   x-text="editMateriData.file_url ? editMateriData.file_url.split('/').pop() : ''"></a>
+                            </div>
                             <input type="file" 
                                 id="input_edit_materi_file"
                                 :name="(tipeMateriEdit === 'dokumen' || tipeMateriEdit === 'video') ? 'file_url' : '_file_url_edit_disabled'"
                                 :accept="tipeMateriEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
                                 x-on:change="fileNameEdit = $event.target.files[0] ? $event.target.files[0].name : ''"
                                 style="display:none;">
-                            <div class="mt-1 border-2 border-amber-200 border-dashed rounded-xl hover:border-amber-400 transition bg-amber-50/50 group cursor-pointer" onclick="document.getElementById('input_edit_materi_file').click()">
-                                <div class="flex flex-col items-center justify-center py-5 space-y-1.5">
-                                    <svg class="h-8 w-8 text-amber-400 group-hover:text-amber-500 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                                    <span x-show="!fileNameEdit" class="text-sm font-bold text-amber-600 group-hover:text-amber-700">Klik untuk Pilih File Baru</span>
-                                    <span x-show="fileNameEdit" class="text-sm font-bold text-emerald-600 truncate max-w-xs px-2" x-text="fileNameEdit"></span>
-                                    <p class="text-[10px] text-slate-400" x-text="tipeMateriEdit === 'video' ? 'MP4 maksimal 50MB' : 'PDF, DOCX maksimal 50MB'"></p>
+                            <div class="border border-dashed border-amber-300 rounded-lg bg-amber-50/40 cursor-pointer group hover:border-amber-400 transition" onclick="document.getElementById('input_edit_materi_file').click()">
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <svg class="w-5 h-5 text-amber-400 group-hover:text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <span x-show="!fileNameEdit" class="text-xs font-semibold text-amber-600">Klik untuk ganti file (opsional)</span>
+                                    <span x-show="fileNameEdit" class="text-xs font-semibold text-emerald-600 truncate" x-text="fileNameEdit"></span>
                                 </div>
                             </div>
                         </div>
@@ -781,14 +805,14 @@
                  class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden ring-1 ring-slate-200 z-10">
                 <form id="formEditTugas" method="POST" enctype="multipart/form-data" class="flex flex-col h-full max-h-[90vh]">
                     @csrf @method('PUT')
-                    <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 shrink-0">
+                    <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B] shrink-0">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-blue-300">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </div>
                             <div>
                                 <h3 class="text-white font-bold text-[15px] tracking-wide">Edit Tugas</h3>
-                                <p class="text-amber-100 text-[11px] uppercase tracking-wider">Perbarui penugasan siswa</p>
+                                <p class="text-blue-200 text-[11px] uppercase tracking-wider">Perbarui penugasan siswa</p>
                             </div>
                         </div>
                         <button type="button" @click="modalEditTugas = false" class="text-white/70 hover:text-white transition bg-white/5 hover:bg-white/20 p-1.5 rounded-lg">
@@ -796,8 +820,8 @@
                         </button>
                     </div>
 
-                    <div class="px-6 py-6 space-y-6 overflow-y-auto">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="px-4 py-3 space-y-3 overflow-y-auto">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pertemuan / Topik <span class="text-red-500">*</span></label>
                                 <select name="id_pertemuan" x-model="editTugasData.id_pertemuan"
@@ -832,94 +856,103 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Judul Tugas <span class="text-red-500">*</span></label>
-                            <input type="text" name="judul" x-model="editTugasData.judul" required class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Petunjuk Pengerjaan</label>
-                            <textarea name="deskripsi" x-model="editTugasData.deskripsi" rows="4" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50"></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-widest mb-2">Tenggat Waktu <span class="text-red-500">*</span></label>
-                                <input type="datetime-local" name="batas_waktu" x-model="editTugasData.formatted_batas_waktu" required class="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Judul Tugas <span class="text-red-500">*</span></label>
+                                <input type="text" name="judul" x-model="editTugasData.judul" required class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-widest mb-2">Poin Maksimal</label>
-                                <input type="number" name="nilai_maksimal" x-model="editTugasData.nilai_maksimal" class="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Petunjuk Pengerjaan</label>
+                                <textarea name="deskripsi" x-model="editTugasData.deskripsi" rows="2" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 bg-amber-50/50 p-3 rounded-xl border border-amber-100">
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-widest mb-1">Tenggat <span class="text-red-500">*</span></label>
+                                <input type="datetime-local" name="batas_waktu" x-model="editTugasData.formatted_batas_waktu" required class="w-full rounded-lg border border-amber-200 px-2 py-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-widest mb-2">Jenis Tugas</label>
-                                <select name="tipe_tugas" x-model="editTugasData.tipe_tugas" class="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm">
-                                    <option value="individu">Tugas Individu</option>
-                                    <option value="kelompok">Tugas Kelompok</option>
+                                <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-widest mb-1">Poin Maks.</label>
+                                <input type="number" name="nilai_maksimal" x-model="editTugasData.nilai_maksimal" class="w-full rounded-lg border border-amber-200 px-2 py-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-widest mb-1">Jenis</label>
+                                <select name="tipe_tugas" x-model="editTugasData.tipe_tugas" class="w-full rounded-lg border border-amber-200 px-2 py-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm">
+                                    <option value="individu">Individu</option>
+                                    <option value="kelompok">Kelompok</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Advanced File Type Selection for Edit -->
-                        <div x-data="{ tipeFileEdit: editTugasData.tipe_file || 'tanpa' }" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Jenis Lampiran</label>
-                                <select name="tipe_file" x-model="tipeFileEdit" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
-                                    <option value="tanpa">Tanpa File Lampiran</option>
-                                    <option value="dokumen">Dokumen (PDF, Word)</option>
-                                    <option value="video">Video (MP4)</option>
-                                    <option value="link">Tautan Luar / Link</option>
-                                </select>
-                            </div>
-
-                            <!-- File Upload for Dokumen/Video -->
-                            <div x-show="tipeFileEdit === 'dokumen' || tipeFileEdit === 'video'" x-data="{ fileNameEditTugas: '' }">
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Timpa File Lama <span class="text-slate-400 font-normal normal-case">(Opsional)</span></label>
-                                <input type="file" 
-                                    id="input_edit_tugas_file"
-                                    :name="(tipeFileEdit === 'dokumen' || tipeFileEdit === 'video') ? 'file_url' : '_file_edit_tugas_disabled'"
-                                    :accept="tipeFileEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
-                                    x-on:change="fileNameEditTugas = $event.target.files[0] ? $event.target.files[0].name : ''"
-                                    style="display:none;">
-                                <div class="mt-1 border-2 border-amber-200 border-dashed rounded-xl hover:border-amber-400 transition bg-amber-50/50 group cursor-pointer" onclick="document.getElementById('input_edit_tugas_file').click()">
-                                    <div class="flex flex-col items-center justify-center py-5 space-y-1.5">
-                                        <svg class="h-8 w-8 text-amber-400 group-hover:text-amber-500 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                                        <span x-show="!fileNameEditTugas" class="text-sm font-bold text-amber-600 group-hover:text-amber-700">Klik untuk Pilih File Baru</span>
-                                        <span x-show="fileNameEditTugas" class="text-sm font-bold text-emerald-600 truncate max-w-xs px-2" x-text="fileNameEditTugas"></span>
-                                        <p class="text-[10px] text-slate-400" x-text="tipeFileEdit === 'video' ? 'MP4 max 50MB' : 'PDF/DOCX max 50MB'"></p>
+                        <!-- Lampiran -->  
+                        <div x-data="{ tipeFileEdit: editTugasData.tipe_file || 'tanpa' }" class="space-y-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Jenis Lampiran</label>
+                                    <select name="tipe_file" x-model="tipeFileEdit" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
+                                        <option value="tanpa">Tanpa File</option>
+                                        <option value="dokumen">Dokumen (PDF, Word)</option>
+                                        <option value="video">Video (MP4)</option>
+                                        <option value="link">Tautan / Link</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col gap-1.5 justify-end">
+                                    <input type="hidden" name="allow_late" value="0">
+                                    <label class="flex items-center cursor-pointer group">
+                                        <input type="checkbox" name="allow_late" value="1" x-model="editTugasData.allow_late" class="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 transition">
+                                        <span class="ml-2 text-xs text-slate-700 font-medium group-hover:text-amber-600 transition">Izinkan Terlambat</span>
+                                    </label>
+                                    <div class="flex items-center gap-2 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase">Status:</span>
+                                        <select name="status" x-model="editTugasData.status" class="flex-1 rounded border-none bg-transparent text-xs text-slate-700 font-semibold focus:ring-0 cursor-pointer">
+                                            <option value="published">Published</option>
+                                            <option value="draft">Draft</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Link Input -->
-                            <div x-show="tipeFileEdit === 'link'">
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tautan (URL) <span class="text-red-500">*</span></label>
-                                <input type="url" 
-                                    id="input_edit_tugas_link"
-                                    name="file_url"
-                                    x-model="editTugasData.file_url" 
-                                    :required="tipeFileEdit === 'link'" 
-                                    :disabled="tipeFileEdit !== 'link'" 
-                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
+                            <!-- Preview file lama -->
+                            <div x-show="(tipeFileEdit === 'dokumen' || tipeFileEdit === 'video') && editTugasData.file_url" 
+                                 class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                <span class="text-xs text-slate-500">File saat ini:</span>
+                                <a :href="editTugasData.file_url && editTugasData.file_url.startsWith('http') ? editTugasData.file_url : '/storage/' + editTugasData.file_url"
+                                   target="_blank"
+                                   class="text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline truncate max-w-[180px]"
+                                   x-text="editTugasData.file_url ? editTugasData.file_url.split('/').pop() : ''"></a>
                             </div>
-                        </div>
+                            <div x-show="tipeFileEdit === 'link' && editTugasData.file_url"
+                                 class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg">
+                                <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 015.656 0l4-4a4 4 0 01-5.656-5.656l-1.102 1.101"/></svg>
+                                <a :href="editTugasData.file_url" target="_blank" class="text-xs font-semibold text-blue-600 hover:underline truncate" x-text="editTugasData.file_url"></a>
+                            </div>
 
-                        <div class="flex flex-col sm:flex-row gap-6">
-                            <div class="flex flex-col gap-3 justify-center">
-                                <label class="flex items-center cursor-pointer group">
-                                    <!-- Use a hidden input for unchecked state with x-model -->
-                                    <input type="hidden" name="allow_late" value="0">
-                                    <input type="checkbox" name="allow_late" value="1" x-model="editTugasData.allow_late" class="w-5 h-5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 transition">
-                                    <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-amber-600 transition">Izinkan Pengumpulan Terlambat</span>
-                                </label>
-                                
-                                <div class="flex items-center gap-3 bg-slate-100 p-2 rounded-lg border border-slate-200">
-                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status:</span>
-                                    <select name="status" x-model="editTugasData.status" class="flex-1 rounded border-none bg-transparent py-1 text-sm text-slate-700 font-semibold focus:ring-0 cursor-pointer">
-                                        <option value="published">Posting Sekarang</option>
-                                        <option value="draft">Simpan Draft</option>
-                                    </select>
+                            <!-- Upload file baru -->
+                            <div x-show="tipeFileEdit === 'dokumen' || tipeFileEdit === 'video'" x-data="{ fnET: '' }">
+                                <input type="file" id="input_edit_tugas_file"
+                                    :name="(tipeFileEdit === 'dokumen' || tipeFileEdit === 'video') ? 'file_url' : '_file_edit_tugas_disabled'"
+                                    :accept="tipeFileEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
+                                    x-on:change="fnET = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                    style="display:none;">
+                                <div class="border border-dashed border-amber-300 rounded-lg bg-amber-50/40 cursor-pointer group hover:border-amber-400 transition" onclick="document.getElementById('input_edit_tugas_file').click()">
+                                    <div class="flex items-center gap-2 px-3 py-2">
+                                        <svg class="w-5 h-5 text-amber-400 group-hover:text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                        <span x-show="!fnET" class="text-xs font-semibold text-amber-600">Ganti dengan file baru (opsional)</span>
+                                        <span x-show="fnET" class="text-xs font-semibold text-emerald-600 truncate" x-text="fnET"></span>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Link input -->
+                            <div x-show="tipeFileEdit === 'link'">
+                                <input type="url" id="input_edit_tugas_link" name="file_url"
+                                    x-model="editTugasData.file_url"
+                                    :required="tipeFileEdit === 'link'"
+                                    :disabled="tipeFileEdit !== 'link'"
+                                    placeholder="https://..."
+                                    class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
                             </div>
                         </div>
                     </div>

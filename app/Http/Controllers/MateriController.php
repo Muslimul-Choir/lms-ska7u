@@ -93,10 +93,23 @@ class MateriController extends Controller
             $validated['file_url'] = $request->input('file_url');
         }
 
-        $pertemuan = \App\Models\Pertemuan::with('jadwalBelajar.guruMapel')->find($validated['id_pertemuan']);
-        if ($pertemuan && $pertemuan->jadwalBelajar && $pertemuan->jadwalBelajar->guruMapel) {
-            $validated['id_guru_mapel'] = $pertemuan->jadwalBelajar->id_guru_mapel;
-            $validated['id_mapel'] = $pertemuan->jadwalBelajar->guruMapel->id_mapel;
+        // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar
+        $pertemuan = \App\Models\Pertemuan::with('jadwalBelajar.guruMapel.mapel')->find($validated['id_pertemuan']);
+        $jadwal = $pertemuan?->jadwalBelajar;
+        if ($jadwal) {
+            $guruMapelId = $jadwal->id_guru_mapel;
+            if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
+                $validated['id_guru_mapel'] = $guruMapelId;
+                $mapelId = $jadwal->guruMapel?->id_mapel ?? $jadwal->id_mapel;
+                if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
+                    $validated['id_mapel'] = $mapelId;
+                } else {
+                    $validated['id_mapel'] = null;
+                }
+            } else {
+                $validated['id_guru_mapel'] = null;
+                $validated['id_mapel'] = null;
+            }
         }
 
         Materi::create($validated);
@@ -122,10 +135,23 @@ class MateriController extends Controller
             $validated['file_url'] = $request->input('file_url');
         }
 
-        $pertemuan = \App\Models\Pertemuan::with('jadwalBelajar.guruMapel')->find($validated['id_pertemuan']);
-        if ($pertemuan && $pertemuan->jadwalBelajar && $pertemuan->jadwalBelajar->guruMapel) {
-            $validated['id_guru_mapel'] = $pertemuan->jadwalBelajar->id_guru_mapel;
-            $validated['id_mapel'] = $pertemuan->jadwalBelajar->guruMapel->id_mapel;
+        // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar
+        $pertemuan = \App\Models\Pertemuan::with('jadwalBelajar.guruMapel.mapel')->find($validated['id_pertemuan']);
+        $jadwal = $pertemuan?->jadwalBelajar;
+        if ($jadwal) {
+            $guruMapelId = $jadwal->id_guru_mapel;
+            if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
+                $validated['id_guru_mapel'] = $guruMapelId;
+                $mapelId = $jadwal->guruMapel?->id_mapel ?? $jadwal->id_mapel;
+                if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
+                    $validated['id_mapel'] = $mapelId;
+                } else {
+                    $validated['id_mapel'] = null;
+                }
+            } else {
+                $validated['id_guru_mapel'] = null;
+                $validated['id_mapel'] = null;
+            }
         }
 
         $materi->update($validated);
