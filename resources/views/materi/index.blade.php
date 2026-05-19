@@ -468,25 +468,35 @@
                             </div>
                         </div>
                         
-                        <div x-show="tipeMateri === 'dokumen' || tipeMateri === 'video'">
+                        <div x-show="tipeMateri === 'dokumen' || tipeMateri === 'video'" x-data="{ fileName: '' }">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Unggah File <span class="text-red-500">*</span></label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-[#1B3A6B] transition bg-slate-50 group relative">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-slate-400 group-hover:text-[#1B3A6B] transition" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                                    <div class="flex text-sm text-slate-600 justify-center">
-                                        <label class="relative cursor-pointer bg-white rounded-md font-bold text-[#1B3A6B] hover:text-[#0F2145] focus-within:outline-none px-2 py-0.5">
-                                            <span>Pilih File</span>
-                                            <input type="file" name="file_url" class="sr-only" :accept="tipeMateri === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'">
-                                        </label>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400 mt-2" x-text="tipeMateri === 'video' ? 'MP4 maksimal 50MB' : 'PDF, DOCX maksimal 50MB'"></p>
+                            {{-- Hidden file input --}}
+                            <input type="file" 
+                                id="input_materi_file"
+                                :name="(tipeMateri === 'dokumen' || tipeMateri === 'video') ? 'file_url' : '_file_url_disabled'"
+                                :accept="tipeMateri === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
+                                x-on:change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                style="display:none;">
+                            {{-- Clickable area --}}
+                            <div class="mt-1 border-2 border-slate-300 border-dashed rounded-xl hover:border-[#1B3A6B] transition bg-slate-50 group cursor-pointer" onclick="document.getElementById('input_materi_file').click()">
+                                <div class="flex flex-col items-center justify-center py-6 space-y-2">
+                                    <svg class="h-10 w-10 text-slate-400 group-hover:text-[#1B3A6B] transition" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                    <span x-show="!fileName" class="text-sm font-bold text-[#1B3A6B] group-hover:text-[#0F2145]">Klik untuk Pilih File</span>
+                                    <span x-show="fileName" class="text-sm font-bold text-emerald-600 truncate max-w-xs px-2" x-text="fileName"></span>
+                                    <p class="text-[10px] text-slate-400" x-text="tipeMateri === 'video' ? 'MP4 maksimal 50MB' : 'PDF, DOCX maksimal 50MB'"></p>
                                 </div>
                             </div>
                         </div>
 
                         <div x-show="tipeMateri === 'link'">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tautan (URL) <span class="text-red-500">*</span></label>
-                            <input type="url" name="file_url" :required="tipeMateri === 'link'" :disabled="tipeMateri !== 'link'" placeholder="https://youtube.com/..." class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
+                            <input type="url" 
+                                id="input_materi_link"
+                                name="file_url"
+                                :required="tipeMateri === 'link'" 
+                                :disabled="tipeMateri !== 'link'" 
+                                placeholder="https://youtube.com/..." 
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
                         </div>
 
                         <div>
@@ -571,14 +581,33 @@
                             </div>
                         </div>
                         
-                        <div x-show="tipeMateriEdit === 'dokumen' || tipeMateriEdit === 'video'">
+                        <div x-show="tipeMateriEdit === 'dokumen' || tipeMateriEdit === 'video'" x-data="{ fileNameEdit: '' }">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Timpa File Lama <span class="text-slate-400 font-normal normal-case">(Opsional)</span></label>
-                            <input type="file" name="file_url" class="mt-1 block w-full text-slate-600 text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 cursor-pointer" :accept="tipeMateriEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'">
+                            <input type="file" 
+                                id="input_edit_materi_file"
+                                :name="(tipeMateriEdit === 'dokumen' || tipeMateriEdit === 'video') ? 'file_url' : '_file_url_edit_disabled'"
+                                :accept="tipeMateriEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
+                                x-on:change="fileNameEdit = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                style="display:none;">
+                            <div class="mt-1 border-2 border-amber-200 border-dashed rounded-xl hover:border-amber-400 transition bg-amber-50/50 group cursor-pointer" onclick="document.getElementById('input_edit_materi_file').click()">
+                                <div class="flex flex-col items-center justify-center py-5 space-y-1.5">
+                                    <svg class="h-8 w-8 text-amber-400 group-hover:text-amber-500 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                    <span x-show="!fileNameEdit" class="text-sm font-bold text-amber-600 group-hover:text-amber-700">Klik untuk Pilih File Baru</span>
+                                    <span x-show="fileNameEdit" class="text-sm font-bold text-emerald-600 truncate max-w-xs px-2" x-text="fileNameEdit"></span>
+                                    <p class="text-[10px] text-slate-400" x-text="tipeMateriEdit === 'video' ? 'MP4 maksimal 50MB' : 'PDF, DOCX maksimal 50MB'"></p>
+                                </div>
+                            </div>
                         </div>
 
                         <div x-show="tipeMateriEdit === 'link'">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tautan (URL) <span class="text-red-500">*</span></label>
-                            <input type="url" name="file_url" x-model="editMateriData.file_url" :required="tipeMateriEdit === 'link'" :disabled="tipeMateriEdit !== 'link'" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
+                            <input type="url" 
+                                id="input_edit_materi_link"
+                                name="file_url"
+                                x-model="editMateriData.file_url" 
+                                :required="tipeMateriEdit === 'link'" 
+                                :disabled="tipeMateriEdit !== 'link'" 
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
                         </div>
 
                         <div>
@@ -683,18 +712,20 @@
                             </div>
 
                             <!-- File Upload for Dokumen/Video -->
-                            <div x-show="tipeFile === 'dokumen' || tipeFile === 'video'">
+                            <div x-show="tipeFile === 'dokumen' || tipeFile === 'video'" x-data="{ fileNameTugas: '' }">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 sm:mb-2">Unggah File <span class="text-red-500">*</span></label>
-                                <div class="flex justify-center px-3 sm:px-6 py-3 sm:py-4 border-2 border-slate-300 border-dashed rounded-lg sm:rounded-xl hover:border-[#1B3A6B] transition bg-slate-50 group relative">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-8 sm:h-12 w-8 sm:w-12 text-slate-400 group-hover:text-[#1B3A6B] transition" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-                                        <div class="flex text-xs sm:text-sm text-slate-600 justify-center">
-                                            <label class="relative cursor-pointer bg-white rounded-md font-bold text-[#1B3A6B] hover:text-[#0F2145] focus-within:outline-none px-2 py-0.5">
-                                                <span>Pilih</span>
-                                                <input type="file" name="file_url" class="sr-only" :required="tipeFile === 'dokumen' || tipeFile === 'video'" :accept="tipeFile === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'">
-                                            </label>
-                                        </div>
-                                        <p class="text-[9px] sm:text-[10px] text-slate-400 mt-1" x-text="tipeFile === 'video' ? 'MP4 max 50MB' : 'PDF/DOCX max 50MB'"></p>
+                                <input type="file" 
+                                    id="input_tugas_file"
+                                    :name="(tipeFile === 'dokumen' || tipeFile === 'video') ? 'file_url' : '_file_tugas_disabled'"
+                                    :accept="tipeFile === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
+                                    x-on:change="fileNameTugas = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                    style="display:none;">
+                                <div class="border-2 border-slate-300 border-dashed rounded-lg sm:rounded-xl hover:border-[#1B3A6B] transition bg-slate-50 group cursor-pointer" onclick="document.getElementById('input_tugas_file').click()">
+                                    <div class="flex flex-col items-center justify-center py-4 sm:py-6 space-y-1.5 sm:space-y-2">
+                                        <svg class="h-8 sm:h-10 w-8 sm:w-10 text-slate-400 group-hover:text-[#1B3A6B] transition" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                        <span x-show="!fileNameTugas" class="text-xs sm:text-sm font-bold text-[#1B3A6B] group-hover:text-[#0F2145]">Klik untuk Pilih File</span>
+                                        <span x-show="fileNameTugas" class="text-xs sm:text-sm font-bold text-emerald-600 truncate max-w-[200px] sm:max-w-xs px-2" x-text="fileNameTugas"></span>
+                                        <p class="text-[9px] sm:text-[10px] text-slate-400" x-text="tipeFile === 'video' ? 'MP4 max 50MB' : 'PDF/DOCX max 50MB'"></p>
                                     </div>
                                 </div>
                             </div>
@@ -702,7 +733,13 @@
                             <!-- Link Input -->
                             <div x-show="tipeFile === 'link'">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 sm:mb-2">Tautan (URL) <span class="text-red-500">*</span></label>
-                                <input type="url" name="file_url" :required="tipeFile === 'link'" :disabled="tipeFile !== 'link'" placeholder="https://..." class="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
+                                <input type="url" 
+                                    id="input_tugas_link"
+                                    name="file_url"
+                                    :required="tipeFile === 'link'" 
+                                    :disabled="tipeFile !== 'link'" 
+                                    placeholder="https://..." 
+                                    class="w-full rounded-lg sm:rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
                             </div>
                         </div>
 
@@ -836,15 +873,34 @@
                             </div>
 
                             <!-- File Upload for Dokumen/Video -->
-                            <div x-show="tipeFileEdit === 'dokumen' || tipeFileEdit === 'video'">
+                            <div x-show="tipeFileEdit === 'dokumen' || tipeFileEdit === 'video'" x-data="{ fileNameEditTugas: '' }">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Timpa File Lama <span class="text-slate-400 font-normal normal-case">(Opsional)</span></label>
-                                <input type="file" name="file_url" class="mt-1 block w-full text-slate-600 text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 cursor-pointer" :accept="tipeFileEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'">
+                                <input type="file" 
+                                    id="input_edit_tugas_file"
+                                    :name="(tipeFileEdit === 'dokumen' || tipeFileEdit === 'video') ? 'file_url' : '_file_edit_tugas_disabled'"
+                                    :accept="tipeFileEdit === 'video' ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'"
+                                    x-on:change="fileNameEditTugas = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                    style="display:none;">
+                                <div class="mt-1 border-2 border-amber-200 border-dashed rounded-xl hover:border-amber-400 transition bg-amber-50/50 group cursor-pointer" onclick="document.getElementById('input_edit_tugas_file').click()">
+                                    <div class="flex flex-col items-center justify-center py-5 space-y-1.5">
+                                        <svg class="h-8 w-8 text-amber-400 group-hover:text-amber-500 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                        <span x-show="!fileNameEditTugas" class="text-sm font-bold text-amber-600 group-hover:text-amber-700">Klik untuk Pilih File Baru</span>
+                                        <span x-show="fileNameEditTugas" class="text-sm font-bold text-emerald-600 truncate max-w-xs px-2" x-text="fileNameEditTugas"></span>
+                                        <p class="text-[10px] text-slate-400" x-text="tipeFileEdit === 'video' ? 'MP4 max 50MB' : 'PDF/DOCX max 50MB'"></p>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Link Input -->
                             <div x-show="tipeFileEdit === 'link'">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tautan (URL) <span class="text-red-500">*</span></label>
-                                <input type="url" name="file_url" x-model="editTugasData.file_url" :required="tipeFileEdit === 'link'" :disabled="tipeFileEdit !== 'link'" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
+                                <input type="url" 
+                                    id="input_edit_tugas_link"
+                                    name="file_url"
+                                    x-model="editTugasData.file_url" 
+                                    :required="tipeFileEdit === 'link'" 
+                                    :disabled="tipeFileEdit !== 'link'" 
+                                    class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition shadow-sm bg-slate-50">
                             </div>
                         </div>
 

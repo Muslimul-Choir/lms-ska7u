@@ -396,9 +396,9 @@
         <div class="flex-shrink-0 border-t border-[rgba(201,152,42,0.25)] px-3 py-3 relative" x-data="{ profileOpen: false }">
 
             <button @click="profileOpen = !profileOpen"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                   text-slate-400 hover:bg-[rgba(201,152,42,0.2)] hover:text-white
-                   transition-all duration-150 text-sm">
+    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+           text-[rgba(255,235,200,0.55)] hover:bg-[rgba(201,152,42,0.18)] hover:text-[#fde68a]
+           transition-all duration-150 text-sm">
                 <div
                     class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0">
                     <span
@@ -417,37 +417,49 @@
             </button>
 
             {{-- Dropdown membuka ke atas --}}
-            <div x-show="profileOpen" @click.outside="profileOpen = false"
-                x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-2"
-                x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100"
-                x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
-                class="absolute bottom-[4.5rem] left-3 right-3 bg-white dark:bg-slate-800
-                   rounded-xl shadow-xl border border-slate-100 dark:border-slate-700
-                   overflow-hidden z-50"
-                style="display:none">
+           <div x-show="profileOpen" @click.outside="profileOpen = false"
+    x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0 translate-y-1"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-1"
+    class="absolute bottom-[4.5rem] left-3 right-3
+           bg-[#3a0c15]
+           rounded-xl border border-[#c9982a]
+           overflow-hidden z-50
+           shadow-[0_-4px_16px_rgba(0,0,0,0.4)]"
+    style="display:none">
 
-                <a href="{{ route('profile.edit') }}"
-                    class="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Edit Profil
-                </a>
-                <div class="border-t border-slate-100 dark:border-slate-700"></div>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                        class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Keluar
-                    </button>
-                </form>
-            </div>
+    <a href="{{ route('profile.edit') }}"
+        class="flex items-center gap-2.5 px-4 py-3 text-sm
+               text-[#fde68a] hover:bg-[rgba(201,152,42,0.18)]
+               transition-colors">
+        <svg class="w-4 h-4 text-[#c9982a]" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        Edit Profil
+    </a>
+
+    <div class="border-t border-[rgba(201,152,42,0.25)]"></div>
+
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit"
+            class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left
+                   text-rose-400 hover:bg-[rgba(239,68,68,0.12)]
+                   transition-colors">
+            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Keluar
+        </button>
+    </form>
+</div>
 
         </div>
     @endauth
