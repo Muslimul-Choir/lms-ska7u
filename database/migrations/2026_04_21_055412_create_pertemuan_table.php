@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pertemuan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_jadwal')->constrained('jadwalbelajar')
+            $table->foreignId('id_jadwal')->constrained('jadwal_belajar')
                   ->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedTinyInteger('nomor_pertemuan')->default(1);
             $table->date('tanggal')->nullable();

@@ -24,6 +24,7 @@ class UpdateSiswaRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($siswa->id_user),
             ],
             'agama'         => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
+            'tanggal_lahir' => ['required', 'date', 'before:today'],
             'id_kelas'      => ['required', 'exists:kelas,id'],
         ];
     }
@@ -32,6 +33,7 @@ class UpdateSiswaRequest extends FormRequest
     {
         return [
             'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.max'       => 'Nama lengkap tidak boleh lebih dari 150 karakter.',
             'email.required'        => 'Email wajib diisi.',
             'email.email'           => 'Format email tidak valid.',
             'email.unique'          => 'Email sudah terdaftar.',

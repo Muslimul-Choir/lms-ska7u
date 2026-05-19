@@ -20,13 +20,15 @@ class Siswa extends Model
         'email',
         'agama',
         'id_kelas',
+        'tanggal_lahir',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
-    protected $dates = [
+    protected $casts = [
         'created_at',
         'updated_at',
         'deleted_at',
+        'tanggal_lahir' => 'date',
     ];
 
      public function User()

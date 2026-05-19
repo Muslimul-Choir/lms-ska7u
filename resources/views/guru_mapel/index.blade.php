@@ -219,130 +219,14 @@
     @include('guru_mapel.modal-edit')
 
     <script>
-        const modalCreate         = document.getElementById('modalCreate');
-        const modalEdit           = document.getElementById('modalEdit');
-        const searchInput         = document.getElementById('searchInput');
-        const btnSearch           = document.getElementById('btnSearch');
-        const btnReset            = document.getElementById('btnReset');
-        const tableBody           = document.getElementById('guruMapelTableBody');
-        const paginationContainer = document.getElementById('paginationContainer');
+        const modalCreate = document.getElementById('modalCreate');
+        const modalEdit   = document.getElementById('modalEdit');
+        const searchInput = document.getElementById('searchInput');
+        const btnSearch   = document.getElementById('btnSearch');
+        const btnReset    = document.getElementById('btnReset');
 
-        let currentPage   = 1;
-        let currentSearch = '{{ $search }}';
-
-        function loadData(search = '', page = 1) {
-            fetch(`{{ route('guru_mapel.index') }}?search=${encodeURIComponent(search)}&page=${page}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                renderTable(data.guru_mapels, page);
-                renderPagination(data.pagination, data.total);
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function renderTable(guruMapels, page) {
-            if (guruMapels.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="px-6 py-16 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                    </svg>
-                                </div>
-                                <p class="text-slate-400 text-sm font-medium">Belum ada data guru mapel</p>
-                            </div>
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            let html = '';
-            guruMapels.forEach((guruMapel, index) => {
-                const no = (page - 1) * 5 + index + 1;
-
-                // Susun nama kelas dari relasi
-                const namaKelas = [
-                    guruMapel.kelas?.tingkatan?.nama_tingkatan,
-                    guruMapel.kelas?.jurusan?.nama_jurusan,
-                    guruMapel.kelas?.bagian?.nama_bagian,
-                ].filter(Boolean).join(' ') || '-';
-
-                const namaMapel    = guruMapel.mapel?.nama_mapel ?? '-';
-                const namaGuru     = guruMapel.guru?.nama_lengkap ?? '-';
-                const namaSemester = guruMapel.semester?.nama_semester ?? '-';
-                const singkatan    = namaMapel.substring(0, 2).toUpperCase();
-
-                html += `
-                    <tr class="hover:bg-slate-50/70 transition group">
-                        <td class="px-6 py-4 text-slate-400 text-xs font-mono">${String(no).padStart(3, '0')}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-md bg-[#1B3A6B]/10 flex items-center justify-center flex-shrink-0">
-                                    <span class="text-[#1B3A6B] text-[10px] font-bold uppercase">${singkatan}</span>
-                                </div>
-                                <span class="font-semibold text-[#0F2145] text-sm">${namaMapel}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600 text-sm">${namaGuru}</td>
-                        <td class="px-6 py-4 text-slate-600 text-sm">${namaKelas}</td>
-                        <td class="px-6 py-4 text-slate-600 text-sm">${namaSemester}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button"
-                                    data-id="${guruMapel.id}"
-                                    data-id_mapel="${guruMapel.id_mapel}"
-                                    data-id_guru="${guruMapel.id_guru}"
-                                    data-id_kelas="${guruMapel.id_kelas}"
-                                    data-id_semester="${guruMapel.id_semester}"
-                                    class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                    Edit
-                                </button>
-                                <form action="{{ url('guru_mapel') }}/${guruMapel.id}" method="POST"
-                                      onsubmit="return confirm('Yakin ingin menghapus penugasan guru mapel ini?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-
-            tableBody.innerHTML = html;
-            attachEditListeners();
-        }
-
-        function renderPagination(paginationHtml, total) {
-            if (paginationContainer) {
-                paginationContainer.innerHTML = `
-                    <p class="text-xs text-slate-500">
-                        Menampilkan
-                        <span class="font-semibold text-slate-700">${(currentPage - 1) * 5 + 1}–${Math.min(currentPage * 5, total)}</span>
-                        dari
-                        <span class="font-semibold text-slate-700">${total}</span>
-                        entri
-                    </p>
-                    ${paginationHtml}`;
-            }
-        }
-
-        function attachEditListeners() {
+        // Function untuk bind edit buttons
+        function bindEditButtons() {
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', function () {
                     document.getElementById('editIdMapel').value    = this.dataset.id_mapel;
@@ -355,12 +239,10 @@
             });
         }
 
-        attachEditListeners();
-
+        // Event listeners untuk search
         btnSearch.addEventListener('click', () => {
-            currentSearch = searchInput.value;
-            currentPage   = 1;
-            loadData(currentSearch, currentPage);
+            const search = encodeURIComponent(searchInput.value);
+            window.location.href = `{{ route('guru_mapel.index') }}?search=${search}`;
         });
 
         searchInput.addEventListener('keypress', e => {
@@ -369,13 +251,11 @@
 
         if (btnReset) {
             btnReset.addEventListener('click', () => {
-                searchInput.value = '';
-                currentSearch     = '';
-                currentPage       = 1;
-                loadData('', currentPage);
+                window.location.href = `{{ route('guru_mapel.index') }}`;
             });
         }
 
+        // Modal events
         document.getElementById('btnTambahGuruMapel').addEventListener('click', () => modalCreate.style.display = 'block');
         document.getElementById('closeCreate').addEventListener('click',         () => modalCreate.style.display = 'none');
         document.getElementById('cancelCreate').addEventListener('click',        () => modalCreate.style.display = 'none');
@@ -384,5 +264,8 @@
         document.getElementById('closeEdit').addEventListener('click',           () => modalEdit.style.display = 'none');
         document.getElementById('cancelEdit').addEventListener('click',          () => modalEdit.style.display = 'none');
         document.getElementById('overlayEdit').addEventListener('click',         () => modalEdit.style.display = 'none');
+
+        // Bind edit buttons on page load
+        bindEditButtons();
     </script>
 </x-app-layout>

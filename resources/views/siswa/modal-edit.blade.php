@@ -83,6 +83,23 @@
                         @endif
                     </div>
 
+                    {{-- Tanggal Lahir --}}
+                    <div>
+                        <label for="edit_tanggal_lahir" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Tanggal Lahir <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date"
+                            id="edit_tanggal_lahir"
+                            name="tanggal_lahir"
+                            value="{{ old('_modal') === 'edit' ? old('tanggal_lahir') : '' }}"
+                            class="w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-amber-500
+                            {{ $errors->has('tanggal_lahir') && old('_modal') === 'edit' ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-white' }}">
+                        @if ($errors->has('tanggal_lahir') && old('_modal') === 'edit')
+                            <p class="mt-1 text-xs text-red-600">{{ $errors->first('tanggal_lahir') }}</p>
+                        @endif
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Password didasarkan pada tanggal lahir (DDMMYYYY)</p>
+                    </div>
+
                     {{-- Agama --}}
                     <div>
                         <label for="edit_agama" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">

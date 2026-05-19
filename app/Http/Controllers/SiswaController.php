@@ -10,16 +10,19 @@ use App\Mail\Siswa\KirimAkunSiswa;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Traits\GeneratesPasswordFromBirthDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\Failure;
 
 class SiswaController extends Controller
 {
+    use GeneratesPasswordFromBirthDate;
+
     // ── INDEX ────────────────────────────────────────────────
     public function index(Request $request)
     {
@@ -41,7 +44,7 @@ class SiswaController extends Controller
             $query->where('agama', $request->agama);
         }
 
-        $siswas     = $query->latest()->paginate(15)->withQueryString();
+        $siswas     = $query->latest()->paginate(10)->withQueryString();
         $kelasList  = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
             ->get()
             ->sortBy('nama_kelas')
@@ -55,7 +58,7 @@ class SiswaController extends Controller
     public function store(StoreSiswaRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $plainPassword = Str::random(6) . rand(100, 999);
+            $plainPassword = $this->generatePasswordFromBirthDate($request->tanggal_lahir);
 
             $user = User::create([
                 'name'              => $request->nama_lengkap,
@@ -66,11 +69,12 @@ class SiswaController extends Controller
             ]);
 
             Siswa::create([
-                'id_user'      => $user->id,
-                'nama_lengkap' => $request->nama_lengkap,
-                'email'        => $request->email,
-                'agama'        => $request->agama,
-                'id_kelas'     => $request->id_kelas,
+                'id_user'       => $user->id,
+                'nama_lengkap'  => $request->nama_lengkap,
+                'email'         => $request->email,
+                'agama'         => $request->agama,
+                'id_kelas'      => $request->id_kelas,
+                'tanggal_lahir' => $request->tanggal_lahir,
             ]);
         });
 
@@ -87,6 +91,7 @@ class SiswaController extends Controller
                 'email'        => $request->email,
                 'agama'        => $request->agama,
                 'id_kelas'     => $request->id_kelas,
+                'tanggal_lahir' => $request->tanggal_lahir,
             ]);
 
             $siswa->User->update([
@@ -114,7 +119,7 @@ class SiswaController extends Controller
     // ── SEND EMAIL satu siswa ─────────────────────────────────
     public function sendEmail(Siswa $siswa)
     {
-        $plainPassword = Str::random(6) . rand(100, 999);
+        $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
         $siswa->User->update(['password' => Hash::make($plainPassword)]);
         Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
 
@@ -124,43 +129,92 @@ class SiswaController extends Controller
     // ── SEND EMAIL SEMUA ─────────────────────────────────────
     public function sendEmailAll()
     {
-        $siswas = Siswa::all();
-
-        foreach ($siswas as $siswa) {
-            $plainPassword = Str::random(6) . rand(100, 999);
-            $siswa->User->update(['password' => Hash::make($plainPassword)]);
-            Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
-        }
+        Siswa::chunk(100, function ($siswas) {
+            foreach ($siswas as $siswa) {
+                $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
+                $siswa->User->update(['password' => Hash::make($plainPassword)]);
+                Mail::to($siswa->email)->queue(new KirimAkunSiswa($siswa, $plainPassword));
+            }
+        });
 
         return redirect()->route('siswa.index')
-            ->with('success', "Email akun berhasil dikirim ke seluruh siswa ({$siswas->count()} siswa).");
+            ->with('success', "Email akun berhasil dikirim ke seluruh siswa.");
     }
 
     // ── EXPORT ───────────────────────────────────────────────
     public function export()
     {
-        return Excel::download(new SiswaExport, 'data-siswa-' . now()->format('Ymd') . '.xlsx');
+        return Excel::download(new SiswaExport, 'data-siswa-' . now()->format('dmY') . '.xlsx');
     }
 
     // ── IMPORT ───────────────────────────────────────────────
     public function import(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2048'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
         ]);
 
         try {
             $import = new SiswaImport();
             Excel::import($import, $request->file('file'));
 
-            $importedCount = count($import->imported);
+            // ── Gabungkan validation failures dari rules() ke skipped_details ──
+            $validationFailures = collect($import->failures())
+                ->map(fn(Failure $f) => [
+                    'row'    => $f->row(),
+                    'email'  => '-',
+                    'reason' => implode(', ', $f->errors()),
+                ])
+                ->all();
 
-            return redirect()->route('siswa.index')
-                ->with('success', "{$importedCount} data diimpor.");
-        } catch (\Exception $e) {
-            Log::error('Import Siswa Error: ' . $e->getMessage());
+            $summary = $import->getSummary();
 
-            return redirect()->route('siswa.index')
+            if (!empty($validationFailures)) {
+                $summary['skipped_details'] = array_merge(
+                    $validationFailures,
+                    $summary['skipped_details']
+                );
+                $summary['skipped'] = count($summary['skipped_details']);
+            }
+
+            // ── Buat pesan feedback ─────────────────────────────────────────────
+            $messages = [];
+
+            if ($summary['created'] > 0) {
+                $messages[] = "{$summary['created']} siswa baru berhasil ditambahkan.";
+            }
+
+            if ($summary['restored'] > 0) {
+                $restoredEmails = array_column($import->restored, 'email');
+                $emailPreview   = implode(', ', array_slice($restoredEmails, 0, 5));
+                $suffix         = count($restoredEmails) > 5 ? ', dan lainnya' : '';
+                $messages[]     = "{$summary['restored']} siswa berhasil dipulihkan: {$emailPreview}{$suffix}.";
+            }
+
+            if ($summary['skipped'] > 0) {
+                $messages[] = "beberapa baris dilewati (lihat detail di bawah).";
+            }
+
+            $mainMessage = !empty($messages)
+                ? implode(' | ', $messages)
+                : 'Tidak ada data baru yang diproses.';
+
+            $status         = ($summary['created'] + $summary['restored']) > 0 ? 'success' : 'warning';
+            $skippedDetails = array_slice($summary['skipped_details'], 0, 100);
+
+            return redirect()
+                ->route('siswa.index')
+                ->with($status, $mainMessage)
+                ->with('skipped_details', $skippedDetails)
+                ->with('skipped_truncated', $summary['skipped'] > 100);
+        } catch (\Throwable $e) {
+            Log::error('Import Siswa Error', [
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->route('siswa.index')
                 ->with('error', 'Terjadi kesalahan saat mengimpor data. Silakan periksa file dan coba lagi.');
         }
     }
@@ -190,7 +244,10 @@ class SiswaController extends Controller
     public function restoreAll()
     {
         DB::transaction(function () {
-            $siswas = Siswa::onlyTrashed()->get();
+            $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
+                $q->withTrashed();
+            }])->get();
+
             foreach ($siswas as $siswa) {
                 $siswa->restore();
                 $siswa->User()->withTrashed()->restore();
@@ -219,7 +276,9 @@ class SiswaController extends Controller
     public function forceDeleteAll()
     {
         DB::transaction(function () {
-            $siswas = Siswa::onlyTrashed()->get();
+            $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
+                $q->withTrashed();
+            }])->get();
             foreach ($siswas as $siswa) {
                 $siswa->User()->withTrashed()->forceDelete();
                 $siswa->forceDelete();

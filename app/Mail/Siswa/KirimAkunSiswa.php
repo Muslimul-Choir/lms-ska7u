@@ -6,12 +6,12 @@ use App\Models\Siswa;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
+// use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class KirimAkunSiswa extends Mailable
+class KirimAkunSiswa extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -46,11 +46,6 @@ class KirimAkunSiswa extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
-     */
     public function attachments(): array
     {
         return [];

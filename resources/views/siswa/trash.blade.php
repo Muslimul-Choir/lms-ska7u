@@ -54,6 +54,7 @@
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Agama</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Kelas</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Tanggal Lahir</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Dihapus Pada</th>
                         <th class="px-4 py-3 text-center font-semibold text-gray-600">Aksi</th>
                     </tr>
@@ -64,6 +65,9 @@
                             <td class="px-4 py-3 text-gray-400">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3 font-medium text-gray-400 line-through">{{ $siswa->nama_lengkap }}</td>
                             <td class="px-4 py-3 text-gray-400">{{ $siswa->email }}</td>
+                            <td class="px-4 py-3 text-gray-400">
+                                {{ $siswa->tanggal_lahir ? $siswa->tanggal_lahir->format('d/m/Y') : '-' }}
+                            </td>
                             <td class="px-4 py-3 text-gray-400">{{ $siswa->agama }}</td>
                             <td class="px-4 py-3 text-gray-400">{{ $siswa->Kelas?->nama_kelas ?? '-' }}</td>
                             <td class="px-4 py-3 text-gray-400 text-xs">
