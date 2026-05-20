@@ -48,16 +48,34 @@ class TugasController extends Controller
             $validated['file_url'] = null;
         }
 
-        // If mapel and guru_mapel are not manually selected, get from pertemuan's jadwal_belajar
-        if (!$validated['id_guru_mapel'] || !$validated['id_mapel']) {
-            $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel')->find($validated['id_pertemuan']);
-            if ($pertemuan && $pertemuan->JadwalBelajar) {
-                if (!$validated['id_guru_mapel']) {
-                    $validated['id_guru_mapel'] = $pertemuan->JadwalBelajar->id_guru_mapel;
+        // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar pertemuan
+        if (!($validated['id_guru_mapel'] ?? null) || !($validated['id_mapel'] ?? null)) {
+            $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
+            $jadwal = $pertemuan?->JadwalBelajar;
+
+            if ($jadwal) {
+                // Resolve id_guru_mapel — hanya set jika record-nya benar-benar ada
+                if (!($validated['id_guru_mapel'] ?? null)) {
+                    $guruMapelId = $jadwal->id_guru_mapel;
+                    if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
+                        $validated['id_guru_mapel'] = $guruMapelId;
+                    } else {
+                        $validated['id_guru_mapel'] = null;
+                    }
                 }
-                if (!$validated['id_mapel']) {
-                    $validated['id_mapel'] = $pertemuan->JadwalBelajar->id_mapel;
+
+                // Resolve id_mapel — coba dari GuruMapel dulu, fallback ke kolom langsung
+                if (!($validated['id_mapel'] ?? null)) {
+                    $mapelId = $jadwal->GuruMapel?->id_mapel ?? $jadwal->id_mapel;
+                    if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
+                        $validated['id_mapel'] = $mapelId;
+                    } else {
+                        $validated['id_mapel'] = null;
+                    }
                 }
+            } else {
+                $validated['id_guru_mapel'] = $validated['id_guru_mapel'] ?? null;
+                $validated['id_mapel'] = $validated['id_mapel'] ?? null;
             }
         }
 
@@ -105,16 +123,34 @@ class TugasController extends Controller
             // If file type is dokumen/video but no new file uploaded, keep existing file
         }
 
-        // If mapel and guru_mapel are not manually selected, get from pertemuan's jadwal_belajar
-        if (!$validated['id_guru_mapel'] || !$validated['id_mapel']) {
-            $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel')->find($validated['id_pertemuan']);
-            if ($pertemuan && $pertemuan->JadwalBelajar) {
-                if (!$validated['id_guru_mapel']) {
-                    $validated['id_guru_mapel'] = $pertemuan->JadwalBelajar->id_guru_mapel;
+        // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar pertemuan
+        if (!($validated['id_guru_mapel'] ?? null) || !($validated['id_mapel'] ?? null)) {
+            $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
+            $jadwal = $pertemuan?->JadwalBelajar;
+
+            if ($jadwal) {
+                // Resolve id_guru_mapel — hanya set jika record-nya benar-benar ada
+                if (!($validated['id_guru_mapel'] ?? null)) {
+                    $guruMapelId = $jadwal->id_guru_mapel;
+                    if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
+                        $validated['id_guru_mapel'] = $guruMapelId;
+                    } else {
+                        $validated['id_guru_mapel'] = null;
+                    }
                 }
-                if (!$validated['id_mapel']) {
-                    $validated['id_mapel'] = $pertemuan->JadwalBelajar->id_mapel;
+
+                // Resolve id_mapel — coba dari GuruMapel dulu, fallback ke kolom langsung
+                if (!($validated['id_mapel'] ?? null)) {
+                    $mapelId = $jadwal->GuruMapel?->id_mapel ?? $jadwal->id_mapel;
+                    if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
+                        $validated['id_mapel'] = $mapelId;
+                    } else {
+                        $validated['id_mapel'] = null;
+                    }
                 }
+            } else {
+                $validated['id_guru_mapel'] = $validated['id_guru_mapel'] ?? null;
+                $validated['id_mapel'] = $validated['id_mapel'] ?? null;
             }
         }
 
