@@ -209,111 +209,49 @@
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', function () {
                     document.getElementById('editNamaTahun').value = this.dataset.nama;
-                    document.getElementById('editIsAktif').checked = this.dataset.is_aktif == '1';
-                    document.getElementById('formEdit').action = `/tahunajaran/${this.dataset.id}`;
+                    document.getElementById('editIsAktif').checked  = this.dataset.is_aktif == '1';
+                    document.getElementById('formEdit').action      = `/tahunajaran/${this.dataset.id}`;
                     modalEdit.style.display = 'block';
                 });
             });
         }
 
-        // Event listeners untuk search
-        searchInput.addEventListener('input', function() {
+        // Search: navigasi dengan query param
+        searchInput.addEventListener('input', function () {
             const search = encodeURIComponent(searchInput.value);
             window.location.href = `{{ route('tahunajaran.index') }}?search=${search}`;
         });
 
-        btnSearch.addEventListener('click', function() {
+        btnSearch.addEventListener('click', function () {
             const search = encodeURIComponent(searchInput.value);
             window.location.href = `{{ route('tahunajaran.index') }}?search=${search}`;
+        });
+
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') btnSearch.click();
         });
 
         if (btnReset) {
-            btnReset.addEventListener('click', function() {
+            btnReset.addEventListener('click', function () {
                 window.location.href = `{{ route('tahunajaran.index') }}`;
             });
         }
 
-        // Support Enter key
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                btnSearch.click();
-            }
-        });
-
-        // Modal events
+        // Modal – Create
         document.getElementById('btnTambahTahun').addEventListener('click', () => modalCreate.style.display = 'block');
-        document.getElementById('closeCreate').addEventListener('click',     () => modalCreate.style.display = 'none');
-        document.getElementById('cancelCreate').addEventListener('click',    () => modalCreate.style.display = 'none');
-        document.getElementById('overlayCreate').addEventListener('click',   () => modalCreate.style.display = 'none');
+        document.getElementById('closeCreate').addEventListener('click',    () => modalCreate.style.display = 'none');
+        document.getElementById('cancelCreate').addEventListener('click',   () => modalCreate.style.display = 'none');
+        document.getElementById('overlayCreate').addEventListener('click',  () => modalCreate.style.display = 'none');
 
-        document.getElementById('closeEdit').addEventListener('click',       () => modalEdit.style.display = 'none');
-        document.getElementById('cancelEdit').addEventListener('click',      () => modalEdit.style.display = 'none');
-        document.getElementById('overlayEdit').addEventListener('click',     () => modalEdit.style.display = 'none');
+        // Modal – Edit
+        document.getElementById('closeEdit').addEventListener('click',    () => modalEdit.style.display = 'none');
+        document.getElementById('cancelEdit').addEventListener('click',   () => modalEdit.style.display = 'none');
+        document.getElementById('overlayEdit').addEventListener('click',  () => modalEdit.style.display = 'none');
 
         // Bind edit buttons on page load
         bindEditButtons();
 
-        @if ($errors->any())
-            modalCreate.style.display = 'block';
-        @endif
-    </script>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            bindEditButtons();
-        }
-
-        // Function to bind edit buttons
-        function bindEditButtons() {
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.getElementById('editNamaTahun').value = this.dataset.nama;
-                    document.getElementById('editIsAktif').checked = this.dataset.is_aktif == '1';
-                    document.getElementById('formEdit').action = `/tahunajaran/${this.dataset.id}`;
-                    modalEdit.style.display = 'block';
-                });
-            });
-        }
-
-        // Event listeners
-        searchInput.addEventListener('input', function() {
-            currentSearch = this.value;
-            currentPage = 1;
-            loadData(currentSearch, currentPage);
-        });
-
-        btnSearch.addEventListener('click', function() {
-            currentSearch = searchInput.value;
-            currentPage = 1;
-            loadData(currentSearch, currentPage);
-        });
-
-        if (btnReset) {
-            btnReset.addEventListener('click', function() {
-                searchInput.value = '';
-                currentSearch = '';
-                currentPage = 1;
-                loadData('', 1);
-            });
-        }
-
-        // Initial load if no search
-        if (!currentSearch) {
-            loadData('', 1);
-        }
-
-        // Modal events
-        document.getElementById('btnTambahTahun').addEventListener('click', () => modalCreate.style.display = 'block');
-        document.getElementById('closeCreate').addEventListener('click',     () => modalCreate.style.display = 'none');
-        document.getElementById('cancelCreate').addEventListener('click',    () => modalCreate.style.display = 'none');
-        document.getElementById('overlayCreate').addEventListener('click',   () => modalCreate.style.display = 'none');
-
-        document.getElementById('closeEdit').addEventListener('click',       () => modalEdit.style.display = 'none');
-        document.getElementById('cancelEdit').addEventListener('click',      () => modalEdit.style.display = 'none');
-        document.getElementById('overlayEdit').addEventListener('click',     () => modalEdit.style.display = 'none');
-
+        // Buka modal create jika ada validation error
         @if ($errors->any())
             modalCreate.style.display = 'block';
         @endif
