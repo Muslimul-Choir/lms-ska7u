@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class KelasController extends Controller
 {
+    
     /**
      * Tampilkan daftar kelas (aktif).
      */
@@ -49,19 +50,8 @@ class KelasController extends Controller
             $query->where('id_jurusan', $request->id_jurusan);
         }
 
-        $kelasList = $query->latest()->paginate(10)->withQueryString();
+        $kelas = $query->latest()->paginate(10)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'kelasList' => $kelasList->items(),
-                'pagination' => [
-                    'current_page' => $kelasList->currentPage(),
-                    'last_page' => $kelasList->lastPage(),
-                    'per_page' => $kelasList->perPage(),
-                    'total' => $kelasList->total(),
-                ]
-            ]);
-        }
 
         // Data untuk dropdown form
         $tingkatanList  = Tingkatan::orderBy('nama_tingkatan')->get();
@@ -73,7 +63,7 @@ class KelasController extends Controller
             ->get();
 
         return view('kelas.index', compact(
-            'kelasList',
+            'kelas',
             'tingkatanList',
             'jurusanList',
             'bagianList',
