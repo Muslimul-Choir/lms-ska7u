@@ -50,7 +50,7 @@
                             <span class="w-1 h-5 rounded-full bg-amber-500 inline-block"></span>
                             Daftar Bagian
                         </h3>
-                        <p class="text-xs text-gray-400 mt-0.5 ml-3">Kelola data unit / divisi organisasi</p>
+                        <p class="text-xs text-gray-400 mt-0.5 ml-3"> Kelola data bagian kelas berdasarkan tingkat dan program pembelajaran</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('bagian.trash') }}"
