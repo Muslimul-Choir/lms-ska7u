@@ -313,5 +313,4 @@
             filterKelasByTingkat(this.value);
         });
     </script>
-
 </x-app-layout>

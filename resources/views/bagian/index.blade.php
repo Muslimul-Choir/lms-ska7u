@@ -243,5 +243,4 @@
         modalCreate.style.display = 'flex';
     @endif
 </script>
-
 </x-app-layout>

@@ -987,5 +987,4 @@ function updateMapelInfo(selectEl, infoBoxId) {
     }
 }
 </script>
-
 </x-app-layout>

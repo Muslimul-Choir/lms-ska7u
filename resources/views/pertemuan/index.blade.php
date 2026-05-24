@@ -331,5 +331,4 @@
             modalCreate.style.display = 'block';
         @endif
     </script>
-
 </x-app-layout>

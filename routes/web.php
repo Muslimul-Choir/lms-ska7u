@@ -34,7 +34,49 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// 🧪 Testing Routes - DEVELOPMENT ONLY
+if (config('app.debug')) {
+    Route::get('/test-email', function () {
+        return view('test-email');
+    })->name('test-email');
+    
+    Route::post('/test-email-send', function (\Illuminate\Http\Request $request) {
+        try {
+            $email = $request->input('email');
+            $password = $request->input('password', '12345678');
+            
+            \Illuminate\Support\Facades\Log::info("Testing email send to: $email");
+            \Illuminate\Support\Facades\Log::info("Mail config: " . json_encode([
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'from' => config('mail.from.address'),
+            ]));
+            
+            $testSiswa = new \App\Models\Siswa();
+            $testSiswa->nama_lengkap = 'Test User';
+            $testSiswa->email = $email;
+            
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\Siswa\KirimAkunSiswa($testSiswa, $password));
+            
+            \Illuminate\Support\Facades\Log::info("Email test sent successfully to: $email");
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => "✅ Email test berhasil dikirim ke: $email",
+                'check_spam' => 'Silakan cek folder Spam/Junk email Anda'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Email test failed: " . $e->getMessage());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => "❌ Gagal mengirim email: " . $e->getMessage(),
+                'details' => config('app.debug') ? $e->getTraceAsString() : null
+            ], 500);
+        }
+    })->name('test-email-send');
+}
 
 // Route::bind() harus di luar middleware group agar terdaftar secara global
 Route::bind('bagian',         fn($v) => Bagian::withTrashed()->findOrFail($v));
@@ -49,7 +91,12 @@ Route::bind('jadwalbelajar', fn($v) => JadwalBelajar::withTrashed()->findOrFail(
 Route::bind('pertemuan', fn($v) => Pertemuan::withTrashed()->findOrFail($v));
 Route::bind('absensi', fn($v) => Absensi::withTrashed()->findOrFail($v));
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// ============================================================
+// 👤 ADMIN/GURU ROUTES - Protected with Role Middleware
+// ============================================================
+Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(function () {
+    
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -215,6 +262,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('pengumpulan-tugas', \App\Http\Controllers\PengumpulanTugasController::class)->only(['index']);
     Route::resource('penilaian', \App\Http\Controllers\PenilaianController::class)->only(['index']);
     Route::resource('activity-log', \App\Http\Controllers\ActivityLogController::class)->only(['index']);
+});
+
+// ============================================================
+// 👨‍🎓 STUDENT ROUTES - Protected with Student Role Middleware
+// ============================================================
+Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
+    Route::get('/siswa/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
+    Route::get('/siswa/materi/{id}', [\App\Http\Controllers\Siswa\DashboardController::class, 'showMateri'])->name('siswa.materi.show');
+    Route::get('/siswa/tugas/{id}', [\App\Http\Controllers\Siswa\DashboardController::class, 'showTugas'])->name('siswa.tugas.show');
 });
 
 require __DIR__ . '/auth.php';
