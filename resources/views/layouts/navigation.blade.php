@@ -18,11 +18,15 @@
     <div class="px-4">
         <div class="flex-shrink-0 flex items-center justify-between px-2 h-16 rounded-lg border-b-2 border-[#c9982a]">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
-                    <svg class="w-4 h-4 text-orange-100" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-                    </svg>
-                </span>
+                @if(Auth::user() && Auth::user()->role === 'siswa')
+                    <x-student-logo class="w-9 h-9 flex-shrink-0" />
+                @else
+                    <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
+                        <svg class="w-4 h-4 text-orange-100" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+                        </svg>
+                    </span>
+                @endif
                 <div>
                     <p class="font-heading font-bold text-white text-sm leading-tight">
                         {{ config('app.name', 'LMS SKA7U') }}</p>
@@ -71,6 +75,8 @@
         {{-- ─────────────────────────────
              UMUM
         ───────────────────────────── --}}
+        @auth
+        @unless(Auth::user()->role === 'siswa')
         <p class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Umum</p>
 
         {{-- Dashboard --}}
@@ -385,6 +391,29 @@
                 <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
             @endif
         </a>
+        @endunless
+
+        {{-- ── SISWA MENU ── --}}
+        @if(Auth::user()->role === 'siswa')
+        <p class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Pembelajaran</p>
+
+        {{-- Dashboard Siswa --}}
+        <a href="{{ route('siswa.dashboard') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.dashboard') }}">
+            <svg class="{{ iconActive('siswa.dashboard') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.dashboard') }}">Dashboard</span>
+            @if (navIndicator('siswa.dashboard'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+        @endif
+        @endauth
 
     </nav>
 

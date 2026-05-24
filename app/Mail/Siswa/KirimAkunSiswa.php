@@ -3,17 +3,13 @@
 namespace App\Mail\Siswa;
 
 use App\Models\Siswa;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 // use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class KirimAkunSiswa extends Mailable implements ShouldQueue
+class KirimAkunSiswa extends Mailable
 {
-    use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.

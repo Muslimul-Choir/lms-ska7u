@@ -131,13 +131,13 @@
         </header>
 
         {{-- Desktop page header --}}
-        @hasSection('header')
+        @isset($header)
             <div class=" bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 py-5">
-                    @yield('header')
+                    {{ $header }}
                 </div>
             </div>
-        @endif
+        @endisset
 
         {{-- Content --}}
         <main
@@ -145,7 +145,7 @@
                          px-4 pt-4 pb-8
                          sm:px-6 sm:pt-6
                          lg:px-8 lg:py-8">
-            @yield('content')
+            {!! $slot !!}
         </main>
 
         {{-- Footer --}}
