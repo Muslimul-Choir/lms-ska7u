@@ -1,87 +1,95 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-[#1B3A6B] flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                 </svg>
             </div>
             <div>
-                <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">Master Absensi</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5 tracking-widest uppercase">Manajemen Data Absensi</p>
+                <h2 class="font-bold text-[15px] text-gray-800 tracking-wide leading-none">Master Absensi</h2>
+                <p class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-widest">Data Master</p>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-50 min-h-screen">
+    <div class="py-7 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide">
-                <span class="text-[#1B3A6B]">Dashboard</span>
-                <span class="text-slate-300">/</span>
+            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                <a href="#" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
+                <span class="text-gray-300">/</span>
                 <span>Master Data</span>
-                <span class="text-slate-300">/</span>
-                <span class="text-slate-600 font-semibold">Absensi</span>
+                <span class="text-gray-300">/</span>
+                <span class="text-gray-600 font-semibold">Absensi</span>
             </nav>
 
-            {{-- Alert --}}
+            {{-- Alert Success --}}
             @if (session('success'))
-                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
-                    <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700 transition">
+                    <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                     </button>
                 </div>
             @endif
 
             {{-- Main Card --}}
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
                 {{-- Card Header --}}
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
+                <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h3 class="text-white font-semibold text-sm tracking-wide">Daftar Absensi</h3>
-                        <p class="text-blue-200 text-xs mt-0.5">Kelola data kehadiran siswa per pertemuan</p>
+                        <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+                            <span class="w-1 h-5 rounded-full bg-amber-500 inline-block"></span>
+                            Daftar Absensi
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5 ml-3">Kelola data kehadiran siswa per pertemuan</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('absensi.trash') }}"
-                           class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg border border-white/20 transition backdrop-blur-sm">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                            <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            Trash
+                            Tempat Sampah
                         </a>
                         <button type="button" id="btnTambahAbsensi"
-                                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs font-semibold rounded-lg transition shadow-md shadow-amber-900/20">
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                             </svg>
-                            Tambah Absensi
+                             Tambah Absensi
                         </button>
                     </div>
                 </div>
 
-                {{-- Search & Filter --}}
-                <div class="px-6 py-3 bg-slate-50 border-b border-slate-100">
-                    <div class="flex flex-wrap items-center gap-2 max-w-4xl">
-                        <div class="relative flex-1 min-w-[160px]">
+                {{-- Search & Filter Bar --}}
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
+                    <div class="flex flex-wrap items-center gap-2">
+
+                        {{-- Search --}}
+                        <div class="relative min-w-[180px] flex-1 max-w-xs">
                             <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
                             <input type="text" id="searchInput" value="{{ request('search') }}"
                                 placeholder="Cari nama siswa..."
-                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition">
+                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition">
                         </div>
+
+                        {{-- Filter Pertemuan --}}
                         <div class="relative">
-                            <select id="pertemuanSelect" class="pl-3 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition appearance-none">
+                            <select id="pertemuanSelect"
+                                    class="appearance-none pl-3 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition cursor-pointer">
                                 <option value="">Semua Pertemuan</option>
                                 @foreach($pertemuans as $pertemuan)
                                     <option value="{{ $pertemuan->id }}" {{ request('id_pertemuan') == $pertemuan->id ? 'selected' : '' }}>
@@ -89,33 +97,38 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </div>
                         </div>
+
+                        {{-- Filter Status --}}
                         <div class="relative">
-                            <select id="statusSelect" class="pl-3 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition appearance-none">
+                            <select id="statusSelect"
+                                    class="appearance-none pl-3 pr-8 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition cursor-pointer">
                                 <option value="">Semua Status</option>
-                                <option value="hadir"  {{ request('status') == 'hadir'  ? 'selected' : '' }}>Hadir</option>
-                                <option value="izin"   {{ request('status') == 'izin'   ? 'selected' : '' }}>Izin</option>
-                                <option value="sakit"  {{ request('status') == 'sakit'  ? 'selected' : '' }}>Sakit</option>
-                                <option value="alpha"  {{ request('status') == 'alpha'  ? 'selected' : '' }}>Alpha</option>
+                                <option value="hadir" {{ request('status') == 'hadir' ? 'selected' : '' }}>Hadir</option>
+                                <option value="izin"  {{ request('status') == 'izin'  ? 'selected' : '' }}>Izin</option>
+                                <option value="sakit" {{ request('status') == 'sakit' ? 'selected' : '' }}>Sakit</option>
+                                <option value="alpha" {{ request('status') == 'alpha' ? 'selected' : '' }}>Alpha</option>
                             </select>
-                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </div>
                         </div>
+
                         <button type="button" id="btnSearch"
-                                class="px-4 py-2 bg-[#1B3A6B] hover:bg-[#0F2145] text-white text-sm font-medium rounded-lg transition">
+                                class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
                             Cari
                         </button>
+
                         @if(request('search') || request('id_pertemuan') || request('status'))
                             <button type="button" id="btnReset"
-                                    class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition">
+                                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-xl transition">
                                 Reset
                             </button>
                         @endif
@@ -126,41 +139,38 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200">
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest w-12">#</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Siswa</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pertemuan</th>
-                                <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-28">Status</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Keterangan</th>
-                                <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest w-40">Aksi</th>
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest w-12">#</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Siswa</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Pertemuan</th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-28">Status</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Keterangan</th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-36">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="absensiTableBody" class="divide-y divide-slate-100">
+                        <tbody id="absensiTableBody" class="divide-y divide-gray-100">
                             @forelse ($absensis as $absensi)
-                                <tr class="hover:bg-slate-50/70 transition group">
-                                    <td class="px-6 py-4 text-slate-400 text-xs font-mono">
+                                <tr class="hover:bg-amber-50/40 transition">
+                                    <td class="px-6 py-4 text-gray-400 text-xs font-mono">
                                         {{ str_pad($loop->iteration + ($absensis->currentPage() - 1) * $absensis->perPage(), 3, '0', STR_PAD_LEFT) }}
                                     </td>
 
-                                    {{-- ✅ Siswa: pakai nama_lengkap --}}
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2.5">
-                                            <div class="w-7 h-7 rounded-full bg-[#1B3A6B]/10 flex items-center justify-center flex-shrink-0">
-                                                <span class="text-[#1B3A6B] text-[10px] font-bold uppercase">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                                <span class="text-amber-600 text-[10px] font-bold uppercase">
                                                     {{ substr($absensi->siswa->nama_lengkap ?? 'NA', 0, 2) }}
                                                 </span>
                                             </div>
-                                            <div>
-                                                <p class="font-semibold text-[#0F2145] text-sm leading-tight">
-                                                    {{ $absensi->siswa->nama_lengkap ?? 'N/A' }}
-                                                </p>
-                                            </div>
+                                            <span class="font-semibold text-gray-800 text-sm">
+                                                {{ $absensi->siswa->nama_lengkap ?? 'N/A' }}
+                                            </span>
                                         </div>
                                     </td>
 
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center gap-1.5 text-slate-600 text-sm">
-                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
+                                        <span class="inline-flex items-center gap-1.5 text-gray-600 text-sm">
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
                                                 {{ $absensi->pertemuan->nomor_pertemuan ?? '-' }}
                                             </span>
                                             Pertemuan ke-{{ $absensi->pertemuan->nomor_pertemuan ?? '-' }}
@@ -170,22 +180,20 @@
                                     <td class="px-6 py-4 text-center">
                                         @php
                                             $statusMap = [
-                                                'hadir' => ['bg-green-50', 'text-green-700', 'border-green-200', 'Hadir'],
-                                                'izin'  => ['bg-blue-50',  'text-blue-700',  'border-blue-200',  'Izin'],
-                                                'sakit' => ['bg-amber-50', 'text-amber-700', 'border-amber-200', 'Sakit'],
-                                                'alpha' => ['bg-red-50',   'text-red-600',   'border-red-200',   'Alpha'],
+                                                'hadir' => ['bg-emerald-50', 'text-emerald-700', 'border-emerald-200', '● Hadir'],
+                                                'izin'  => ['bg-blue-50',    'text-blue-700',    'border-blue-200',    '● Izin'],
+                                                'sakit' => ['bg-amber-50',   'text-amber-700',   'border-amber-200',   '● Sakit'],
+                                                'alpha' => ['bg-red-50',     'text-red-600',     'border-red-200',     '● Alpha'],
                                             ];
-                                            [$bg, $text, $border, $label] = $statusMap[$absensi->status] ?? ['bg-slate-50','text-slate-500','border-slate-200',$absensi->status];
+                                            [$bg, $text, $border, $label] = $statusMap[$absensi->status] ?? ['bg-gray-50','text-gray-500','border-gray-200', $absensi->status];
                                         @endphp
-                                        <span class="inline-flex items-center px-2.5 py-1 {{ $bg }} {{ $text }} border {{ $border }} text-[10px] font-bold rounded-full uppercase tracking-wide">
+                                        <span class="inline-flex items-center px-2.5 py-1 {{ $bg }} {{ $text }} border {{ $border }} text-[10px] font-bold rounded-full">
                                             {{ $label }}
                                         </span>
                                     </td>
 
-                                    <td class="px-6 py-4">
-                                        <span class="text-slate-500 text-sm">
-                                            {{ $absensi->keterangan ? \Illuminate\Support\Str::limit($absensi->keterangan, 40) : '-' }}
-                                        </span>
+                                    <td class="px-6 py-4 text-gray-500 text-sm max-w-xs truncate">
+                                        {{ $absensi->keterangan ? \Illuminate\Support\Str::limit($absensi->keterangan, 40) : '—' }}
                                     </td>
 
                                     <td class="px-6 py-4">
@@ -196,22 +204,22 @@
                                                 data-id_siswa="{{ $absensi->id_siswa }}"
                                                 data-status="{{ $absensi->status }}"
                                                 data-keterangan="{{ $absensi->keterangan }}"
-                                                class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
-                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                class="btn-edit w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
+                                                title="Edit">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
-                                                Edit
                                             </button>
                                             <form action="{{ route('absensi.destroy', $absensi) }}" method="POST"
                                                   onsubmit="return confirm('Yakin ingin menghapus absensi ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                        class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition"
+                                                        title="Hapus">
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
-                                                    Hapus
                                                 </button>
                                             </form>
                                         </div>
@@ -219,15 +227,15 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-16 text-center">
+                                    <td colspan="6" class="px-6 py-20 text-center">
                                         <div class="flex flex-col items-center gap-3">
-                                            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                                                 </svg>
                                             </div>
-                                            <p class="text-slate-400 text-sm font-medium">Belum ada data absensi</p>
-                                            <p class="text-slate-300 text-xs">Klik <span class="font-semibold text-slate-400">Tambah Absensi</span> untuk mulai menambahkan data</p>
+                                            <p class="text-gray-400 text-sm font-semibold">Belum ada data absensi</p>
+                                            <p class="text-gray-300 text-xs">Klik <span class="font-semibold text-gray-400">+ Tambah Absensi</span> untuk mulai menambahkan</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -238,12 +246,12 @@
 
                 {{-- Pagination --}}
                 @if ($absensis->hasPages())
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4">
-                        <p class="text-xs text-slate-500">
+                    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
+                        <p class="text-xs text-gray-500">
                             Menampilkan
-                            <span class="font-semibold text-slate-700">{{ $absensis->firstItem() }}–{{ $absensis->lastItem() }}</span>
+                            <span class="font-semibold text-gray-700">{{ $absensis->firstItem() }}–{{ $absensis->lastItem() }}</span>
                             dari
-                            <span class="font-semibold text-slate-700">{{ $absensis->total() }}</span>
+                            <span class="font-semibold text-gray-700">{{ $absensis->total() }}</span>
                             entri
                         </p>
                         {{ $absensis->links() }}
@@ -266,7 +274,32 @@
         const btnSearch       = document.getElementById('btnSearch');
         const btnReset        = document.getElementById('btnReset');
 
-        // ✅ bindEditButtons — set radio button
+        function getSearchUrl() {
+            const search    = encodeURIComponent(searchInput.value);
+            const pertemuan = encodeURIComponent(pertemuanSelect.value);
+            const status    = encodeURIComponent(statusSelect.value);
+            return `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
+        }
+
+        btnSearch.addEventListener('click', () => window.location.href = getSearchUrl());
+        pertemuanSelect.addEventListener('change', () => window.location.href = getSearchUrl());
+        statusSelect.addEventListener('change', () => window.location.href = getSearchUrl());
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.location.href = getSearchUrl(); });
+
+        if (btnReset) {
+            btnReset.addEventListener('click', () => {
+                window.location.href = `{{ route('absensi.index') }}`;
+            });
+        }
+
+        document.getElementById('btnTambahAbsensi').addEventListener('click', () => modalCreate.style.display = 'flex');
+        document.getElementById('closeCreate').addEventListener('click',       () => modalCreate.style.display = 'none');
+        document.getElementById('cancelCreate').addEventListener('click',      () => modalCreate.style.display = 'none');
+        document.getElementById('overlayCreate').addEventListener('click',     () => modalCreate.style.display = 'none');
+        document.getElementById('closeEdit').addEventListener('click',         () => modalEdit.style.display   = 'none');
+        document.getElementById('cancelEdit').addEventListener('click',        () => modalEdit.style.display   = 'none');
+        document.getElementById('overlayEdit').addEventListener('click',       () => modalEdit.style.display   = 'none');
+
         function bindEditButtons() {
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', function () {
@@ -275,66 +308,20 @@
                     document.getElementById('editKeterangan').value  = this.dataset.keterangan ?? '';
                     document.getElementById('formEdit').action       = `/absensi/${this.dataset.id}`;
 
-                    // ✅ Set radio button status dengan benar
                     const status = this.dataset.status;
                     document.querySelectorAll('.edit-status-radio').forEach(radio => {
                         radio.checked = (radio.value === status);
                     });
 
-                    modalEdit.style.display = 'block';
+                    modalEdit.style.display = 'flex';
                 });
             });
         }
 
-        // Event listeners untuk search & filter
-        searchInput.addEventListener('input', function() {
-            const search = encodeURIComponent(searchInput.value);
-            const pertemuan = encodeURIComponent(pertemuanSelect.value);
-            const status = encodeURIComponent(statusSelect.value);
-            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
-        });
-
-        pertemuanSelect.addEventListener('change', function() {
-            const search = encodeURIComponent(searchInput.value);
-            const pertemuan = encodeURIComponent(pertemuanSelect.value);
-            const status = encodeURIComponent(statusSelect.value);
-            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
-        });
-
-        statusSelect.addEventListener('change', function() {
-            const search = encodeURIComponent(searchInput.value);
-            const pertemuan = encodeURIComponent(pertemuanSelect.value);
-            const status = encodeURIComponent(statusSelect.value);
-            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
-        });
-
-        btnSearch.addEventListener('click', function() {
-            const search = encodeURIComponent(searchInput.value);
-            const pertemuan = encodeURIComponent(pertemuanSelect.value);
-            const status = encodeURIComponent(statusSelect.value);
-            window.location.href = `{{ route('absensi.index') }}?search=${search}&id_pertemuan=${pertemuan}&status=${status}`;
-        });
-
-        if (btnReset) {
-            btnReset.addEventListener('click', function() {
-                window.location.href = `{{ route('absensi.index') }}`;
-            });
-        }
-
-        // Modal events
-        document.getElementById('btnTambahAbsensi').addEventListener('click', () => modalCreate.style.display = 'block');
-        document.getElementById('closeCreate').addEventListener('click',       () => modalCreate.style.display = 'none');
-        document.getElementById('cancelCreate').addEventListener('click',      () => modalCreate.style.display = 'none');
-        document.getElementById('overlayCreate').addEventListener('click',     () => modalCreate.style.display = 'none');
-        document.getElementById('closeEdit').addEventListener('click',         () => modalEdit.style.display   = 'none');
-        document.getElementById('cancelEdit').addEventListener('click',        () => modalEdit.style.display   = 'none');
-        document.getElementById('overlayEdit').addEventListener('click',       () => modalEdit.style.display   = 'none');
-
-        // ✅ Bind tombol edit pada data awal (server-side render)
         bindEditButtons();
 
         @if ($errors->any())
-            modalCreate.style.display = 'block';
+            modalCreate.style.display = 'flex';
         @endif
     </script>
 
