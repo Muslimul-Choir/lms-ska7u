@@ -113,7 +113,12 @@ class GuruMapelController extends Controller
             'Semester',
         ]);
 
-        return view('guru_mapel.show', compact('guru_mapel'));
+        $mapels    = Mapel::all();
+        $gurus     = Guru::all();
+        $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
+        $semesters = Semester::all();
+
+        return view('guru_mapel.show', compact('guru_mapel', 'mapels', 'gurus', 'kelas', 'semesters'));
     }
 
     public function edit(GuruMapel $guru_mapel): View

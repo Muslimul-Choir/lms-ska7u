@@ -92,6 +92,7 @@
                         <tbody class="divide-y divide-slate-100">
                             @forelse ($guruMapels as $guruMapel)
                                 <tr class="hover:bg-red-50/40 transition group">
+
                                     {{-- No --}}
                                     <td class="px-6 py-4 text-slate-400 text-xs font-mono">
                                         {{ str_pad($loop->iteration + ($guruMapels->currentPage() - 1) * $guruMapels->perPage(), 3, '0', STR_PAD_LEFT) }}
@@ -101,53 +102,73 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-7 h-7 rounded-md bg-red-100 flex items-center justify-center flex-shrink-0">
-                                                <span class="text-red-600 text-[10px] font-bold uppercase">
-                                                    {{ substr($guruMapel->Mapel->nama_mapel, 0, 2) }}
+                                                <span class="text-red-400 text-[10px] font-bold uppercase">
+                                                    {{ substr($guruMapel->Mapel->nama_mapel ?? '-', 0, 2) }}
                                                 </span>
                                             </div>
-                                            <span class="font-semibold text-red-700 text-sm">{{ $guruMapel->Mapel->nama_mapel }}</span>
+                                            <span class="font-semibold text-slate-500 text-sm line-through decoration-red-300">
+                                                {{ $guruMapel->Mapel->nama_mapel ?? '-' }}
+                                            </span>
                                         </div>
                                     </td>
 
                                     {{-- Guru --}}
-                                    <td class="px-6 py-4 text-red-600 text-sm">
-                                        {{ $guruMapel->Guru->nama_guru }}
+                                    <td class="px-6 py-4 text-slate-400 text-sm">
+                                        {{ $guruMapel->Guru->nama_guru ?? '-' }}
                                     </td>
 
                                     {{-- Kelas --}}
-                                    <td class="px-6 py-4 text-red-600 text-sm">
-                                        {{ $guruMapel->Kelas->nama_kelas }}
+                                    <td class="px-6 py-4 text-slate-400 text-sm max-w-xs truncate">
+                                        {{ $guruMapel->Kelas->nama_kelas ?? '-' }}
                                     </td>
 
                                     {{-- Semester --}}
-                                    <td class="px-6 py-4 text-red-600 text-sm">
-                                        {{ $guruMapel->Semester->nama_semester }}
+                                    <td class="px-6 py-4 text-slate-400 text-sm">
+                                        {{ $guruMapel->Semester->nama_semester ?? '-' }}
                                     </td>
 
-                                    {{-- Dihapus Pada --}}
-                                    <td class="px-6 py-4 text-slate-500 text-xs">
-                                        {{ $guruMapel->deleted_at->format('d/m/Y H:i') }}
+                                    {{-- Deleted At --}}
+                                    <td class="px-6 py-4">
+                                        <div class="inline-flex items-center gap-1.5 px-2 py-1
+                                                    bg-red-50 border border-red-100 rounded-md">
+                                            <svg class="w-3 h-3 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span class="text-red-500 text-[11px] font-medium whitespace-nowrap">
+                                                {{ $guruMapel->deleted_at->format('d M Y, H:i') }}
+                                            </span>
+                                        </div>
                                     </td>
 
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
-                                            <form action="{{ route('guru_mapel.restore', $guruMapel) }}" method="POST" class="inline">
+                                            {{-- Restore --}}
+                                            <form action="{{ route('guru_mapel.restore', $guruMapel->id) }}" method="POST">
                                                 @csrf
+                                                @method('PATCH')
                                                 <button type="submit"
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-lg transition">
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5
+                                                               bg-emerald-50 hover:bg-emerald-100
+                                                               text-emerald-700 border border-emerald-200
+                                                               text-xs font-semibold rounded-lg transition">
                                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                                     </svg>
                                                     Pulihkan
                                                 </button>
                                             </form>
-                                            <form action="{{ route('guru_mapel.forceDelete', $guruMapel) }}" method="POST"
-                                                  onsubmit="return confirm('Yakin ingin menghapus permanen data ini? Data tidak bisa dipulihkan lagi.')">
+
+                                            {{-- Force Delete --}}
+                                            <form action="{{ route('guru_mapel.forceDelete', $guruMapel->id) }}" method="POST"
+                                                  onsubmit="return confirm('Hapus permanen? Data tidak bisa dipulihkan!')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5
+                                                               bg-red-50 hover:bg-red-100
+                                                               text-red-600 border border-red-200
+                                                               text-xs font-semibold rounded-lg transition">
                                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
@@ -163,11 +184,11 @@
                                         <div class="flex flex-col items-center gap-3">
                                             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
                                             </div>
-                                            <p class="text-slate-400 text-sm font-medium">Belum ada data guru mapel terhapus</p>
-                                            <p class="text-slate-300 text-xs">Trash kosong atau data telah dipulihkan</p>
+                                            <p class="text-slate-400 text-sm font-medium">Trash kosong</p>
+                                            <p class="text-slate-300 text-xs">Tidak ada data yang dihapus sementara</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -189,8 +210,8 @@
                         {{ $guruMapels->links() }}
                     </div>
                 @endif
-            </div>
 
+            </div>
         </div>
     </div>
 </x-app-layout>
