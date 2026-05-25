@@ -112,7 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('guru_mapel/trash', [GuruMapelController::class, 'trash'])->name('guru_mapel.trash');
     Route::patch('guru_mapel/trash/{guru_mapel}/restore', [GuruMapelController::class, 'restore'])->name('guru_mapel.restore');
     Route::delete('guru_mapel/trash/{guru_mapel}/force-delete', [GuruMapelController::class, 'forceDelete'])->name('guru_mapel.force-delete');
-    Route::resource('guru_mapel', GuruMapelController::class);
+    Route::resource('guru_mapel', GuruMapelController::class)->except(['show']);
 
     // Kelas Routes
     Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {

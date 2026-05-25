@@ -15,7 +15,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-[#f0f4f8] min-h-screen">
+    <div class="py-8 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Breadcrumb --}}
@@ -39,9 +39,7 @@
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
                     <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700 transition">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                     </button>
                 </div>
             @endif
@@ -76,13 +74,11 @@
                                 <select name="tingkatan"
                                         onchange="this.form.submit()"
                                         class="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg
-                                               focus:outline-none focus:ring-2 focus:ring-white/30
-                                               transition cursor-pointer
+                                               focus:outline-none transition cursor-pointer
                                                {{ $filterTingkatan ? 'bg-white text-[#B91C1C] border border-white/60' : 'bg-white/15 text-white border border-white/20' }}">
                                     <option value="" class="text-slate-700">Semua Tingkatan</option>
                                     @foreach($tingkatanList as $tingkatan)
-                                        <option value="{{ $tingkatan->id }}"
-                                                class="text-slate-700"
+                                        <option value="{{ $tingkatan->id }}" class="text-slate-700"
                                             {{ $filterTingkatan == $tingkatan->id ? 'selected' : '' }}>
                                             {{ $tingkatan->nama_tingkatan }}
                                         </option>
@@ -95,8 +91,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            {{-- Reset filter --}}
                             @if($filterTingkatan)
                                 <a href="{{ route('jambelajar.trash') }}"
                                    class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium
@@ -118,7 +112,6 @@
                             </svg>
                             Kembali ke Data Utama
                         </a>
-
                     </div>
                 </div>
 
@@ -126,7 +119,7 @@
                 @if($filterTingkatan)
                     @php $namaTingkatanFilter = $tingkatanList->firstWhere('id', $filterTingkatan)?->nama_tingkatan; @endphp
                     <div class="px-6 py-2.5 bg-red-50 border-b border-red-100 flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
                         </svg>
                         <span class="text-xs text-red-600 font-medium">
@@ -170,9 +163,10 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-7 h-7 rounded-md bg-red-100 flex items-center justify-center flex-shrink-0">
-                                                <span class="text-red-400 text-[10px] font-bold">
-                                                    {{ \Carbon\Carbon::parse($jamBelajar->jam_mulai)->format('H:i') }}
-                                                </span>
+                                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polyline points="12 6 12 12 16 14"/>
+                                                </svg>
                                             </div>
                                             <span class="font-semibold text-slate-500 text-sm line-through decoration-red-300">
                                                 {{ \Carbon\Carbon::parse($jamBelajar->jam_mulai)->format('H:i') }}
@@ -181,7 +175,7 @@
                                     </td>
 
                                     {{-- Jam Selesai --}}
-                                    <td class="px-6 py-4 text-slate-400 text-sm line-through decoration-red-300">
+                                    <td class="px-6 py-4 text-slate-500 text-sm font-semibold line-through decoration-red-300">
                                         {{ \Carbon\Carbon::parse($jamBelajar->jam_selesai)->format('H:i') }}
                                     </td>
 
@@ -201,6 +195,7 @@
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
+
                                             {{-- Restore --}}
                                             <form action="{{ route('jambelajar.restore', $jamBelajar->id) }}" method="POST">
                                                 @csrf
@@ -233,6 +228,7 @@
                                                     Hapus Permanen
                                                 </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 </tr>
