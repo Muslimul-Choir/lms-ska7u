@@ -1,83 +1,106 @@
-<div id="modalCreate" style="display:none; position:fixed; inset:0; z-index:9999;">
+<div id="modalCreate" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
 
     {{-- Overlay --}}
     <div id="overlayCreate"
-         style="position:absolute; inset:0; background:rgba(10,25,60,0.55); backdrop-filter:blur(3px);">
+         style="position:absolute; inset:0; background:rgba(45,8,16,0.55); backdrop-filter:blur(4px);"
+         onclick="closeCreateModal()">
     </div>
 
-    {{-- Dialog wrapper --}}
-    <div style="position:relative; z-index:10; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:1rem;">
+    {{-- Dialog --}}
+    <div style="position:relative; z-index:10; width:100%; max-width:480px; margin:1rem;">
+        <div style="background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(107,26,43,0.22), 0 4px 16px rgba(0,0,0,0.08); overflow:hidden; border:1px solid rgba(107,26,43,0.1);">
 
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden ring-1 ring-slate-200">
-
-            {{-- Modal Header --}}
-            <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 rounded-md bg-white/15 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            {{-- ── Header ── --}}
+            <div style="padding:18px 24px; background:linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%); display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden;">
+                <div style="position:absolute; width:120px; height:120px; border-radius:50%; top:-40px; right:10px; border:1.5px solid rgba(232,147,10,0.2); pointer-events:none;"></div>
+                <div style="position:absolute; width:70px; height:70px; border-radius:50%; top:10px; right:70px; border:1.5px solid rgba(232,147,10,0.12); pointer-events:none;"></div>
+                <div style="display:flex; align-items:center; gap:12px; position:relative;">
+                    <div style="width:38px; height:38px; border-radius:10px; background:rgba(232,147,10,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-white font-semibold text-sm tracking-wide">Tambah Jadwal Belajar</h3>
-                        <p class="text-blue-200 text-[11px]">Isi data jadwal belajar baru</p>
+                        <h3 style="color:#fff; font-weight:700; font-size:15px; margin:0 0 2px;">Tambah Jadwal Belajar</h3>
+                        <p style="color:rgba(255,255,255,0.5); font-size:11px; margin:0;">Isi data jadwal belajar baru</p>
                     </div>
                 </div>
-                <button type="button" id="closeCreate"
-                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/25 text-white transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <button type="button" onclick="closeCreateModal()"
+                        style="width:30px; height:30px; border-radius:8px; background:rgba(255,255,255,0.12); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            {{-- Modal Body --}}
-            <form action="{{ route('jadwalbelajar.store') }}" method="POST" class="px-6 py-5 space-y-4">
+            {{-- ── Gold accent bar ── --}}
+            <div style="height:3px; background:linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
+
+            {{-- ── Body ── --}}
+            <form action="{{ route('jadwalbelajar.store') }}" method="POST" style="padding:24px; display:flex; flex-direction:column; gap:18px;">
                 @csrf
 
                 {{-- Hidden fields diisi otomatis saat klik tombol + --}}
                 <input type="hidden" name="hari"   id="createHari">
                 <input type="hidden" name="id_jam" id="createIdJam">
 
-                {{-- Hari (readonly, terisi otomatis) --}}
+                {{-- Hari (readonly) --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-                        Hari
-                    </label>
-                    <input type="text" id="createHariDisplay" readonly
-                           class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 cursor-not-allowed">
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">Hari</label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="createHariDisplay" readonly
+                               style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#6B7280; background:#F9FAFB; outline:none; box-sizing:border-box; cursor:not-allowed;">
+                    </div>
                 </div>
 
-                {{-- Jam Belajar (readonly, terisi otomatis) --}}
+                {{-- Jam Belajar (readonly) --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-                        Jam Belajar
-                    </label>
-                    <input type="text" id="createJamDisplay" readonly
-                           class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 cursor-not-allowed">
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">Jam Belajar</label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="createJamDisplay" readonly
+                               style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#6B7280; background:#F9FAFB; outline:none; box-sizing:border-box; cursor:not-allowed;">
+                    </div>
                 </div>
 
                 {{-- Kelas --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-                        Kelas <span class="text-red-400">*</span>
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
+                        Kelas <span style="color:#EF4444;">*</span>
                     </label>
-                    <select name="id_kelas" id="createIdKelas"
-                            class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700 bg-white
-                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B] transition
-                                   @error('id_kelas') border-red-400 bg-red-50 @else border-slate-200 @enderror">
-                        <option value="">-- Pilih Kelas --</option>
-                        @foreach($kelasList as $k)
-                            <option value="{{ $k->id }}" {{ old('id_kelas') == $k->id ? 'selected' : '' }}>
-                                {{ trim(($k->Tingkatan->nama_tingkatan ?? '') . ' ' . ($k->Jurusan->nama_jurusan ?? '') . ' ' . ($k->Bagian->nama_bagian ?? '')) }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('id_kelas')
-                        <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
                             </svg>
+                        </span>
+                        <select name="id_kelas" id="createIdKelas"
+                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid {{ $errors->has('id_kelas') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('id_kelas') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
+                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
+                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            <option value="">-- Pilih Kelas --</option>
+                            @foreach($kelasList as $k)
+                                <option value="{{ $k->id }}" {{ old('id_kelas') == $k->id ? 'selected' : '' }}>
+                                    {{ trim(($k->Tingkatan->nama_tingkatan ?? '') . ' ' . ($k->Jurusan->nama_jurusan ?? '') . ' ' . ($k->Bagian->nama_bagian ?? '')) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></span>
+                    </div>
+                    @error('id_kelas')
+                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
+                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                             {{ $message }}
                         </p>
                     @enderror
@@ -85,46 +108,47 @@
 
                 {{-- Guru Mata Pelajaran --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-                        Guru Mata Pelajaran
-                    </label>
-                    <select name="id_guru_mapel" id="createIdGuruMapel"
-                            class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700 bg-white
-                                   focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B] transition
-                                   @error('id_guru_mapel') border-red-400 bg-red-50 @else border-slate-200 @enderror">
-                        <option value="">-- Pilih Guru (opsional) --</option>
-                        @foreach($guruMapelList as $guru)
-                            {{-- Simpan id_mapel sebagai data attribute --}}
-                            <option value="{{ $guru->id }}"
-                                    data-mapel-id="{{ $guru->Mapel->id ?? '' }}"
-                                    data-mapel-nama="{{ $guru->Mapel->nama_mapel ?? '' }}"
-                                    {{ old('id_guru_mapel') == $guru->id ? 'selected' : '' }}>
-                                {{ ($guru->Guru->nama_lengkap ?? '') . ' — ' . ($guru->Mapel->nama_mapel ?? '') }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('id_guru_mapel')
-                        <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">Guru Mata Pelajaran</label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            {{ $message }}
-                        </p>
-                    @enderror
+                        </span>
+                        <select name="id_guru_mapel" id="createIdGuruMapel"
+                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
+                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
+                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            <option value="">-- Pilih Guru (opsional) --</option>
+                            @foreach($guruMapelList as $guru)
+                                <option value="{{ $guru->id }}"
+                                        data-mapel-id="{{ $guru->Mapel->id ?? '' }}"
+                                        data-mapel-nama="{{ $guru->Mapel->nama_mapel ?? '' }}"
+                                        {{ old('id_guru_mapel') == $guru->id ? 'selected' : '' }}>
+                                    {{ ($guru->Guru->nama_lengkap ?? '') . ' — ' . ($guru->Mapel->nama_mapel ?? '') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></span>
+                    </div>
                 </div>
 
-                {{-- Mata Pelajaran (otomatis terisi dari guru mapel) --}}
+                {{-- Mata Pelajaran --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
                         Mata Pelajaran
-                        <span class="text-slate-400 normal-case font-normal tracking-normal">(jika tanpa guru)</span>
+                        <span style="font-weight:400; color:#9CA3AF; text-transform:none; letter-spacing:0;">(jika tanpa guru)</span>
                     </label>
-                    {{-- Wrapper posisi relatif untuk badge "otomatis" --}}
-                    <div class="relative">
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </span>
                         <select name="id_mapel" id="createIdMapel"
-                                class="w-full rounded-lg border px-3 py-2.5 text-sm text-slate-700 bg-white
-                                       focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B] transition
-                                       border-slate-200">
+                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
+                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
+                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
                             <option value="">-- Pilih Mapel (opsional) --</option>
                             @foreach($mapelList as $mapel)
                                 <option value="{{ $mapel->id }}" {{ old('id_mapel') == $mapel->id ? 'selected' : '' }}>
@@ -132,136 +156,116 @@
                                 </option>
                             @endforeach
                         </select>
-
-                        {{-- Badge muncul saat mapel dikunci oleh guru --}}
                         <span id="createMapelBadge"
-                              class="hidden absolute right-2 top-1/2 -translate-y-1/2
-                                     text-[10px] font-semibold px-1.5 py-0.5 rounded
-                                     bg-blue-100 text-blue-700 pointer-events-none">
+                              style="display:none; position:absolute; right:13px; top:50%; transform:translateY(-50%); font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; background:#EFF6FF; color:#1D4ED8; pointer-events:none;">
                             Otomatis
                         </span>
                     </div>
-
-                    {{-- Info hint --}}
-                    <p id="createMapelHint" class="hidden mt-1.5 text-[11px] text-blue-500 flex items-center gap-1">
-                        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        Terisi otomatis dari mapel guru yang dipilih. Kosongkan pilihan guru untuk mengubah.
+                    <p id="createMapelHint" style="display:none; margin-top:5px; font-size:11px; color:#3B82F6; display:flex; align-items:center; gap:4px;">
+                        <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                        Terisi otomatis dari mapel guru yang dipilih.
                     </p>
                 </div>
 
-                {{-- Nama Kegiatan (untuk Istirahat, Upacara, dll) --}}
+                {{-- Nama Kegiatan --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
                         Nama Kegiatan
-                        <span class="text-slate-400 normal-case font-normal tracking-normal">(jika bukan mapel)</span>
+                        <span style="font-weight:400; color:#9CA3AF; text-transform:none; letter-spacing:0;">(jika bukan mapel)</span>
                     </label>
-                    <input type="text" name="nama_kegiatan" value="{{ old('nama_kegiatan') }}"
-                           placeholder="cth: Istirahat, Upacara..."
-                           class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 bg-white
-                                  focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/30 focus:border-[#1B3A6B] transition
-                                  @error('nama_kegiatan') border-red-400 bg-red-50 @enderror">
-                    @error('nama_kegiatan')
-                        <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
+                        </span>
+                        <input type="text" name="nama_kegiatan" value="{{ old('nama_kegiatan') }}"
+                               placeholder="cth: Istirahat, Upacara..."
+                               style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid {{ $errors->has('nama_kegiatan') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('nama_kegiatan') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s;"
+                               onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
+                               onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                    </div>
+                    @error('nama_kegiatan')
+                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
+                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                             {{ $message }}
                         </p>
                     @enderror
                 </div>
 
-                {{-- Divider --}}
-                <div class="border-t border-slate-100"></div>
-
-                {{-- Actions --}}
-                <div class="flex items-center justify-end gap-2 pt-1">
-                    <button type="button" id="cancelCreate"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition border border-slate-200">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+                {{-- ── Footer Buttons ── --}}
+                <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:6px; border-top:1px solid #F3F4F6;">
+                    <button type="button" onclick="closeCreateModal()"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 20px; font-size:13.5px; font-weight:600; background:#F9FAFB; color:#374151; border:1.5px solid #E5E7EB; border-radius:10px; cursor:pointer; transition:background .2s;"
+                            onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='#F9FAFB'">
                         Batal
                     </button>
                     <button type="submit"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-[#C8992A] hover:bg-[#b5861f] text-white rounded-lg transition shadow-sm shadow-amber-900/20">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-size:13.5px; font-weight:700; background:linear-gradient(135deg,#6B1A2B,#9B3045); color:#fff; border:none; border-radius:10px; cursor:pointer; transition:opacity .2s; box-shadow:0 2px 8px rgba(107,26,43,0.25);"
+                            onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
                         </svg>
                         Simpan
                     </button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
 
 <script>
-    const _origOpenModalCreate = window.openModalCreate;
-    window.openModalCreate = function(hari, idJam) {
-        document.getElementById('createHari').value  = hari;
-        document.getElementById('createIdJam').value = idJam;
-        document.getElementById('createHariDisplay').value = hari;
+function closeCreateModal() {
+    document.getElementById('modalCreate').style.display = 'none';
+    document.body.style.overflow = '';
+}
 
-        const jamMap = {
-            @foreach($jamList as $jam)
-                "{{ $jam->id }}": "{{ $jam->jam_mulai }} – {{ $jam->jam_selesai }}",
-            @endforeach
-        };
-        document.getElementById('createJamDisplay').value = jamMap[idJam] ?? idJam;
-
-        const idKelasFilter = "{{ $idKelas ?? '' }}";
-        if (idKelasFilter) {
-            document.getElementById('createIdKelas').value = idKelasFilter;
-        }
-
-        // Reset guru & mapel saat modal dibuka ulang
-        document.getElementById('createIdGuruMapel').value = '';
-        syncMapelFromGuru();
-
-        document.getElementById('modalCreate').style.display = 'block';
+const _origOpenModalCreate = window.openModalCreate;
+window.openModalCreate = function(hari, idJam) {
+    document.getElementById('createHari').value  = hari;
+    document.getElementById('createIdJam').value = idJam;
+    document.getElementById('createHariDisplay').value = hari;
+    const jamMap = {
+        @foreach($jamList as $jam)
+            "{{ $jam->id }}": "{{ $jam->jam_mulai }} – {{ $jam->jam_selesai }}",
+        @endforeach
     };
+    document.getElementById('createJamDisplay').value = jamMap[idJam] ?? idJam;
+    const idKelasFilter = "{{ $idKelas ?? '' }}";
+    if (idKelasFilter) document.getElementById('createIdKelas').value = idKelasFilter;
+    document.getElementById('createIdGuruMapel').value = '';
+    syncMapelFromGuru();
+    document.getElementById('modalCreate').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+};
+document.getElementById('overlayCreate')?.addEventListener('click', closeCreateModal);
 
-    /**
-     * Sinkronisasi select id_mapel berdasarkan pilihan guru mapel.
-     * - Jika guru dipilih dan punya mapel → set & lock select mapel
-     * - Jika guru dikosongkan → unlock select mapel
-     */
-    function syncMapelFromGuru() {
-        const guruSelect  = document.getElementById('createIdGuruMapel');
-        const mapelSelect = document.getElementById('createIdMapel');
-        const badge       = document.getElementById('createMapelBadge');
-        const hint        = document.getElementById('createMapelHint');
-
-        const selectedOpt = guruSelect.options[guruSelect.selectedIndex];
-        const mapelId     = selectedOpt?.dataset?.mapelId ?? '';
-        const mapelNama   = selectedOpt?.dataset?.mapelNama ?? '';
-
-        if (guruSelect.value && mapelId) {
-            // Guru dipilih dan punya data mapel → kunci & isi mapel
-            mapelSelect.value    = mapelId;
-            mapelSelect.disabled = true;
-            mapelSelect.classList.add('bg-slate-50', 'cursor-not-allowed', 'text-slate-400');
-            mapelSelect.classList.remove('bg-white', 'text-slate-700');
-            badge.classList.remove('hidden');
-            hint.classList.remove('hidden');
-        } else {
-            // Guru tidak dipilih atau tidak punya mapel → bebaskan pilihan
-            mapelSelect.value    = '';
-            mapelSelect.disabled = false;
-            mapelSelect.classList.remove('bg-slate-50', 'cursor-not-allowed', 'text-slate-400');
-            mapelSelect.classList.add('bg-white', 'text-slate-700');
-            badge.classList.add('hidden');
-            hint.classList.add('hidden');
-        }
+function syncMapelFromGuru() {
+    const guruSelect  = document.getElementById('createIdGuruMapel');
+    const mapelSelect = document.getElementById('createIdMapel');
+    const badge       = document.getElementById('createMapelBadge');
+    const hint        = document.getElementById('createMapelHint');
+    const selectedOpt = guruSelect.options[guruSelect.selectedIndex];
+    const mapelId     = selectedOpt?.dataset?.mapelId ?? '';
+    if (guruSelect.value && mapelId) {
+        mapelSelect.value    = mapelId;
+        mapelSelect.disabled = true;
+        mapelSelect.style.background = '#F9FAFB';
+        mapelSelect.style.color      = '#9CA3AF';
+        mapelSelect.style.cursor     = 'not-allowed';
+        badge.style.display = 'block';
+        hint.style.display  = 'flex';
+    } else {
+        mapelSelect.value    = '';
+        mapelSelect.disabled = false;
+        mapelSelect.style.background = '#F9FAFB';
+        mapelSelect.style.color      = '#111827';
+        mapelSelect.style.cursor     = 'pointer';
+        badge.style.display = 'none';
+        hint.style.display  = 'none';
     }
-
-    // Jalankan setiap kali guru mapel berubah
-    document.getElementById('createIdGuruMapel')
-        ?.addEventListener('change', syncMapelFromGuru);
-
-    // Jalankan sekali saat halaman load (untuk kasus old() setelah validasi gagal)
-    document.addEventListener('DOMContentLoaded', syncMapelFromGuru);
+}
+document.getElementById('createIdGuruMapel')?.addEventListener('change', syncMapelFromGuru);
+document.addEventListener('DOMContentLoaded', syncMapelFromGuru);
 </script>

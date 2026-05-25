@@ -22,8 +22,8 @@ class AbsensiController extends Controller
         $absensis = Absensi::with(['pertemuan', 'siswa'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('siswa', function ($q) use ($search) {
-                    $q->where('nama', 'like', '%' . $search . '%')
-                      ->orWhere('nis', 'like', '%' . $search . '%');
+                    $q->where('nama_lengkap', 'like', '%' . $search . '%')
+                      ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })
             ->when($pertemuan_filter, function ($query, $pertemuan_filter) {
