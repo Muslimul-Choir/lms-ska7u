@@ -14,7 +14,6 @@ class StoreJamBelajarRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_tingkatan' => ['required', 'exists:tingkatan,id'],
             'jam_mulai'    => ['required', 'date_format:H:i'],
             'jam_selesai'  => ['required', 'date_format:H:i', 'after:jam_mulai'],
         ];
@@ -23,8 +22,6 @@ class StoreJamBelajarRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id_tingkatan.required' => 'Tingkatan wajib dipilih.',
-            'id_tingkatan.exists'   => 'Tingkatan tidak valid.',
             'jam_mulai.required'    => 'Jam mulai wajib diisi.',
             'jam_mulai.date_format' => 'Format jam mulai tidak valid.',
             'jam_selesai.required'  => 'Jam selesai wajib diisi.',

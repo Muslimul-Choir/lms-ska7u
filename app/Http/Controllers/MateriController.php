@@ -10,6 +10,9 @@ class MateriController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+        
         $q = $request->input('q');
         $filter_tipe = $request->input('filter_tipe', 'semua');
         $filter_status = $request->input('filter_status', 'semua');
@@ -17,6 +20,13 @@ class MateriController extends Controller
         $pertemuanQuery = Pertemuan::where(function($query) {
             $query->has('materis')->orHas('tugas');
         });
+
+        if ($isGuru) {
+            $guru = $user->guru;
+            $pertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($query) use ($guru) {
+                $query->where('id_guru', $guru->id);
+            });
+        }
 
         if ($q || $filter_tipe !== 'semua' || $filter_status !== 'semua') {
             $pertemuanQuery->where(function ($qBuilder) use ($q, $filter_tipe, $filter_status) {
@@ -70,9 +80,26 @@ class MateriController extends Controller
         $materis = $filter_tipe === 'tugas' ? collect() : $materiQuery->latest()->get();
         $tugas = $filter_tipe === 'materi' ? collect() : $tugasQuery->latest()->get();
         
-        $allPertemuan = Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel'])->orderBy('nomor_pertemuan')->get();
-        $gurus = \App\Models\Guru::with('user')->get();
-        $allGuruMapel = \App\Models\GuruMapel::with(['guru', 'mapel', 'kelas'])->get();
+        $allPertemuanQuery = Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel']);
+        if ($isGuru) {
+            $guru = $user->guru;
+            $allPertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            });
+        }
+        $allPertemuan = $allPertemuanQuery->orderBy('nomor_pertemuan')->get();
+        
+        $gurusQuery = \App\Models\Guru::with('user');
+        if ($isGuru) {
+            $gurusQuery->where('id', $user->guru->id);
+        }
+        $gurus = $gurusQuery->get();
+        
+        $allGuruMapelQuery = \App\Models\GuruMapel::with(['guru', 'mapel', 'kelas']);
+        if ($isGuru) {
+            $allGuruMapelQuery->where('id_guru', $user->guru->id);
+        }
+        $allGuruMapel = $allGuruMapelQuery->get();
         
         return view('materi.index', compact('materis', 'tugas', 'pertemuans', 'allPertemuan', 'gurus', 'allGuruMapel', 'q', 'filter_tipe', 'filter_status'));
     }

@@ -108,7 +108,9 @@ class SiswaController extends Controller
     public function destroy(Siswa $siswa)
     {
         DB::transaction(function () use ($siswa) {
-            $siswa->User->delete();
+            if ($siswa->user) {
+                $siswa->user->delete();
+            }
             $siswa->delete();
         });
 

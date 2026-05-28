@@ -66,22 +66,6 @@
 
                     <div class="flex flex-wrap items-center gap-2">
 
-                        {{-- Filter --}}
-                        <form method="GET" action="{{ route('jambelajar.index') }}">
-                            <select name="tingkatan"
-                                    onchange="this.form.submit()"
-                                    class="px-3 py-2 text-xs border border-gray-200 rounded-xl">
-                                <option value="">Semua Tingkatan</option>
-
-                                @foreach($tingkatanList as $tingkatan)
-                                    <option value="{{ $tingkatan->id }}"
-                                        {{ $filterTingkatan == $tingkatan->id ? 'selected' : '' }}>
-                                        {{ $tingkatan->nama_tingkatan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </form>
-
                         {{-- Trash --}}
                         <a href="{{ route('jambelajar.trash') }}"
                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
@@ -111,91 +95,88 @@
                         <thead>
                             <tr class="bg-gray-50 border-b border-gray-200">
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase">
-                                    Tingkatan
+                                    No
                                 </th>
-
-                                @foreach($jamKe as $ke => $label)
-                                    <th class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase border-l border-gray-100">
-                                        {{ $label }}
-                                    </th>
-                                @endforeach
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase">
+                                    Jam Mulai
+                                </th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase">
+                                    Jam Selesai
+                                </th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
 
                         <tbody>
 
-                            @forelse($groupedJamBelajar as $tingkatanNama => $rowJams)
+                            @forelse($jamBelajars as $index => $jam)
 
                                 <tr class="border-b border-gray-100 hover:bg-amber-50/40">
 
-                                    {{-- Tingkatan --}}
+                                    {{-- No --}}
                                     <td class="px-6 py-4">
-                                        <div class="font-bold text-gray-800">
-                                            {{ $tingkatanNama }}
+                                        <div class="text-sm text-gray-600">
+                                            {{ $index + 1 }}
                                         </div>
                                     </td>
 
-                                    {{-- Jam --}}
-                                    @foreach($jamKe as $ke => $label)
+                                    {{-- Jam Mulai --}}
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-semibold text-gray-700">
+                                            {{ \Carbon\Carbon::parse($jam->jam_mulai)->format('H:i') }}
+                                        </div>
+                                    </td>
 
-                                        <td class="px-4 py-3 text-center border-l border-gray-100">
+                                    {{-- Jam Selesai --}}
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-semibold text-gray-700">
+                                            {{ \Carbon\Carbon::parse($jam->jam_selesai)->format('H:i') }}
+                                        </div>
+                                    </td>
 
-                                            @if(isset($rowJams[$ke]))
+                                    {{-- Aksi --}}
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-center gap-2">
 
-                                                @php $jam = $rowJams[$ke]; @endphp
+                                            {{-- EDIT --}}
+                                            <button type="button"
+                                                    class="btn-edit w-7 h-7 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
+                                                    data-id="{{ $jam->id }}"
+                                                    data-jam_mulai="{{ \Carbon\Carbon::parse($jam->jam_mulai)->format('H:i') }}"
+                                                    data-jam_selesai="{{ \Carbon\Carbon::parse($jam->jam_selesai)->format('H:i') }}">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                            </button>
 
-                                                <div class="text-xs font-semibold text-gray-700 mb-2">
-                                                    {{ \Carbon\Carbon::parse($jam->jam_mulai)->format('H:i') }}
-                                                    -
-                                                    {{ \Carbon\Carbon::parse($jam->jam_selesai)->format('H:i') }}
-                                                </div>
+                                            {{-- DELETE --}}
+                                            <form action="{{ route('jambelajar.destroy', $jam) }}"
+                                                  method="POST"
+                                                  onsubmit="return confirm('Yakin ingin menghapus?')"
+                                                  style="display: inline;">
 
-                                                <div class="flex items-center justify-center gap-1">
+                                                @csrf
+                                                @method('DELETE')
 
-                                                    {{-- EDIT --}}
-                                                    <button type="button"
-                                                            class="btn-edit w-7 h-7 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
-                                                            data-id="{{ $jam->id }}"
-                                                            data-id_tingkatan="{{ $jam->id_tingkatan }}"
-                                                            data-jam_mulai="{{ \Carbon\Carbon::parse($jam->jam_mulai)->format('H:i') }}"
-                                                            data-jam_selesai="{{ \Carbon\Carbon::parse($jam->jam_selesai)->format('H:i') }}">
-                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                                    </button>
+                                                <button type="submit"
+                                                        class="w-7 h-7 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition">
+                                                     <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
 
-                                                    {{-- DELETE --}}
-                                                    <form action="{{ route('jambelajar.destroy', $jam) }}"
-                                                          method="POST"
-                                                          onsubmit="return confirm('Yakin ingin menghapus?')">
-
-                                                        @csrf
-                                                        @method('DELETE')
-
-                                                        <button type="submit"
-                                                                class="w-7 h-7 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition">
-                                                             <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-
-                                                </div>
-
-                                            @else
-                                                <span class="text-gray-300 text-xs">—</span>
-                                            @endif
-
-                                        </td>
-
-                                    @endforeach
+                                        </div>
+                                    </td>
 
                                 </tr>
 
                             @empty
 
                                 <tr>
-                                    <td colspan="{{ count($jamKe) + 1 }}"
+                                    <td colspan="4"
                                         class="px-6 py-16 text-center text-gray-400">
                                         Belum ada data jam belajar
                                     </td>
@@ -253,27 +234,6 @@
 
                 @csrf
                 @method('PUT')
-
-                {{-- Tingkatan --}}
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
-                        Tingkatan
-                    </label>
-
-                    <select id="editIdTingkatan"
-                            name="id_tingkatan"
-                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 outline-none">
-
-                        <option value="">-- Pilih Tingkatan --</option>
-
-                        @foreach($tingkatanList as $tingkatan)
-                            <option value="{{ $tingkatan->id }}">
-                                {{ $tingkatan->nama_tingkatan }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                </div>
 
                 {{-- Jam --}}
                 <div class="grid grid-cols-2 gap-4">
@@ -361,13 +321,10 @@
         // =========================
         const modalEdit = document.getElementById('modalEdit');
 
-        function openEditModal(id, idTingkatan, jamMulai, jamSelesai) {
+        function openEditModal(id, jamMulai, jamSelesai) {
 
             document.getElementById('formEdit').action =
                 `/jambelajar/${id}`;
-
-            document.getElementById('editIdTingkatan').value =
-                idTingkatan;
 
             document.getElementById('editJamMulai').value =
                 jamMulai;
@@ -395,7 +352,6 @@
 
                 openEditModal(
                     this.dataset.id,
-                    this.dataset.id_tingkatan,
                     this.dataset.jam_mulai,
                     this.dataset.jam_selesai
                 );

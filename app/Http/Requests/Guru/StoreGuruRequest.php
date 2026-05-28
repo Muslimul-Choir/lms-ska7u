@@ -4,6 +4,7 @@ namespace App\Http\Requests\Guru;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreGuruRequest extends FormRequest
 {
@@ -24,7 +25,13 @@ class StoreGuruRequest extends FormRequest
     {
         return [
             'nama_lengkap'    => ['required', 'string', 'max:150'],
-            'email'           => ['required', 'email', 'max:150', 'unique:guru,email', 'unique:users,email'],
+            'email'           => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('guru', 'email')->whereNull('deleted_at'),
+                Rule::unique('users', 'email')->whereNull('deleted_at'),
+            ],
             'status_pengajar' => ['required', 'in:pengajar,walikelas,keduanya'],
         ];
     }

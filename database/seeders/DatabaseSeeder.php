@@ -37,6 +37,10 @@ class DatabaseSeeder extends Seeder
             KelasSeeder::class,
             SemesterSeeder::class,
             GuruMapelSeeder::class,
+            
+            // Sample data seeders (optional - comment out if not needed)
+            // KuisSampleDataSeeder::class,
+            // TugasPenilaianSampleDataSeeder::class,
         ]);
     }
 }

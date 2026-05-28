@@ -24,7 +24,8 @@ class DashboardController extends Controller
         $siswa = Siswa::where('id_user', $user->id)->first();
 
         if (!$siswa) {
-            return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan.');
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan. Silakan hubungi administrator.');
         }
 
         // Get class information
