@@ -16,15 +16,6 @@ return new class extends Migration
         $table->time('jam_mulai');
         $table->time('jam_selesai');
 
-        // Tambahan sesuai model
-        $table->unsignedBigInteger('id_tingkatan');
-
-        // Foreign key (relasi ke tabel tingkatan)
-        $table->foreign('id_tingkatan')
-              ->references('id')
-              ->on('tingkatan')
-              ->onDelete('cascade');
-
         $table->timestamps();
         $table->softDeletes();
     });

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Siswa;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSiswaRequest extends FormRequest
 {
@@ -15,7 +16,13 @@ class StoreSiswaRequest extends FormRequest
     {
         return [
             'nama_lengkap'  => ['required', 'string', 'max:150'],
-            'email'         => ['required', 'email', 'max:150', 'unique:siswa,email', 'unique:users,email'],
+            'email'         => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('siswa', 'email')->whereNull('deleted_at'),
+                Rule::unique('users', 'email')->whereNull('deleted_at'),
+            ],
             'tanggal_lahir' => ['required', 'date', 'before:today'],
             'agama'         => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
             'id_kelas'      => ['required', 'exists:kelas,id'],

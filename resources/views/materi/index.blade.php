@@ -1,21 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-[#1B3A6B] flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
             </div>
+
             <div>
-                <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">
-                    Tugas Kelas
+                <h2 class="font-bold text-[15px] text-gray-800 tracking-wide leading-none">
+                    Materi & Tugas
                 </h2>
-                <p class="text-[11px] text-slate-400 mt-0.5 tracking-widest uppercase">Manajemen Konten & Penugasan Siswa</p>
+                <p class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-widest">
+                    Konten & Evaluasi
+                </p>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6 sm:py-8 bg-slate-50 min-h-screen" x-data="{
+    <x-slot name="breadcrumb">
+        <a href="{{ route('dashboard') }}" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
+        <svg class="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span class="text-gray-600 font-semibold">Materi & Tugas</span>
+    </x-slot>
+
+    <div class="py-7 bg-gray-50 min-h-screen" x-data="{
         activePertemuan: null,
         
         // Create Modals
@@ -54,20 +65,14 @@
             this.modalEditTugas = true;
         }
     }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Breadcrumb & Action Button --}}
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide">
-                    <a href="{{ route('dashboard') }}" class="text-[#1B3A6B] hover:underline">Dashboard</a>
-                    <span class="text-slate-300">/</span>
-                    <span class="text-slate-600 font-semibold">Tugas Kelas</span>
-                </nav>
-
                 <div class="flex items-center gap-3 relative" x-data="{ openMenu: false }">
                     <button @click="openMenu = !openMenu" @click.away="openMenu = false"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C8992A] hover:bg-[#b5861f] text-white text-sm font-bold rounded-full transition shadow-lg shadow-amber-900/20">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
                         Buat
@@ -78,15 +83,15 @@
                          x-transition:enter="transition ease-out duration-100"
                          x-transition:enter-start="transform opacity-0 scale-95"
                          x-transition:enter-end="transform opacity-100 scale-100"
-                         class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl ring-1 ring-slate-200 z-40 overflow-hidden">
-                        <button @click="modalTugas = true; openMenu = false" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-3 border-b border-slate-100">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-[#1B3A6B]">
+                         class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl ring-1 ring-gray-200 z-40 overflow-hidden">
+                        <button @click="modalTugas = true; openMenu = false" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium flex items-center gap-3 border-b border-gray-100">
+                            <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                             </div>
                             Tugas Baru
                         </button>
-                        <button @click="modalMateri = true; openMenu = false" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-[#C8992A]">
+                        <button @click="modalMateri = true; openMenu = false" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                             </div>
                             Materi Baru
@@ -97,7 +102,7 @@
 
             {{-- Alert Messages --}}
             @if (session('success'))
-                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         <span class="font-medium">{{ session('success') }}</span>
@@ -108,7 +113,7 @@
                 </div>
             @endif
             @if ($errors->any())
-                <div class="px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm shadow-sm">
+                <div class="px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm">
                     <ul class="list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -118,30 +123,30 @@
             @endif
 
             {{-- Search & Filter Bar --}}
-            <form method="GET" action="{{ route('materi.index') }}" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4">
+            <form method="GET" action="{{ route('materi.index') }}" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-4">
                 <div class="flex-1 relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari judul materi, tugas, atau nomor pertemuan..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari judul materi, tugas, atau nomor pertemuan..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-amber-400/30 focus:border-amber-400 transition bg-white">
                 </div>
                 
                 <div class="flex flex-wrap sm:flex-nowrap items-center gap-3">
-                    <select name="filter_tipe" class="border border-slate-200 rounded-lg text-sm py-2 px-3 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
+                    <select name="filter_tipe" class="border border-gray-200 rounded-lg text-sm py-2 px-3 focus:ring-amber-400/30 focus:border-amber-400 transition bg-white">
                         <option value="semua" {{ request('filter_tipe') == 'semua' ? 'selected' : '' }}>Semua Tipe</option>
                         <option value="materi" {{ request('filter_tipe') == 'materi' ? 'selected' : '' }}>Hanya Materi</option>
                         <option value="tugas" {{ request('filter_tipe') == 'tugas' ? 'selected' : '' }}>Hanya Tugas</option>
                     </select>
 
-                    <select name="filter_status" class="border border-slate-200 rounded-lg text-sm py-2 px-3 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition shadow-sm bg-slate-50">
+                    <select name="filter_status" class="border border-gray-200 rounded-lg text-sm py-2 px-3 focus:ring-amber-400/30 focus:border-amber-400 transition bg-white">
                         <option value="semua" {{ request('filter_status') == 'semua' ? 'selected' : '' }}>Semua Status</option>
                         <option value="published" {{ request('filter_status') == 'published' ? 'selected' : '' }}>Published</option>
                         <option value="draft" {{ request('filter_status') == 'draft' ? 'selected' : '' }}>Draft</option>
                     </select>
                     
-                    <button type="submit" class="bg-[#1B3A6B] hover:bg-[#0F2145] text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">Cari</button>
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Cari</button>
                     @if(request('q') || request('filter_tipe') && request('filter_tipe') != 'semua' || request('filter_status') && request('filter_status') != 'semua')
-                        <a href="{{ route('materi.index') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center" title="Reset Filter">
+                        <a href="{{ route('materi.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center" title="Reset Filter">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                         </a>
                     @endif
@@ -149,7 +154,7 @@
             </form>
 
             {{-- Accordion List by Pertemuan --}}
-            <div class="space-y-4 sm:space-y-6">
+            <div class="space-y-4">
                 @forelse($pertemuans as $pertemuan)
                     @php
                         $materiList = $materis->where('id_pertemuan', $pertemuan->id)->map(function($m) { $m->is_tugas = false; return $m; });
@@ -158,20 +163,20 @@
                         $hasContent = $items->count() > 0;
                     @endphp
 
-                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden" 
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden" 
                          x-data="{ count: {{ $items->count() }} }">
                          
                         {{-- Header Accordion --}}
                         <div @click="togglePertemuan({{ $pertemuan->id }})" 
-                             class="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-r hover:from-slate-50 hover:to-white cursor-pointer transition select-none border-b border-slate-100 group">
+                             class="flex items-center justify-between p-5 bg-gradient-to-r hover:from-amber-50 hover:to-white cursor-pointer transition select-none border-b border-gray-100 group">
                             
-                            <div class="flex items-center gap-3 sm:gap-4">
-                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50/50 border border-blue-100 text-[#1B3A6B] flex flex-col items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex flex-col items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                                     <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5">Pert</span>
                                     <span class="text-base sm:text-lg font-black leading-none">{{ $pertemuan->nomor_pertemuan }}</span>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-[#0F2145] text-sm sm:text-base group-hover:text-[#1B3A6B] transition">
+                                    <h3 class="font-bold text-gray-800 text-sm sm:text-base group-hover:text-amber-600 transition">
                                         Pertemuan Ke-{{ $pertemuan->nomor_pertemuan }}
                                     </h3>
                                     <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
@@ -181,27 +186,27 @@
                                             $namaGuru  = $jadwal?->guruMapel?->guru?->nama_lengkap ?? null;
                                         @endphp
                                         @if($namaMapel)
-                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600">
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600">
                                                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                                                 {{ $namaMapel }}
                                             </span>
                                         @endif
                                         @if($namaGuru)
-                                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500">
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500">
                                                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                                 {{ $namaGuru }}
                                             </span>
                                         @endif
                                         @if(!$namaMapel && !$namaGuru)
-                                            <span class="text-[10px] font-medium text-slate-400">Tidak terhubung ke jadwal khusus</span>
+                                            <span class="text-[10px] font-medium text-gray-400">Tidak terhubung ke jadwal khusus</span>
                                         @endif
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="flex items-center gap-4">
-                                <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500" x-text="count + ' Item Konten'"></span>
-                                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 group-hover:bg-[#1B3A6B]/10 group-hover:text-[#1B3A6B] transition">
+                                <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500" x-text="count + ' Item Konten'"></span>
+                                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 group-hover:bg-amber-100 group-hover:text-amber-600 transition">
                                     <svg class="w-5 h-5 transform transition-transform duration-300" 
                                          :class="{'rotate-180': activePertemuan === {{ $pertemuan->id }} }" 
                                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,14 +222,14 @@
                              class="bg-white">
                              
                             @if(!$hasContent)
-                                <div class="px-5 py-8 text-center text-sm text-slate-400">
+                                <div class="px-5 py-8 text-center text-sm text-gray-400">
                                     Belum ada materi atau tugas di pertemuan ini.
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left text-sm border-collapse">
                                         <thead>
-                                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                                            <tr class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                                                 <th class="px-5 py-3 w-10 text-center">#</th>
                                                 <th class="px-5 py-3 w-1/3 min-w-[200px]">Judul Konten</th>
                                                 <th class="px-5 py-3">Mata Pelajaran</th>
@@ -233,9 +238,9 @@
                                                 <th class="px-5 py-3 text-center w-32">Aksi</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-slate-100 text-slate-600">
+                                        <tbody class="divide-y divide-gray-100 text-gray-600">
                                             @foreach($items as $index => $item)
-                                                <tr class="hover:bg-slate-50/50 transition group">
+                                                <tr class="hover:bg-amber-50/40 transition group">
                                                     <td class="px-5 py-4 text-[11px] font-mono text-slate-400 text-center align-top">
                                                         {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
                                                     </td>
@@ -340,49 +345,54 @@
                                                     <td class="px-5 py-4 align-top text-center">
                                                         <div class="flex items-center justify-center gap-1.5">
                                                             @if($item->is_tugas)
-                                                                <a href="{{ $item->file_url ? (str_starts_with($item->file_url, 'http') ? $item->file_url : asset('storage/' . $item->file_url)) : '#' }}" 
-                                                                   target="_blank"
-                                                                   class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 transition"
-                                                                   title="Lihat Lampiran Tugas">
-                                                                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                                {{-- Tugas Actions --}}
+                                                                <a href="{{ route('tugas.rekap', $item->id) }}" 
+                                                                   class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
+                                                                   title="Rekap Pengumpulan">
+                                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                                                                 </a>
-                                                                <button @click='openEditTugas(@json($item))' 
-                                                                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200 transition"
-                                                                        title="Edit Tugas">
+                                                                <button 
+                                                                    @click="openEditTugas({{ json_encode($item) }})"
+                                                                    class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
+                                                                    title="Edit">
                                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                                                 </button>
-                                                                <form action="{{ route('tugas.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus tugas ini?')">
+                                                                <form action="{{ route('tugas.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus tugas ini?')">
                                                                     @csrf @method('DELETE')
-                                                                    <button type="submit" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition" title="Hapus Tugas">
+                                                                    <button type="submit" 
+                                                                            class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition"
+                                                                            title="Hapus">
                                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                                     </button>
                                                                 </form>
                                                             @else
-                                                                @if(isset($pertemuan->id_jadwal))
-                                                                <a href="{{ route('ruang-belajar.show', [$pertemuan->id_jadwal, $item->id]) }}" 
-                                                                   target="_blank"
-                                                                   class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 transition"
-                                                                   title="Pratinjau Materi">
-                                                                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                                                </a>
+                                                                {{-- Materi Actions --}}
+                                                                @if($item->tipe_materi == 'link')
+                                                                    <a href="{{ $item->file_url }}" target="_blank" 
+                                                                       class="w-8 h-8 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-lg transition"
+                                                                       title="Buka Link">
+                                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                                    </a>
+                                                                @else
+                                                                    <a href="{{ $item->file_url ? (str_starts_with($item->file_url, 'http') ? $item->file_url : asset('storage/' . $item->file_url)) : '#' }}" 
+                                                                       target="_blank"
+                                                                       download
+                                                                       class="w-8 h-8 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-lg transition"
+                                                                       title="Unduh">
+                                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                                    </a>
                                                                 @endif
-                                                                @if($item->file_url && ($item->tipe_materi === 'dokumen' || $item->tipe_materi === 'video'))
-                                                                <a href="{{ str_starts_with($item->file_url, 'http') ? $item->file_url : asset('storage/' . $item->file_url) }}" 
-                                                                   target="_blank"
-                                                                   download
-                                                                   class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition"
-                                                                   title="Download File">
-                                                                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                                                </a>
-                                                                @endif
-                                                                <button @click='openEditMateri(@json($item))' 
-                                                                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200 transition"
-                                                                        title="Edit Materi">
+                                                                <button 
+                                                                    @click="openEditMateri({{ json_encode($item) }})"
+                                                                    class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
+                                                                    title="Edit">
                                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                                                 </button>
-                                                                <form action="{{ route('materi.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus materi ini?')">
+                                                                <form action="{{ route('materi.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus materi ini?')">
                                                                     @csrf @method('DELETE')
-                                                                    <button type="submit" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition" title="Hapus Materi">
+                                                                    <button type="submit" 
+                                                                            class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition"
+                                                                            title="Hapus">
                                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                                     </button>
                                                                 </form>
@@ -987,5 +997,4 @@ function updateMapelInfo(selectEl, infoBoxId) {
     }
 }
 </script>
-
 </x-app-layout>

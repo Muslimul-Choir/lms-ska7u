@@ -108,7 +108,9 @@ class SiswaController extends Controller
     public function destroy(Siswa $siswa)
     {
         DB::transaction(function () use ($siswa) {
-            $siswa->User->delete();
+            if ($siswa->user) {
+                $siswa->user->delete();
+            }
             $siswa->delete();
         });
 
@@ -119,26 +121,47 @@ class SiswaController extends Controller
     // ── SEND EMAIL satu siswa ─────────────────────────────────
     public function sendEmail(Siswa $siswa)
     {
-        $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
-        $siswa->User->update(['password' => Hash::make($plainPassword)]);
-        Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
+        try {
+            $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
+            $siswa->User->update(['password' => Hash::make($plainPassword)]);
+            
+            Log::info("Attempting to send email to: {$siswa->email}");
+            Log::info("MAIL_MAILER: " . config('mail.default'));
+            Log::info("MAIL_HOST: " . config('mail.mailers.smtp.host'));
+            
+            Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
+            
+            Log::info("Email successfully sent to: {$siswa->email}");
 
-        return back()->with('success', "Email akun berhasil dikirim ke {$siswa->email}.");
+            return back()->with('success', "✅ Email akun berhasil dikirim ke {$siswa->email}.");
+        } catch (\Exception $e) {
+            Log::error("Failed to send email to {$siswa->email}: " . $e->getMessage());
+            Log::error("Error details: " . $e->getTraceAsString());
+            
+            return back()->with('error', "❌ Gagal mengirim email ke {$siswa->email}. Error: " . substr($e->getMessage(), 0, 100));
+        }
     }
 
     // ── SEND EMAIL SEMUA ─────────────────────────────────────
     public function sendEmailAll()
     {
-        Siswa::chunk(100, function ($siswas) {
-            foreach ($siswas as $siswa) {
-                $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
-                $siswa->User->update(['password' => Hash::make($plainPassword)]);
-                Mail::to($siswa->email)->queue(new KirimAkunSiswa($siswa, $plainPassword));
-            }
-        });
+        try {
+            Siswa::chunk(100, function ($siswas) {
+                foreach ($siswas as $siswa) {
+                    $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
+                    $siswa->User->update(['password' => Hash::make($plainPassword)]);
+                    // Gunakan send() langsung agar email terkirim segera (bukan queue)
+                    Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
+                }
+            });
 
-        return redirect()->route('siswa.index')
-            ->with('success', "Email akun berhasil dikirim ke seluruh siswa.");
+            return redirect()->route('siswa.index')
+                ->with('success', "Email akun berhasil dikirim ke seluruh siswa.");
+        } catch (\Exception $e) {
+            Log::error('Error sending emails: ' . $e->getMessage());
+            return redirect()->route('siswa.index')
+                ->with('error', "Gagal mengirim email: " . $e->getMessage());
+        }
     }
 
     // ── EXPORT ───────────────────────────────────────────────
