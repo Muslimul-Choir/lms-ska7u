@@ -1,6 +1,6 @@
 {{-- layouts/app.blade.php --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" >
 
 <head>
     <meta charset="utf-8">
@@ -153,6 +153,9 @@
             </p>
         </footer>
     </div>
+
+    <x-alerts.success />
+    <x-alerts.error />
 
     @stack('scripts')
 </body>

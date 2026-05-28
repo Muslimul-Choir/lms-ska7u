@@ -117,8 +117,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Kelas Routes
     Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {
         Route::get('/trash',           'trash')->name('trash');
-        Route::patch('/{id}/restore',  'restore')->name('restore');
-        Route::delete('/{id}/force',   'forceDelete')->name('force-delete');
+        Route::patch('/trash/{kelas}/restore', 'restore')
+            ->name('restore')
+            ->withTrashed();
+        Route::delete('/trash/{kelas}/force', 'forceDelete')
+            ->name('force-delete')
+            ->withTrashed();
+Route::patch('/restore-all',        [KelasController::class, 'restoreAll'])->name('restoreAll');
+    Route::delete('/force-delete-all',  [KelasController::class, 'forceDeleteAll'])->name('forceDeleteAll');
+        
 
         Route::get('/',                'index')->name('index');
         Route::post('/',               'store')->name('store');

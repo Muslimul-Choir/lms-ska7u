@@ -97,6 +97,31 @@ class GuruController extends Controller
     // ── DESTROY ──────────────────────────────────────────────
     public function destroy(Guru $guru)
     {
+        $errors = [];
+
+        // Cek apakah guru masih menjadi wali kelas
+        if ($guru->kelas()->exists()) {
+            $kelasCount = $guru->kelas()->count();
+            $errors[] = "Guru ini masih menjadi wali kelas untuk {$kelasCount} kelas. Ubah wali kelas terlebih dahulu.";
+        }
+
+        // Cek apakah guru masih mengajar mapel
+        if ($guru->guruMapel()->exists()) {
+            $mapelCount = $guru->guruMapel()->count();
+            $errors[] = "Guru ini masih mengajar {$mapelCount} mapel. Hapus relasi guru-mapel terlebih dahulu.";
+        }
+
+        // Cek apakah guru masih memiliki tugas
+        if ($guru->Tugas()->exists()) {
+            $tugasCount = $guru->Tugas()->count();
+            $errors[] = "Guru ini masih memiliki {$tugasCount} tugas. Hapus tugas terlebih dahulu.";
+        }
+
+        if (!empty($errors)) {
+            return redirect()->route('guru.index')
+                ->with('error', implode(' | ', $errors));
+        }
+
         DB::transaction(function () use ($guru) {
             $guru->user->delete();
             $guru->delete();
@@ -215,9 +240,23 @@ class GuruController extends Controller
     }
 
     // ── TRASH ────────────────────────────────────────────────
-    public function trash()
+    public function trash(Request $request)
     {
-        $gurus = Guru::onlyTrashed()->latest('deleted_at')->paginate(15);
+        $query = Guru::onlyTrashed();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status_pengajar')) {
+            $query->where('status_pengajar', $request->status_pengajar);
+        }
+
+        $gurus = $query->latest('deleted_at')->paginate(15)->withQueryString();
         return view('guru.trash', compact('gurus'));
     }
 
