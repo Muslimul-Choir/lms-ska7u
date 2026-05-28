@@ -426,5 +426,4 @@
 
     });
 </script>
-
 </x-app-layout>

@@ -446,5 +446,4 @@
             document.body.style.overflow = 'hidden';
         @endif
     </script>
-
 </x-app-layout>

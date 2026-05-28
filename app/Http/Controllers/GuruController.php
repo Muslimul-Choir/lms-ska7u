@@ -9,6 +9,7 @@ use App\Http\Requests\Guru\UpdateGuruRequest;
 use App\Imports\Guru\GuruImport;
 use App\Mail\Guru\KirimAkunGuru;
 use App\Models\Guru;
+use App\Models\Kelas;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -94,11 +95,18 @@ class GuruController extends Controller
             ->with('success', 'Data guru berhasil diperbarui.');
     }
 
-    // ── DESTROY ──────────────────────────────────────────────
+
     public function destroy(Guru $guru)
     {
         DB::transaction(function () use ($guru) {
-            $guru->user->delete();
+         
+            Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
+
+       
+            if ($guru->user) {
+                $guru->user->delete();
+            }
+       
             $guru->delete();
         });
 
@@ -106,7 +114,7 @@ class GuruController extends Controller
             ->with('success', 'Data guru berhasil dihapus.');
     }
 
-    // ── SEND EMAIL (satu guru) ────────────────────────────────
+
     public function sendEmail(Guru $guru)
     {
         $plainPassword = Str::random(6) . rand(100, 999);
@@ -115,25 +123,43 @@ class GuruController extends Controller
             'password' => Hash::make($plainPassword)
         ]);
 
-        Mail::to($guru->email)
-            ->send(new KirimAkunGuru($guru, $plainPassword));
+        try {
+            Mail::to($guru->email)
+                ->send(new KirimAkunGuru($guru, $plainPassword));
 
-        return back()->with('success', "Email berhasil dikirim.");
+            return back()->with('success', "✅ Email akun berhasil dikirim ke {$guru->email} dengan password baru.");
+        } catch (\Throwable $e) {
+            Log::error('Gagal kirim email guru: ' . $e->getMessage());
+            return back()->with('error', "❌ Gagal mengirim email ke {$guru->email}. Pesan error: " . $e->getMessage());
+        }
     }
 
     // ── SEND EMAIL SEMUA ─────────────────────────────────────
     public function sendEmailAll()
     {
-        Guru::chunk(100, function ($gurus) {
+        $berhasil = 0;
+        $gagal    = 0;
+
+        Guru::chunk(100, function ($gurus) use (&$berhasil, &$gagal) {
             foreach ($gurus as $guru) {
                 $plainPassword = Str::random(6) . rand(100, 999);
                 $guru->user->update(['password' => Hash::make($plainPassword)]);
-                Mail::to($guru->email)->queue(new KirimAkunGuru($guru, $plainPassword));
+                try {
+                    Mail::to($guru->email)->send(new KirimAkunGuru($guru, $plainPassword));
+                    $berhasil++;
+                } catch (\Throwable $e) {
+                    Log::error("Gagal kirim email guru {$guru->email}: " . $e->getMessage());
+                    $gagal++;
+                }
             }
         });
 
-        return redirect()->route('guru.index')
-            ->with('success', "Email akun berhasil dikirim ke seluruh guru.");
+        $msg = "✅ {$berhasil} email akun guru berhasil dikirim.";
+        if ($gagal > 0) {
+            $msg .= " ⚠️ {$gagal} email gagal dikirim (lihat log untuk detail).";
+        }
+
+        return redirect()->route('guru.index')->with('success', $msg);
     }
 
     // ── EXPORT EXCEL ─────────────────────────────────────────
@@ -153,7 +179,7 @@ class GuruController extends Controller
             $import = new GuruImport();
             Excel::import($import, $request->file('file'));
 
-            // ── Gabungkan validation failures dari rules() ke skipped_details ──
+           
             $validationFailures = collect($import->failures())
                 ->map(fn(Failure $f) => [
                     'row'    => $f->row(),
@@ -172,7 +198,7 @@ class GuruController extends Controller
                 $summary['skipped'] = count($summary['skipped_details']);
             }
 
-            // ── Buat pesan feedback ─────────────────────────────────────────────
+         
             $messages = [];
 
             if ($summary['created'] > 0) {
@@ -258,6 +284,9 @@ class GuruController extends Controller
         $guru = Guru::onlyTrashed()->findOrFail($id);
 
         DB::transaction(function () use ($guru) {
+            // Hapus referensi guru di kelas (wali_kelas)
+            Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
+            
             $guru->user()->withTrashed()->forceDelete();
             $guru->forceDelete();
         });
@@ -274,6 +303,9 @@ class GuruController extends Controller
                 $q->withTrashed();
             }])->get();
             foreach ($gurus as $guru) {
+                // Hapus referensi guru di kelas (wali_kelas)
+                Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
+                
                 $guru->user()->withTrashed()->forceDelete();
                 $guru->forceDelete();
             }
