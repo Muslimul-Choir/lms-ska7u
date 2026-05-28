@@ -68,6 +68,41 @@
 
                     <div class="flex flex-wrap items-center gap-2">
 
+                        {{-- Filter Tingkatan --}}
+                        <form method="GET" action="{{ route('jambelajar.trash') }}" class="flex items-center gap-2">
+                            <div class="relative">
+                                <select name="tingkatan"
+                                        onchange="this.form.submit()"
+                                        class="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg
+                                               focus:outline-none transition cursor-pointer
+                                               {{ $filterTingkatan ? 'bg-white text-[#B91C1C] border border-white/60' : 'bg-white/15 text-white border border-white/20' }}">
+                                    <option value="" class="text-slate-700">Semua Tingkatan</option>
+                                    @foreach($tingkatanList as $tingkatan)
+                                        <option value="{{ $tingkatan->id }}" class="text-slate-700"
+                                            {{ $filterTingkatan == $tingkatan->id ? 'selected' : '' }}>
+                                            {{ $tingkatan->nama_tingkatan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-3.5 h-3.5 {{ $filterTingkatan ? 'text-[#B91C1C]' : 'text-white/70' }}"
+                                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            @if($filterTingkatan)
+                                <a href="{{ route('jambelajar.trash') }}"
+                                   class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium
+                                          bg-white/20 hover:bg-white/30 text-white rounded-lg transition"
+                                   title="Reset filter">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </a>
+                            @endif
+                        </form>
+
                         {{-- Kembali --}}
                         <a href="{{ route('jambelajar.index') }}"
                            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20
@@ -81,6 +116,16 @@
                 </div>
 
                 {{-- Filter badge info --}}
+                @if($filterTingkatan)
+                    @php $namaTingkatanFilter = $tingkatanList->firstWhere('id', $filterTingkatan)?->nama_tingkatan; @endphp
+                    <div class="px-6 py-2.5 bg-red-50 border-b border-red-100 flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+                        </svg>
+                        <span class="text-xs text-red-600 font-medium">
+                            Menampilkan tingkatan: <span class="font-bold">{{ $namaTingkatanFilter }}</span>
+                        </span>
+                    </div>
                 @endif
 
                 {{-- Table --}}
@@ -89,6 +134,7 @@
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200">
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest w-12">#</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Tingkatan</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jam Mulai</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Jam Selesai</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Dihapus Pada</th>
@@ -102,6 +148,15 @@
                                     {{-- No --}}
                                     <td class="px-6 py-4 text-slate-400 text-xs font-mono">
                                         {{ str_pad($loop->iteration + ($jamBelajars->currentPage() - 1) * $jamBelajars->perPage(), 3, '0', STR_PAD_LEFT) }}
+                                    </td>
+
+                                    {{-- Tingkatan --}}
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md
+                                                     bg-slate-100 text-slate-500 text-xs font-semibold
+                                                     line-through decoration-red-300">
+                                            {{ $jamBelajar->tingkatan?->nama_tingkatan ?? '—' }}
+                                        </span>
                                     </td>
 
                                     {{-- Jam Mulai --}}

@@ -44,6 +44,42 @@
             <form action="{{ route('jambelajar.store') }}" method="POST" style="padding:24px; display:flex; flex-direction:column; gap:18px;">
                 @csrf
 
+                {{-- Tingkatan --}}
+                <div>
+                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
+                        Tingkatan <span style="color:#EF4444;">*</span>
+                    </label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18M10 4v16M14 4v16"/>
+                            </svg>
+                        </span>
+                        <select name="id_tingkatan"
+                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid {{ $errors->has('id_tingkatan') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('id_tingkatan') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
+                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
+                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            <option value="">-- Pilih Tingkatan --</option>
+                            @foreach($tingkatanList as $tingkatan)
+                                <option value="{{ $tingkatan->id }}" {{ old('id_tingkatan') == $tingkatan->id ? 'selected' : '' }}>
+                                    {{ $tingkatan->nama_tingkatan }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </span>
+                    </div>
+                    @error('id_tingkatan')
+                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
+                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
                 {{-- Jam Mulai & Selesai --}}
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
 
