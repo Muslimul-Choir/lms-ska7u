@@ -1,6 +1,4 @@
-{{-- resources/views/users/trash.blade.php --}}
 <x-app-layout>
-
     <x-slot name="header">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-3">

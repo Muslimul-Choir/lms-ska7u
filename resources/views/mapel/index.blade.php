@@ -1,93 +1,179 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            {{-- Icon --}}
-            <div class="w-8 h-8 rounded bg-[#1B3A6B] flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944
-                        12.083 12.083 0 015.84 10.578L12 14z" />
+                        d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
                 </svg>
             </div>
 
             <div>
-                <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">
+                <h2 class="font-bold text-[15px] text-gray-800 tracking-wide leading-none">
                     Master Mapel
                 </h2>
-                <p class="text-[11px] text-slate-400 mt-0.5 tracking-widest uppercase">
-                    Manajemen Data Mata Pelajaran
+                <p class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-widest">
+                    Data Master
                 </p>
             </div>
         </div>
     </x-slot>
 
-    {{-- Page Body --}}
-    <div class="py-8 bg-slate-50 min-h-screen">
+    <div class="py-7 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-medium tracking-wide">
-                <span class="text-[#1B3A6B]">Dashboard</span>
-                <span>/</span>
+            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                <a href="#" class="text-amber-600 hover:text-amber-700 transition">
+                    Dashboard
+                </a>
+
+                <span class="text-gray-300">/</span>
+
                 <span>Master Data</span>
-                <span>/</span>
-                <span class="text-slate-600 font-semibold">Mapel</span>
+
+                <span class="text-gray-300">/</span>
+
+                <span class="text-gray-600 font-semibold">
+                    Mapel
+                </span>
             </nav>
 
-            {{-- Alert --}}
+            {{-- Success Alert --}}
             @if (session('success'))
-                <div class="px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
-                    {{ session('success') }}
+                <div
+                    class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm">
+
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+
+                        <span class="font-medium">
+                            {{ session('success') }}
+                        </span>
+                    </div>
+
+                    <button onclick="this.parentElement.remove()"
+                        class="text-emerald-400 hover:text-emerald-600 transition">
+
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 
+                                8.586l4.293-4.293a1 1 0 
+                                111.414 1.414L11.414 10l4.293 
+                                4.293a1 1 0 
+                                01-1.414 1.414L10 
+                                11.414l-4.293 
+                                4.293a1 1 0 
+                                01-1.414-1.414L8.586 
+                                10 4.293 
+                                5.707a1 1 0 
+                                010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
                 </div>
             @endif
 
             {{-- Main Card --}}
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
                 {{-- Header --}}
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-b bg-gradient-to-r from-[#0F2145] to-[#1B3A6B]">
+                <div
+                    class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
                     <div>
-                        <h3 class="text-white font-semibold text-sm">Daftar Mapel</h3>
-                        <p class="text-blue-200 text-xs">Kelola data mata pelajaran</p>
+                        <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+                            <span class="w-1 h-5 rounded-full bg-amber-500 inline-block"></span>
+                            Daftar Mapel
+                        </h3>
+
+                        <p class="text-xs text-gray-400 mt-0.5 ml-3">
+                            Kelola data mata pelajaran
+                        </p>
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2">
+
                         <a href="{{ route('mapel.trash') }}"
-                           class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-xs rounded-lg border border-white/20">
-                            Trash
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+
+                            <svg class="w-3.5 h-3.5 text-red-400" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 
+                                    0116.138 21H7.862a2 2 0 
+                                    01-1.995-1.858L5 7m5 
+                                    4v6m4-6v6m1-10V4a1 
+                                    1 0 00-1-1h-4a1 1 
+                                    0 00-1 1v3M4 7h16" />
+                            </svg>
+
+                            Tempat Sampah
                         </a>
 
-                        <button id="btnTambahMapel"
-                            class="px-3 py-2 bg-[#C8992A] hover:bg-[#b5861f] text-white text-xs rounded-lg font-semibold">
-                            + Tambah Mapel
+                        <button type="button"
+                            id="btnTambahMapel"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
+
+                            <svg class="w-3.5 h-3.5" fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2.5">
+
+                                <path stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+
+                            Tambah Mapel
                         </button>
                     </div>
                 </div>
 
                 {{-- Search --}}
-                <div class="px-6 py-3 bg-slate-50 border-b">
-                    <div class="flex items-center gap-2 max-w-md">
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
+                    <div class="flex items-center gap-2 max-w-sm">
+
                         <div class="relative flex-1">
+
                             <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                <svg class="w-3.5 h-3.5 text-gray-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2">
+
+                                    <path stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M21 21l-6-6m2-5a7 7 0 
+                                        11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
-                            <input
-                                type="text"
+
+                            <input type="text"
                                 id="searchInput"
                                 value="{{ request('search') }}"
-                                placeholder="Cari mapel..."
-                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 focus:border-[#1B3A6B] transition"
-                            >
+                                placeholder="Cari nama mapel..."
+                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition">
                         </div>
-                        <button type="button" id="btnSearch"
-                                class="px-4 py-2 bg-[#1B3A6B] hover:bg-[#0F2145] text-white text-sm font-medium rounded-lg transition">
+
+                        <button type="button"
+                            id="btnSearch"
+                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
                             Cari
                         </button>
+
                         @if(request('search'))
-                            <button type="button" id="btnReset"
-                               class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition">
+                            <button type="button"
+                                id="btnReset"
+                                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-xl transition">
+
                                 Reset
                             </button>
                         @endif
@@ -95,253 +181,269 @@
                 </div>
 
                 {{-- Cards --}}
-                <div class="px-6 py-4">
-                    <div id="mapelCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="px-6 py-5">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
                         @forelse ($mapels as $mapel)
-                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+
+                            <div
+                                class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-200 transition-all overflow-hidden group">
+
                                 {{-- Foto --}}
-                                <div class="aspect-square bg-slate-100 flex items-center justify-center p-4">
+                                <div class="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+
                                     @if($mapel->foto)
-                                        <img src="{{ asset('storage/' . $mapel->foto) }}" alt="Foto {{ $mapel->nama_mapel }}" class="w-full h-full object-cover rounded-lg">
+
+                                        <img src="{{ asset('storage/' . $mapel->foto) }}"
+                                            alt="{{ $mapel->nama_mapel }}"
+                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+
                                     @else
-                                        <div class="w-16 h-16 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
+
+                                        <div
+                                            class="w-20 h-20 bg-amber-100 rounded-2xl flex items-center justify-center">
+
+                                            <svg class="w-10 h-10 text-amber-400"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                stroke-width="1.5">
+
+                                                <path stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    d="M12 14l9-5-9-5-9 
+                                                    5 9 5zm0 
+                                                    0l6.16-3.422A12.083 
+                                                    12.083 0 
+                                                    0112 20.944 
+                                                    12.083 12.083 0 
+                                                    015.84 10.578L12 14z" />
                                             </svg>
                                         </div>
+
                                     @endif
                                 </div>
 
                                 {{-- Content --}}
                                 <div class="p-4">
-                                    <div class="mb-2">
-                                        <span class="inline-block px-2 py-1 bg-[#1B3A6B]/10 text-[#1B3A6B] text-xs font-bold rounded">
-                                            {{ $mapel->kode_mapel }}
-                                        </span>
-                                    </div>
 
-                                    <h3 class="font-semibold text-[#0F2145] text-sm mb-1 line-clamp-2">
+                                    <span
+                                        class="inline-block px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg mb-2 tracking-wide">
+                                        {{ $mapel->kode_mapel }}
+                                    </span>
+
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1 line-clamp-2 leading-snug">
                                         {{ $mapel->nama_mapel }}
                                     </h3>
 
-                                    <p class="text-slate-500 text-xs mb-4 line-clamp-2">
+                                    <p class="text-gray-400 text-xs mb-4 line-clamp-2 leading-relaxed">
                                         {{ $mapel->deskripsi ?? 'Tidak ada deskripsi' }}
                                     </p>
 
-                                    {{-- Aksi --}}
+                                    {{-- Actions --}}
                                     <div class="flex gap-2">
-                                        <button
-                                            class="btn-edit flex-1 px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-medium rounded-lg transition"
-                                            data-id="{{ $mapel->id }}"
-                                            data-kode="{{ $mapel->kode_mapel }}"
-                                            data-nama="{{ $mapel->nama_mapel }}"
-                                            data-deskripsi="{{ $mapel->deskripsi }}"
-                                            data-foto="{{ $mapel->foto }}">
+
+                                        {{-- EDIT --}}
+                                        <button type="button"
+                                            onclick="openEditModal(
+                                                '{{ $mapel->id }}',
+                                                '{{ $mapel->kode_mapel }}',
+                                                '{{ $mapel->nama_mapel }}',
+                                                `{{ $mapel->deskripsi ?? '' }}`,
+                                                '{{ $mapel->foto ? asset('storage/' . $mapel->foto) : '' }}'
+                                            )"
+
+                                            class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 text-xs font-semibold rounded-lg transition">
+
+                                            <svg class="w-3.5 h-3.5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                stroke-width="2.5">
+
+                                                <path stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    d="M11 5H6a2 2 0 
+                                                    00-2 2v11a2 2 0 
+                                                    002 2h11a2 2 0 
+                                                    002-2v-5m-1.414-9.414a2 
+                                                    2 0 112.828 
+                                                    2.828L11.828 
+                                                    15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+
                                             Edit
                                         </button>
 
-                                        <form action="{{ route('mapel.destroy', $mapel) }}" method="POST" class="flex-1"
-                                              onsubmit="return confirm('Hapus mapel ini?')">
+                                        {{-- DELETE --}}
+                                        <form action="{{ route('mapel.destroy', $mapel) }}"
+                                            method="POST"
+                                            class="flex-1"
+                                            onsubmit="return confirm('Yakin ingin menghapus mapel ini?')">
+
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-medium rounded-lg transition">
+
+                                            <button type="submit"
+                                                class="w-full inline-flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 text-xs font-semibold rounded-lg transition">
+
+                                                <svg class="w-3.5 h-3.5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5">
+
+                                                    <path stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        d="M19 7l-.867 12.142A2 2 0 
+                                                        0116.138 21H7.862a2 2 0 
+                                                        01-1.995-1.858L5 
+                                                        7m5 4v6m4-6v6m1-10V4a1 
+                                                        1 0 00-1-1h-4a1 1 
+                                                        0 00-1 1v3M4 7h16" />
+                                                </svg>
+
                                                 Hapus
                                             </button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
+
                         @empty
-                            <div class="col-span-full flex flex-col items-center justify-center py-16">
-                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                                    <svg class="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
-                                    </svg>
+
+                            <div class="col-span-full py-20 text-center">
+
+                                <div class="flex flex-col items-center gap-3">
+
+                                    <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+
+                                        <svg class="w-7 h-7 text-gray-300"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="1.5">
+
+                                            <path stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M12 14l9-5-9-5-9 
+                                                5 9 5zm0 
+                                                0l6.16-3.422A12.083 
+                                                12.083 0 
+                                                0112 20.944 
+                                                12.083 12.083 0 
+                                                015.84 10.578L12 14z" />
+                                        </svg>
+                                    </div>
+
+                                    <p class="text-gray-400 text-sm font-semibold">
+                                        Belum ada data mapel
+                                    </p>
+
+                                    <p class="text-gray-300 text-xs">
+                                        Klik
+                                        <span class="font-semibold text-gray-400">
+                                            + Tambah Mapel
+                                        </span>
+                                        untuk mulai menambahkan
+                                    </p>
                                 </div>
-                                <p class="text-slate-400 text-sm font-medium">Belum ada data mapel</p>
-                                <p class="text-slate-300 text-xs">Klik <span class="font-semibold text-slate-400">Tambah Mapel</span> untuk mulai menambahkan data</p>
                             </div>
+
                         @endforelse
+
                     </div>
                 </div>
 
                 {{-- Pagination --}}
-                <div id="paginationContainer" class="px-6 py-4 border-t bg-slate-50">
-                    {{ $mapels->links() }}
-                </div>
+                @if ($mapels->hasPages())
+                    <div
+                        class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
+
+                        <p class="text-xs text-gray-500">
+                            Menampilkan
+
+                            <span class="font-semibold text-gray-700">
+                                {{ $mapels->firstItem() }}–{{ $mapels->lastItem() }}
+                            </span>
+
+                            dari
+
+                            <span class="font-semibold text-gray-700">
+                                {{ $mapels->total() }}
+                            </span>
+
+                            entri
+                        </p>
+
+                        {{ $mapels->links() }}
+                    </div>
+                @endif
 
             </div>
         </div>
     </div>
 
-    {{-- Include Modal --}}
+    {{-- MODAL --}}
     @include('mapel.modal-create')
     @include('mapel.modal-edit')
 
-    {{-- Script --}}
+    {{-- SCRIPT --}}
     <script>
         const modalCreate = document.getElementById('modalCreate');
-        const modalEdit = document.getElementById('modalEdit');
-        const cardsContainer = document.getElementById('mapelCardsContainer');
-        const paginationContainer = document.getElementById('paginationContainer');
         const searchInput = document.getElementById('searchInput');
         const btnSearch = document.getElementById('btnSearch');
         const btnReset = document.getElementById('btnReset');
 
-        let currentPage = 1;
-        let currentSearch = '{{ $search }}';
-
-        // Function to load data
-        function loadData(search = '', page = 1) {
-            fetch(`{{ route('mapel.index') }}?search=${encodeURIComponent(search)}&page=${page}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                renderCards(data.mapels, page);
-                renderPagination(data.pagination, data.total);
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Function to render cards
-        function renderCards(mapels, currentPage) {
-            if (mapels.length === 0) {
-                cardsContainer.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-16">
-                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                            <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
-                            </svg>
-                        </div>
-                        <p class="text-slate-400 text-sm font-medium mt-4">Belum ada data mapel</p>
-                        <p class="text-slate-300 text-xs">Klik <span class="font-semibold text-slate-400">Tambah Mapel</span> untuk mulai menambahkan data</p>
-                    </div>
-                `;
-                return;
-            }
-
-            cardsContainer.innerHTML = mapels.map((mapel, index) => {
-                const fotoHtml = mapel.foto ?
-                    `<img src="{{ asset('storage/') }}/${mapel.foto}" alt="Foto ${mapel.nama_mapel}" class="w-full h-full object-cover rounded-lg">` :
-                    `<div class="w-16 h-16 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422A12.083 12.083 0 0112 20.944 12.083 12.083 0 015.84 10.578L12 14z" />
-                        </svg>
-                    </div>`;
-                return `
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                        <div class="aspect-square bg-slate-100 flex items-center justify-center p-4">
-                            ${fotoHtml}
-                        </div>
-                        <div class="p-4">
-                            <div class="mb-2">
-                                <span class="inline-block px-2 py-1 bg-[#1B3A6B]/10 text-[#1B3A6B] text-xs font-bold rounded">
-                                    ${mapel.kode_mapel}
-                                </span>
-                            </div>
-                            <h3 class="font-semibold text-[#0F2145] text-sm mb-1 line-clamp-2">${mapel.nama_mapel}</h3>
-                            <p class="text-slate-600 text-xs mb-3 line-clamp-2">${mapel.deskripsi || '-'}</p>
-                            <div class="flex items-center justify-between">
-                                <button type="button"
-                                    data-id="${mapel.id}"
-                                    data-kode="${mapel.kode_mapel}"
-                                    data-nama="${mapel.nama_mapel}"
-                                    data-deskripsi="${mapel.deskripsi || ''}"
-                                    class="btn-edit inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                    Edit
-                                </button>
-                                <form action="/mapel/${mapel.id}" method="POST" onsubmit="return confirm('Yakin ingin menghapus mapel ini?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="_method" value="DELETE">
-                                    <button type="submit"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            bindEditButtons();
-        }
-
-        // Function to render pagination
-        function renderPagination(paginationHtml, total) {
-            if (!paginationHtml) {
-                paginationContainer.style.display = 'none';
-                return;
-            }
-            paginationContainer.style.display = 'flex';
-            paginationContainer.className = 'px-6 py-4 border-t bg-slate-50 flex items-center justify-between gap-4';
-            const infoText = `Menampilkan ${Math.min(1, total)}–${Math.min(4, total)} dari ${total} entri`;
-            paginationContainer.innerHTML = `
-                <p class="text-xs text-slate-500">${infoText}</p>
-                ${paginationHtml}
-            `;
-        }
-
-        // Event listeners
-        searchInput.addEventListener('input', function() {
-            currentSearch = this.value;
-            currentPage = 1;
-            loadData(currentSearch, currentPage);
+        // SEARCH
+        btnSearch.addEventListener('click', () => {
+            window.location.href =
+                `{{ route('mapel.index') }}?search=${encodeURIComponent(searchInput.value)}`;
         });
 
-        btnSearch.addEventListener('click', function() {
-            currentSearch = searchInput.value;
-            currentPage = 1;
-            loadData(currentSearch, currentPage);
-        });
-
+        // RESET
         if (btnReset) {
-            btnReset.addEventListener('click', function() {
-                searchInput.value = '';
-                currentSearch = '';
-                currentPage = 1;
-                loadData('', 1);
+            btnReset.addEventListener('click', () => {
+                window.location.href = `{{ route('mapel.index') }}`;
             });
         }
 
-        // Initial load if no search
-        if (!currentSearch) {
-            loadData('', 1);
-        }
+        // ENTER SEARCH
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnSearch.click();
+            }
+        });
 
-        // Modal events
-        document.getElementById('btnTambahMapel').addEventListener('click', () => modalCreate.style.display = 'block');
-        document.getElementById('cancelCreate').addEventListener('click', () => modalCreate.style.display = 'none');
-        document.getElementById('overlayCreate').addEventListener('click', () => modalCreate.style.display = 'none');
+        // OPEN CREATE MODAL
+        document.getElementById('btnTambahMapel')
+            .addEventListener('click', () => {
 
-        document.getElementById('cancelEdit').addEventListener('click', () => modalEdit.style.display = 'none');
-        document.getElementById('overlayEdit').addEventListener('click', () => modalEdit.style.display = 'none');
-
-        // Edit button events (re-bind after AJAX)
-        function bindEditButtons() {
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.getElementById('editKodeMapel').value = this.dataset.kode;
-                    document.getElementById('editNamaMapel').value = this.dataset.nama;
-                    document.getElementById('editDeskripsi').value = this.dataset.deskripsi;
-                    document.getElementById('formEdit').action = `/mapel/${this.dataset.id}`;
-                    modalEdit.style.display = 'block';
-                });
+                modalCreate.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             });
-        }
 
+        // CLOSE CREATE MODAL
+        document.getElementById('cancelCreate')
+            .addEventListener('click', () => {
+
+                modalCreate.style.display = 'none';
+                document.body.style.overflow = '';
+            });
+
+        // CLOSE OVERLAY
+        document.getElementById('overlayCreate')
+            .addEventListener('click', () => {
+
+                modalCreate.style.display = 'none';
+                document.body.style.overflow = '';
+            });
+
+        // AUTO OPEN CREATE MODAL IF ERROR
         @if ($errors->any())
-            modalCreate.style.display = 'block';
+            modalCreate.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         @endif
     </script>
-
 </x-app-layout>

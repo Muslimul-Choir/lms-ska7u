@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
 
 class Pertemuan extends Model
 {
@@ -17,6 +18,8 @@ class Pertemuan extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_jadwal',
+        'id_guru',
+        'created_by',
         'nomor_pertemuan',
         'tanggal',
         'status',
@@ -29,9 +32,21 @@ class Pertemuan extends Model
         'deleted_at',
     ];
 
+    // ── Relasi ──────────────────────────────────────────
+
      public function JadwalBelajar()
     {
         return $this->belongsTo(JadwalBelajar::class, 'id_jadwal');
+    }
+
+    public function guru()
+    {
+        return $this->belongsTo(Guru::class, 'id_guru');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function materis()

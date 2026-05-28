@@ -7,144 +7,421 @@
                 </svg>
             </div>
             <div>
-                <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">
-                    Ruang Belajar
-                </h2>
+                <h2 class="font-bold text-[15px] text-[#0F2145] tracking-wide uppercase leading-none">Ruang Belajar</h2>
                 <p class="text-[11px] text-slate-400 mt-0.5 tracking-widest uppercase">{{ $jadwalbelajar->mapel->nama_mapel ?? 'Mata Pelajaran' }}</p>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5 flex flex-col md:flex-row gap-6">
-            
-            <!-- Sidebar: Daftar Modul & Materi -->
-            <div class="w-full md:w-1/3 lg:w-1/4">
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-[#0F2145] to-[#1B3A6B] text-white font-semibold text-sm tracking-wide">
-                        Daftar Materi
-                    </div>
-                    <div class="overflow-y-auto max-h-[70vh]">
-                        @foreach ($jadwalbelajar->pertemuan as $pertemuan)
-                            <div class="border-b border-slate-100 last:border-0">
-                                <div class="px-4 py-3 bg-slate-50 text-xs font-bold text-slate-700 uppercase tracking-widest">
-                                    Pertemuan {{ $pertemuan->nomor_pertemuan }}
-                                </div>
-                                <ul>
-                                    @foreach ($pertemuan->materi as $m)
-                                        <li>
-                                            <a href="{{ route('ruang-belajar.show', ['jadwalbelajar' => $jadwalbelajar->id, 'materi' => $m->id]) }}" 
-                                               class="flex items-center justify-between px-4 py-3 text-sm hover:bg-[#1B3A6B]/5 transition-colors {{ $materi->id === $m->id ? 'bg-[#1B3A6B]/10 border-l-4 border-[#1B3A6B] font-semibold text-[#0F2145]' : 'text-slate-600' }}">
-                                                <div class="flex items-center">
-                                                    @if($m->tipe_materi == 'video')
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                    @elseif($m->tipe_materi == 'dokumen')
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                    @else
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                                                    @endif
-                                                    <span class="truncate">{{ $m->judul }}</span>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+<style>
+/* ── Ruang Belajar – Mobile-First ── */
+.rb-root {
+    --brand:      #0F2145;
+    --brand2:     #1B3A6B;
+    --gold:       #C8992A;
+    --surface:    #ffffff;
+    --bg:         #f4f6fb;
+    --text:       #1a1f36;
+    --muted:      #6b7280;
+    --radius-lg:  16px;
+    --radius-md:  12px;
+    --shadow:     0 2px 12px rgba(0,0,0,.07);
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 16px 0 40px;
+}
+
+/* Wrapper */
+.rb-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+@media (min-width: 768px) {
+    .rb-wrap {
+        padding: 0 24px;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 20px;
+    }
+}
+
+/* ── SIDEBAR ── */
+.rb-sidebar {
+    width: 100%;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+@media (min-width: 768px) {
+    .rb-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+}
+
+/* Sidebar toggle (mobile only) */
+.rb-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    background: linear-gradient(135deg, var(--brand), var(--brand2));
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .03em;
+}
+@media (min-width: 768px) {
+    .rb-sidebar-toggle { cursor: default; }
+    .rb-sidebar-toggle .rb-toggle-arrow { display: none; }
+}
+
+.rb-toggle-arrow { transition: transform .25s; }
+.rb-toggle-arrow.open { transform: rotate(180deg); }
+
+.rb-sidebar-list {
+    display: none;
+}
+.rb-sidebar-list.open { display: block; }
+@media (min-width: 768px) {
+    .rb-sidebar-list { display: block !important; }
+}
+
+/* Pertemuan group */
+.rb-pertemuan-label {
+    padding: 8px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    background: #f8faff;
+    border-top: 1px solid #f0f2f7;
+    border-bottom: 1px solid #f0f2f7;
+}
+.rb-materi-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: #374151;
+    text-decoration: none;
+    border-bottom: 1px solid #f4f6fb;
+    transition: background .15s;
+}
+.rb-materi-link:last-child { border-bottom: none; }
+.rb-materi-link:hover { background: #f0f4ff; }
+.rb-materi-link.active {
+    background: #eff6ff;
+    border-left: 3px solid var(--brand2);
+    color: var(--brand);
+    font-weight: 700;
+}
+.rb-materi-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* ── MAIN ── */
+.rb-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Alert */
+.rb-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    color: #166534;
+}
+
+/* Content card */
+.rb-content-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+.rb-content-body { padding: 20px; }
+
+.rb-content-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: #eff6ff;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--brand2);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: 10px;
+}
+
+.rb-content-title {
+    font-size: clamp(17px, 4vw, 24px);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.3;
+}
+
+/* Media box */
+.rb-media-box {
+    background: #0a0a0a;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+.rb-media-box video { width: 100%; display: block; }
+.rb-media-box iframe { width: 100%; min-height: 320px; display: block; border: none; }
+@media (min-width: 640px) { .rb-media-box iframe { min-height: 480px; } }
+
+/* Text content */
+.rb-text-box {
+    background: #f9faff;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius-md);
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: #374151;
+    margin-bottom: 16px;
+}
+
+/* Description */
+.rb-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+    background: #f8faff;
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Nav footer */
+.rb-nav-footer {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.rb-nav-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px; font-weight: 700;
+    text-decoration: none;
+    transition: opacity .2s, transform .15s;
+}
+.rb-nav-btn:hover { opacity: .88; transform: translateY(-1px); }
+.rb-nav-btn.prev { background: #f1f5f9; color: #374151; }
+.rb-nav-btn.done { background: linear-gradient(135deg, var(--gold), #e6ac30); color: #fff; }
+.rb-nav-btn.next { background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; }
+.rb-nav-btn.disabled { background: #f1f5f9; color: #9ca3af; pointer-events: none; cursor: not-allowed; }
+</style>
+
+<div class="rb-root">
+    <div class="rb-wrap">
+
+        {{-- ── SIDEBAR ── --}}
+        <div class="rb-sidebar">
+            <div class="rb-sidebar-toggle" onclick="toggleSidebar()">
+                <span>📋 Daftar Materi</span>
+                <svg class="rb-toggle-arrow" id="sidebarArrow" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
             </div>
-
-            <!-- Main Content: Ruang Belajar -->
-            <div class="w-full md:w-2/3 lg:w-3/4 flex flex-col gap-6">
-                
-                {{-- Alert Success --}}
-                @if (session('success'))
-                    <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="font-medium">{{ session('success') }}</span>
-                        </div>
-                        <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700 transition">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                        </button>
-                    </div>
-                @endif
-
-                <!-- Content Area -->
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6">
-                        <h1 class="text-2xl font-bold text-[#0F2145] mb-2">{{ $materi->judul }}</h1>
-                        <p class="text-slate-500 mb-6 text-xs font-medium tracking-wide uppercase">Pertemuan {{ $materi->pertemuan->nomor_pertemuan }} &bull; Tipe: {{ ucfirst($materi->tipe_materi) }}</p>
-
-                        <!-- Media Display -->
-                        <div class="w-full bg-slate-50 rounded-lg border border-slate-200 overflow-hidden mb-6 flex items-center justify-center min-h-[400px]">
-                            @if($materi->tipe_materi == 'video')
-                                @if($materi->file_url)
-                                    <video controls class="w-full max-h-[500px]">
-                                        <source src="{{ asset('storage/' . $materi->file_url) }}" type="video/mp4">
-                                        Browser Anda tidak mendukung video HTML5.
-                                    </video>
-                                @else
-                                    <div class="text-slate-400 font-medium">Video belum diunggah.</div>
-                                @endif
-                            @elseif($materi->tipe_materi == 'dokumen')
-                                @if($materi->file_url)
-                                    <iframe src="{{ asset('storage/' . $materi->file_url) }}" class="w-full h-[600px]" frameborder="0"></iframe>
-                                @else
-                                    <div class="text-slate-400 font-medium">Dokumen PDF belum diunggah.</div>
-                                @endif
-                            @else
-                                <div class="p-8 prose max-w-none w-full bg-white text-slate-700">
-                                    {!! nl2br(e($materi->deskripsi)) !!}
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Deskripsi -->
-                        @if($materi->tipe_materi != 'lainnya' && $materi->deskripsi)
-                            <div class="prose max-w-none text-slate-700 text-sm">
-                                <h3 class="text-lg font-bold text-[#0F2145] mb-2">Deskripsi Materi</h3>
-                                <p>{!! nl2br(e($materi->deskripsi)) !!}</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Footer Lesson: Navigasi & Tandai Selesai -->
-                <div class="bg-white border border-slate-200 shadow-sm rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div>
-                        @if($prevMateri)
-                            <a href="{{ route('ruang-belajar.show', ['jadwalbelajar' => $jadwalbelajar->id, 'materi' => $prevMateri->id]) }}" class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold tracking-wide transition">
-                                &laquo; Sebelumnya
-                            </a>
-                        @endif
-                    </div>
-                    
-                    <form action="{{ route('ruang-belajar.mark-done', $materi->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center px-6 py-2.5 bg-[#C8992A] hover:bg-[#b5861f] text-white rounded-lg text-xs font-bold tracking-wide transition shadow-md shadow-amber-900/20">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Tandai Selesai
-                        </button>
-                    </form>
-
-                    <div>
-                        @if($nextMateri)
-                            <a href="{{ route('ruang-belajar.show', ['jadwalbelajar' => $jadwalbelajar->id, 'materi' => $nextMateri->id]) }}" class="inline-flex items-center px-4 py-2 bg-[#1B3A6B] hover:bg-[#0F2145] text-white rounded-lg text-xs font-semibold tracking-wide transition">
-                                Berikutnya &raquo;
-                            </a>
-                        @else
-                            <span class="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-400 rounded-lg text-xs font-semibold tracking-wide cursor-not-allowed">
-                                Berikutnya &raquo;
-                            </span>
-                        @endif
-                    </div>
-                </div>
-
+            <div class="rb-sidebar-list" id="sidebarList">
+                @foreach($jadwalbelajar->pertemuan as $pertemuan)
+                    <div class="rb-pertemuan-label">Pertemuan {{ $pertemuan->nomor_pertemuan }}</div>
+                    @foreach($pertemuan->materi as $m)
+                        @php
+                            $mIcons = ['video'=>'🎥','dokumen'=>'📄','link'=>'🔗'];
+                            $mIcoBg = ['video'=>'#fce7f3','dokumen'=>'#dbeafe','link'=>'#fef3c7'];
+                            $ico   = $mIcons[$m->tipe_materi]  ?? '📝';
+                            $icoBg = $mIcoBg[$m->tipe_materi]  ?? '#f4f6fb';
+                        @endphp
+                        <a href="{{ route('ruang-belajar.show', ['jadwalbelajar'=>$jadwalbelajar->id,'materi'=>$m->id]) }}"
+                           class="rb-materi-link {{ $materi->id === $m->id ? 'active' : '' }}">
+                            <div class="rb-materi-icon" style="background:{{ $icoBg }};">{{ $ico }}</div>
+                            <span class="truncate" style="max-width:160px;">{{ $m->judul }}</span>
+                        </a>
+                    @endforeach
+                @endforeach
             </div>
         </div>
-    </div>
+
+        {{-- ── MAIN ── --}}
+        <div class="rb-main">
+
+            {{-- Alert --}}
+            @if(session('success'))
+                <div class="rb-alert">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span>✅</span> {{ session('success') }}
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#16a34a;cursor:pointer;font-size:18px;line-height:1;">×</button>
+                </div>
+            @endif
+
+            {{-- Content Card --}}
+            <div class="rb-content-card">
+                <div class="rb-content-body">
+                    <div class="rb-content-meta">
+                        Pertemuan {{ $materi->pertemuan->nomor_pertemuan }} &bull; {{ ucfirst($materi->tipe_materi) }}
+                    </div>
+                    <h1 class="rb-content-title">{{ $materi->judul }}</h1>
+
+                    {{-- Media --}}
+                    @if($materi->tipe_materi === 'video')
+                        @if($materi->file_url)
+                            <div class="rb-media-box">
+                                <video controls>
+                                    <source src="{{ asset('storage/' . $materi->file_url) }}" type="video/mp4">
+                                    Browser Anda tidak mendukung video HTML5.
+                                </video>
+                            </div>
+                        @else
+                            <div class="rb-media-box">
+                                <div style="color:#6b7280;font-size:13px;padding:32px;text-align:center;">🎥 Video belum diunggah.</div>
+                            </div>
+                        @endif
+
+                    @elseif($materi->tipe_materi === 'dokumen')
+                        @if($materi->file_url)
+                            <div class="rb-media-box">
+                                <iframe src="{{ asset('storage/' . $materi->file_url) }}"></iframe>
+                            </div>
+                            {{-- Download button for mobile (iframe PDF not always usable) --}}
+                            <a href="{{ asset('storage/' . $materi->file_url) }}" download
+                               style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#2563eb;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:16px;">
+                                ⬇️ Unduh Dokumen
+                            </a>
+                        @else
+                            <div class="rb-media-box">
+                                <div style="color:#6b7280;font-size:13px;padding:32px;text-align:center;">📄 Dokumen belum diunggah.</div>
+                            </div>
+                        @endif
+
+                    @elseif($materi->tipe_materi === 'link')
+                        @if($materi->file_url)
+                            <a href="{{ $materi->file_url }}" target="_blank" rel="noopener noreferrer"
+                               style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border-radius:12px;text-decoration:none;font-size:14px;font-weight:700;margin-bottom:16px;word-break:break-all;">
+                                <span>🔗 Buka Tautan Materi</span>
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @endif
+
+                    @else
+                        {{-- Text / lainnya --}}
+                        @if($materi->deskripsi)
+                            <div class="rb-text-box">{!! nl2br(e($materi->deskripsi)) !!}</div>
+                        @endif
+                    @endif
+
+                    {{-- Deskripsi (for non-text types) --}}
+                    @if($materi->tipe_materi !== 'lainnya' && $materi->deskripsi)
+                        <div>
+                            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Deskripsi Materi</div>
+                            <div class="rb-desc">{!! nl2br(e($materi->deskripsi)) !!}</div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Navigation Footer --}}
+            <div class="rb-nav-footer">
+                <div>
+                    @if($prevMateri)
+                        <a href="{{ route('ruang-belajar.show', ['jadwalbelajar'=>$jadwalbelajar->id,'materi'=>$prevMateri->id]) }}"
+                           class="rb-nav-btn prev">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            Sebelumnya
+                        </a>
+                    @else
+                        <span class="rb-nav-btn disabled">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            Sebelumnya
+                        </span>
+                    @endif
+                </div>
+
+                <form action="{{ route('ruang-belajar.mark-done', $materi->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="rb-nav-btn done">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        Tandai Selesai
+                    </button>
+                </form>
+
+                <div>
+                    @if($nextMateri)
+                        <a href="{{ route('ruang-belajar.show', ['jadwalbelajar'=>$jadwalbelajar->id,'materi'=>$nextMateri->id]) }}"
+                           class="rb-nav-btn next">
+                            Berikutnya
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <span class="rb-nav-btn disabled">
+                            Berikutnya
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                    @endif
+                </div>
+            </div>
+
+        </div>{{-- /rb-main --}}
+    </div>{{-- /rb-wrap --}}
+</div>{{-- /rb-root --}}
+
+@push('scripts')
+<script>
+function toggleSidebar() {
+    const list  = document.getElementById('sidebarList');
+    const arrow = document.getElementById('sidebarArrow');
+    list.classList.toggle('open');
+    arrow.classList.toggle('open');
+}
+</script>
+@endpush
+
 </x-app-layout>

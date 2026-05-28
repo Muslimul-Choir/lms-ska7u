@@ -38,5 +38,10 @@ class PengumpulanTugas extends Model
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
+
+     public function Penilaian()
+    {
+        return $this->hasOne(Penilaian::class, 'id_pengumpulan_tugas');
+    }
 }
 

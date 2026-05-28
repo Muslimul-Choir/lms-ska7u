@@ -32,8 +32,8 @@ class UpdateGuruRequest extends FormRequest
                 'required',
                 'email',
                 'max:150',
-                Rule::unique('guru', 'email')->ignore($guruId),
-                Rule::unique('users', 'email')->ignore($guru->id_user),
+                Rule::unique('guru', 'email')->ignore($guruId)->whereNull('deleted_at'),
+                Rule::unique('users', 'email')->ignore($guru->id_user)->whereNull('deleted_at'),
             ],
             'status_pengajar' => ['required', 'in:pengajar,walikelas,keduanya'],
         ];

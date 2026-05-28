@@ -20,8 +20,8 @@ class UpdateSiswaRequest extends FormRequest
             'nama_lengkap'  => ['required', 'string', 'max:150'],
             'email'         => [
                 'required', 'email', 'max:150',
-                Rule::unique('siswa', 'email')->ignore($siswa->id),
-                Rule::unique('users', 'email')->ignore($siswa->id_user),
+                Rule::unique('siswa', 'email')->ignore($siswa->id)->whereNull('deleted_at'),
+                Rule::unique('users', 'email')->ignore($siswa->id_user)->whereNull('deleted_at'),
             ],
             'agama'         => ['required', 'in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu'],
             'tanggal_lahir' => ['required', 'date', 'before:today'],

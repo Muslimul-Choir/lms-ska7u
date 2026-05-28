@@ -37,6 +37,11 @@ class AuthenticatedSessionController extends Controller
                 ->with('status', 'verification-link-sent');
         }
 
+        // Role-based redirection
+        if ($user->role === 'siswa') {
+            return redirect()->intended(route('siswa.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
