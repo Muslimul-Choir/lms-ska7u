@@ -58,7 +58,7 @@
                                 onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
                                 onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
                             <option value="">-- Pilih Jadwal --</option>
-                            @foreach(\App\Models\JadwalBelajar::all() as $jadwal)
+                            @foreach($jadwalBelajars as $jadwal)
                                 <option value="{{ $jadwal->id }}" {{ old('id_jadwal') == $jadwal->id ? 'selected' : '' }}>
                                     {{ $jadwal->nama_jadwal ?? 'Jadwal #' . $jadwal->id }}
                                 </option>

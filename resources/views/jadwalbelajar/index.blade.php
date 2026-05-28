@@ -61,6 +61,7 @@
                         </h3>
                         <p class="text-xs text-gray-400 mt-0.5 ml-3">Pilih tingkat dan kelas untuk menampilkan jadwal</p>
                     </div>
+                    @if($isAdmin)
                     <div class="flex items-center gap-2">
                         <a href="{{ route('jadwalbelajar.trash') }}"
                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
@@ -77,6 +78,20 @@
                             Print
                         </button>
                     </div>
+                    @else
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.print()"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                            </svg>
+                            Print
+                        </button>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-200">
+                            👁️ Mode Lihat Saja
+                        </span>
+                    </div>
+                    @endif
                 </div>
 
                 <form method="GET" action="{{ route('jadwalbelajar.index') }}"
@@ -103,7 +118,8 @@
                     {{-- Filter Kelas --}}
                     <div class="relative">
                         <select name="id_kelas" id="filterKelas"
-                                class="appearance-none pl-3 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition cursor-pointer">
+                                class="appearance-none pl-3 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition cursor-pointer"
+                                @if($isGuru && $kelasList->isEmpty()) disabled @endif>
                             <option value="">Pilih Kelas</option>
                             @foreach ($kelasList as $kls)
                                 @php
@@ -148,8 +164,32 @@
             </div>
 
             {{-- GRID JADWAL --}}
-            @if (!$idKelas && !$tingkat)
-                {{-- Belum ada filter --}}
+            @if ($isGuru && $kelasList->isEmpty())
+                {{-- Guru belum diassign ke mapel apapun --}}
+                <div class="bg-white rounded-2xl border border-blue-200 shadow-sm px-6 py-20 text-center">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <p class="text-blue-600 text-sm font-semibold">Belum Ada Kelas yang Ditugaskan</p>
+                        <p class="text-blue-400 text-xs max-w-xs">Anda belum diassign ke mapel apapun. Hubungi administrator untuk diassign mengajar di kelas-kelas tertentu.</p>
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-left text-xs text-blue-700">
+                            <p class="font-semibold mb-1">📋 Langkah untuk administrator:</p>
+                            <p>Buka menu <strong>Guru Mapel</strong>, lalu tambahkan guru ini dengan memilih:</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>Guru: Nama guru ini</li>
+                                <li>Mapel: Mata pelajaran yang akan diajarkan</li>
+                                <li>Kelas: Kelas yang akan diajarkan</li>
+                                <li>Semester: Semester yang berlaku</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            @elseif (!$idKelas && !$tingkat && !$isGuru)
+                {{-- Belum ada filter (hanya tampilkan ke admin yang belum filter) --}}
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-20 text-center">
                     <div class="flex flex-col items-center gap-3">
                         <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
@@ -159,6 +199,13 @@
                         </div>
                         <p class="text-gray-500 text-sm font-semibold">Pilih Tingkat atau Kelas</p>
                         <p class="text-gray-300 text-xs">Silakan pilih tingkat atau kelas terlebih dahulu untuk menampilkan jadwal belajar.</p>
+                        <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-left text-xs text-amber-700 max-w-sm">
+                            <p class="font-semibold mb-2">📚 Setup Jadwal Belajar untuk Guru Baru:</p>
+                            <ol class="list-decimal list-inside space-y-1">
+                                <li><strong>Guru Mapel</strong> - Assign guru ke mapel dan kelas (menentukan apa+siapa+di mana)</li>
+                                <li><strong>Jadwal Belajar</strong> - Tentukan hari, jam, dan alokasi guru untuk setiap kelas (di sini)</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
 
@@ -214,6 +261,8 @@
 
                                                 @if ($cellJadwals->isEmpty())
                                                     <div class="flex justify-center items-center min-h-[80px]">
+                                                        @if($isAdmin)
+                                                        {{-- Admin: tombol tambah --}}
                                                         <button type="button"
                                                                 onclick="openModalCreate('{{ $hari }}', '{{ $jam->id }}')"
                                                                 class="w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition">
@@ -221,6 +270,10 @@
                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                                                             </svg>
                                                         </button>
+                                                        @else
+                                                        {{-- Guru: sel kosong --}}
+                                                        <span class="text-gray-200 text-xs">—</span>
+                                                        @endif
                                                     </div>
                                                 @else
                                                     <div class="space-y-2 py-1">
@@ -237,6 +290,8 @@
                                                                         {{ $jadwal->nama_guru }}
                                                                     </p>
                                                                 @endif
+                                                                @if($isAdmin)
+                                                                {{-- Admin: tombol edit & hapus --}}
                                                                 <div class="flex items-center gap-1.5 mt-2">
                                                                     <button type="button"
                                                                             onclick="openModalEdit(
@@ -267,6 +322,7 @@
                                                                         </button>
                                                                     </form>
                                                                 </div>
+                                                                @endif
                                                             </div>
                                                         @endforeach
                                                     </div>
@@ -280,6 +336,20 @@
                     </div>
                 </div>
 
+                @if($jadwals->isEmpty() && ($idKelas || $tingkat))
+                    <div class="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4 mt-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div>
+                                <p class="text-blue-900 text-sm font-semibold">Belum ada jadwal belajar di kelas ini</p>
+                                <p class="text-blue-700 text-xs mt-1">Klik tombol <strong>+</strong> pada sel kosong di atas untuk menambah jadwal belajar pertama.</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <style>
                     @media print {
                         .bg-amber-50 { background-color: #fffbeb !important; }
@@ -292,10 +362,13 @@
         </div>
     </div>
 
+    @if($isAdmin)
     @include('jadwalbelajar.modal-create')
     @include('jadwalbelajar.modal-edit')
+    @endif
 
     <script>
+        @if($isAdmin)
         const modalCreate = document.getElementById('modalCreate');
         const modalEdit   = document.getElementById('modalEdit');
 
@@ -354,6 +427,7 @@
         @if ($errors->any())
             modalCreate.style.display = 'flex';
         @endif
+        @endif
 
         const filterTingkat = document.getElementById('filterTingkat');
         const filterKelas   = document.getElementById('filterKelas');
@@ -374,5 +448,4 @@
             filterKelasByTingkat(this.value);
         });
     </script>
-
 </x-app-layout>

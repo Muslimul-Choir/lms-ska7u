@@ -18,11 +18,15 @@
     <div class="px-4">
         <div class="flex-shrink-0 flex items-center justify-between px-2 h-16 rounded-lg border-b-2 border-[#c9982a]">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
-                    <svg class="w-4 h-4 text-orange-100" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-                    </svg>
-                </span>
+                @if(Auth::user() && Auth::user()->role === 'siswa')
+                    <x-student-logo class="w-9 h-9 flex-shrink-0" />
+                @else
+                    <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
+                        <svg class="w-4 h-4 text-orange-100" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+                        </svg>
+                    </span>
+                @endif
                 <div>
                     <p class="font-heading font-bold text-white text-sm leading-tight">
                         {{ config('app.name', 'LMS SKA7U') }}</p>
@@ -42,7 +46,17 @@
 
 
     {{-- ── NAVIGATION (scrollable) ── --}}
-    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5 scrollbar-thin">
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5 scrollbar-thin"
+         x-data="{ scrollPos: 0 }"
+         x-init="
+            $nextTick(() => {
+                const saved = sessionStorage.getItem('lms_sidebar_scroll');
+                if (saved) {
+                    $el.scrollTop = parseInt(saved);
+                }
+            });
+         "
+         @scroll.passive="sessionStorage.setItem('lms_sidebar_scroll', $el.scrollTop)">
 
         @php
             function navActive(string $pattern): string
@@ -71,6 +85,8 @@
         {{-- ─────────────────────────────
              UMUM
         ───────────────────────────── --}}
+        @auth
+        @unless(Auth::user()->role === 'siswa')
         <p class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Umum</p>
 
         {{-- Dashboard --}}
@@ -89,6 +105,7 @@
             @endif
         </a>
 
+        @if(in_array(Auth::user()->role, ['admin', 'super_admin']))
         {{-- Admin Management --}}
         <a href="{{ route('users.index') }}"
             class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('users.*') }}">
@@ -227,12 +244,14 @@
                 <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
             @endif
         </a>
+        @endif
 
         {{-- ─────────────────────────────
              PEMBELAJARAN
         ───────────────────────────── --}}
         <p class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Pembelajaran</p>
 
+        @if(in_array(Auth::user()->role, ['admin', 'super_admin']))
         {{-- Mapel --}}
         <a href="{{ route('mapel.index') }}"
             class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('mapel.*') }}">
@@ -274,6 +293,7 @@
                 <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
             @endif
         </a>
+        @endif
 
         {{-- Jadwal Belajar --}}
         <a href="{{ route('jadwalbelajar.index') }}"
@@ -324,16 +344,30 @@
         ───────────────────────────── --}}
         <p class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Konten & Evaluasi</p>
 
-        {{-- Materi & Tugas --}}
+        {{-- Materi --}}
         <a href="{{ route('materi.index') }}"
             class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('materi.*') }}">
             <svg class="{{ iconActive('materi.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24" stroke-width="2">
-                <circle cx="12" cy="12" r="9" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            <span class="flex-1 truncate tracking-wide {{ textActive('materi.*') }}">Materi & Tugas</span>
+            <span class="flex-1 truncate tracking-wide {{ textActive('materi.*') }}">Materi</span>
             @if (navIndicator('materi.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Tugas --}}
+        <a href="{{ route('tugas.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('tugas.*') }}">
+            <svg class="{{ iconActive('tugas.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('tugas.*') }}">Tugas</span>
+            @if (navIndicator('tugas.*'))
                 <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
             @endif
         </a>
@@ -367,6 +401,21 @@
             @endif
         </a>
 
+        {{-- Kuis --}}
+        <a href="{{ route('kuis.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('kuis.*') }} {{ navActive('soal_kuis.*') }} {{ navActive('hasil_kuis.*') }}">
+            <svg class="{{ iconActive('kuis.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('kuis.*') }}">Kuis</span>
+            @if (navIndicator('kuis.*') || navIndicator('soal_kuis.*') || navIndicator('hasil_kuis.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        @if(in_array(Auth::user()->role, ['admin', 'super_admin']))
         {{-- ─────────────────────────────
              SISTEM
         ───────────────────────────── --}}
@@ -385,6 +434,116 @@
                 <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
             @endif
         </a>
+        @endif
+        @endunless
+
+        {{-- ── SISWA MENU ── --}}
+        @if(Auth::user()->role === 'siswa')
+        <p class="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Pembelajaran</p>
+
+        {{-- Dashboard Siswa --}}
+        <a href="{{ route('siswa.dashboard') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.dashboard') }}">
+            <svg class="{{ iconActive('siswa.dashboard') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.dashboard') }}">Dashboard</span>
+            @if (navIndicator('siswa.dashboard'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Materi --}}
+        <a href="{{ route('siswa.materi.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.materi.*') }}">
+            <svg class="{{ iconActive('siswa.materi.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.materi.*') }}">Materi</span>
+            @if (navIndicator('siswa.materi.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Tugas --}}
+        <a href="{{ route('siswa.tugas.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.tugas.*') }}">
+            <svg class="{{ iconActive('siswa.tugas.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.tugas.*') }}">Tugas</span>
+            @if (navIndicator('siswa.tugas.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Kuis --}}
+        <a href="{{ route('siswa.kuis.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.kuis.*') }}">
+            <svg class="{{ iconActive('siswa.kuis.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.kuis.*') }}">Kuis</span>
+            @if (navIndicator('siswa.kuis.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Jadwal --}}
+        <a href="{{ route('siswa.jadwal.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.jadwal.*') }}">
+            <svg class="{{ iconActive('siswa.jadwal.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path stroke-linecap="round" d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.jadwal.*') }}">Jadwal</span>
+            @if (navIndicator('siswa.jadwal.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Absensi --}}
+        <a href="{{ route('siswa.absensi.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.absensi.*') }}">
+            <svg class="{{ iconActive('siswa.absensi.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <circle cx="12" cy="12" r="9" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.absensi.*') }}">Absensi</span>
+            @if (navIndicator('siswa.absensi.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+
+        {{-- Pertemuan --}}
+        <a href="{{ route('siswa.pertemuan.index') }}"
+            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.pertemuan.*') }}">
+            <svg class="{{ iconActive('siswa.pertemuan.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                <rect x="9" y="3" width="6" height="4" rx="1" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4" />
+            </svg>
+            <span class="flex-1 truncate tracking-wide {{ textActive('siswa.pertemuan.*') }}">Pertemuan</span>
+            @if (navIndicator('siswa.pertemuan.*'))
+                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+            @endif
+        </a>
+        @endif
+        @endauth
 
     </nav>
 

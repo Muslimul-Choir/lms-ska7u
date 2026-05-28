@@ -10,25 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('jam_belajar', function (Blueprint $table) {
-        $table->id();
-        $table->time('jam_mulai');
-        $table->time('jam_selesai');
+    {
+        Schema::create('jam_belajar', function (Blueprint $table) {
+            $table->id();
 
-        // Tambahan sesuai model
-        $table->unsignedBigInteger('id_tingkatan');
+            // Relasi ke tabel tingkatan
+            $table->foreignId('id_tingkatan')
+                  ->constrained('tingkatan')
+                  ->onDelete('cascade');
 
-        // Foreign key (relasi ke tabel tingkatan)
-        $table->foreign('id_tingkatan')
-              ->references('id')
-              ->on('tingkatan')
-              ->onDelete('cascade');
+            $table->time('jam_mulai');
+            $table->time('jam_selesai');
 
-        $table->timestamps();
-        $table->softDeletes();
-    });
-}
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
 
     /**
      * Reverse the migrations.

@@ -11,11 +11,38 @@ class TugasController extends Controller
 {
     public function index()
     {
-        $tugas = Tugas::with(['pertemuan', 'guru', 'Mapel', 'GuruMapel'])->latest()->paginate(10);
-        $pertemuans = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->get();
-        $gurus = Guru::all();
-        $mapels = \App\Models\Mapel::all();
-        $guruMapels = \App\Models\GuruMapel::with(['Mapel', 'Guru'])->get();
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        if ($isGuru) {
+            $guru = $user->guru;
+            $tugas = Tugas::with(['pertemuan', 'guru', 'Mapel', 'GuruMapel'])
+                ->where('id_guru', $guru->id)
+                ->latest()
+                ->paginate(10);
+            
+            $pertemuans = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')
+                ->whereHas('JadwalBelajar.GuruMapel', function($q) use ($guru) {
+                    $q->where('id_guru', $guru->id);
+                })->get();
+                
+            $gurus = Guru::where('id', $guru->id)->get();
+            
+            $mapels = \App\Models\Mapel::whereHas('GuruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            })->get();
+            
+            $guruMapels = \App\Models\GuruMapel::with(['Mapel', 'Guru'])
+                ->where('id_guru', $guru->id)
+                ->get();
+        } else {
+            $tugas = Tugas::with(['pertemuan', 'guru', 'Mapel', 'GuruMapel'])->latest()->paginate(10);
+            $pertemuans = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->get();
+            $gurus = Guru::all();
+            $mapels = \App\Models\Mapel::all();
+            $guruMapels = \App\Models\GuruMapel::with(['Mapel', 'Guru'])->get();
+        }
+        
         return view('tugas.index', compact('tugas', 'pertemuans', 'gurus', 'mapels', 'guruMapels'));
     }
 
