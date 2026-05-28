@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Guru;
+use App\Models\JadwalBelajar;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -62,6 +63,11 @@ class Kelas extends Model
     public function Siswa()
     {
         return $this->hasMany(Siswa::class, 'id_kelas');
+    }
+
+    public function jadwalBelajars()
+    {
+        return $this->hasMany(JadwalBelajar::class, 'id_kelas');
     }
 
     /**

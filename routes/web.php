@@ -28,13 +28,58 @@ use App\Models\TahunAjaran;
 use App\Models\Tingkatan;
 use App\Models\Pertemuan;
 use App\Models\Absensi;
+use App\Models\Kuis;
+use App\Models\SoalKuis;
+use App\Models\HasilKuis;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// 🧪 Testing Routes - DEVELOPMENT ONLY
+if (config('app.debug')) {
+    Route::get('/test-email', function () {
+        return view('test-email');
+    })->name('test-email');
+    
+    Route::post('/test-email-send', function (\Illuminate\Http\Request $request) {
+        try {
+            $email = $request->input('email');
+            $password = $request->input('password', '12345678');
+            
+            \Illuminate\Support\Facades\Log::info("Testing email send to: $email");
+            \Illuminate\Support\Facades\Log::info("Mail config: " . json_encode([
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'from' => config('mail.from.address'),
+            ]));
+            
+            $testSiswa = new \App\Models\Siswa();
+            $testSiswa->nama_lengkap = 'Test User';
+            $testSiswa->email = $email;
+            
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\Siswa\KirimAkunSiswa($testSiswa, $password));
+            
+            \Illuminate\Support\Facades\Log::info("Email test sent successfully to: $email");
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => "✅ Email test berhasil dikirim ke: $email",
+                'check_spam' => 'Silakan cek folder Spam/Junk email Anda'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Email test failed: " . $e->getMessage());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => "❌ Gagal mengirim email: " . $e->getMessage(),
+                'details' => config('app.debug') ? $e->getTraceAsString() : null
+            ], 500);
+        }
+    })->name('test-email-send');
+}
 
 // Route::bind() harus di luar middleware group agar terdaftar secara global
 Route::bind('bagian',         fn($v) => Bagian::withTrashed()->findOrFail($v));
@@ -48,8 +93,16 @@ Route::bind('jambelajar',     fn($v) => JamBelajar::withTrashed()->findOrFail($v
 Route::bind('jadwalbelajar', fn($v) => JadwalBelajar::withTrashed()->findOrFail($v));
 Route::bind('pertemuan', fn($v) => Pertemuan::withTrashed()->findOrFail($v));
 Route::bind('absensi', fn($v) => Absensi::withTrashed()->findOrFail($v));
+Route::bind('kuis', fn($v) => Kuis::withTrashed()->findOrFail($v));
+Route::bind('soal', fn($v) => SoalKuis::withTrashed()->findOrFail($v));
+Route::bind('hasil', fn($v) => HasilKuis::withTrashed()->findOrFail($v));
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// ============================================================
+// 👤 ADMIN/GURU ROUTES - Protected with Role Middleware
+// ============================================================
+Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(function () {
+    
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -186,7 +239,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/trash/{id}/force',       'forceDelete')->name('force-delete');
 
         Route::get('/',                          'index')->name('index');
+        Route::get('/create',                    'create')->name('create');
         Route::post('/',                         'store')->name('store');
+        Route::get('/{pertemuan}',               'show')->name('show');
         Route::get('/{pertemuan}/edit',          'edit')->name('edit');
         Route::put('/{pertemuan}',               'update')->name('update');
         Route::delete('/{pertemuan}',            'destroy')->name('destroy');
@@ -215,6 +270,80 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('pengumpulan-tugas', \App\Http\Controllers\PengumpulanTugasController::class)->only(['index']);
     Route::resource('penilaian', \App\Http\Controllers\PenilaianController::class)->only(['index']);
     Route::resource('activity-log', \App\Http\Controllers\ActivityLogController::class)->only(['index']);
+
+    // Pengumpulan Tugas - Rekap & Download (Task 4.1)
+    Route::get('/tugas/{tugas}/rekap', [\App\Http\Controllers\PengumpulanTugasController::class, 'rekap'])->name('tugas.rekap');
+    Route::get('/tugas/{tugas}/rekap/export-pdf', [\App\Http\Controllers\PengumpulanTugasController::class, 'exportPdf'])->name('tugas.rekap.export-pdf');
+    Route::get('/pengumpulan-tugas/{pengumpulanTugas}/download', [\App\Http\Controllers\PengumpulanTugasController::class, 'download'])->name('pengumpulan-tugas.download');
+
+    // Penilaian - Quick Store via AJAX (Task 5.2)
+    Route::post('/penilaian/quick-store', [\App\Http\Controllers\PenilaianController::class, 'quickStore'])->name('penilaian.quick-store');
+
+    // Kuis Routes (Task 7.2)
+    Route::prefix('kuis')->name('kuis.')->controller(\App\Http\Controllers\KuisController::class)->group(function () {
+        Route::get('/trash',                     'trash')->name('trash');
+        Route::patch('/trash/{id}/restore',      'restore')->name('restore');
+        Route::delete('/trash/{id}/force',       'forceDelete')->name('force-delete');
+
+        Route::get('/',                          'index')->name('index');
+        Route::get('/create',                    'create')->name('create');
+        Route::post('/',                         'store')->name('store');
+        Route::get('/{kuis}',                    'show')->name('show');
+        Route::get('/{kuis}/edit',               'edit')->name('edit');
+        Route::put('/{kuis}',                    'update')->name('update');
+        Route::delete('/{kuis}',                 'destroy')->name('destroy');
+    });
+
+    // Soal Kuis Routes (Task 8.2) - Nested under kuis
+    Route::prefix('kuis/{kuis}/soal')->name('soal_kuis.')->controller(\App\Http\Controllers\SoalKuisController::class)->group(function () {
+        Route::get('/',                          'index')->name('index');
+        Route::post('/',                         'store')->name('store');
+        Route::get('/{soal}/edit',               'edit')->name('edit');
+        Route::put('/{soal}',                    'update')->name('update');
+        Route::delete('/{soal}',                 'destroy')->name('destroy');
+    });
+
+    // Hasil Kuis Routes (Task 9.3) - Nested under kuis
+    Route::get('/kuis/{kuis}/hasil/{hasil}', [\App\Http\Controllers\HasilKuisController::class, 'show'])->name('hasil_kuis.show');
+});
+
+// ============================================================
+// 👨‍🎓 STUDENT ROUTES - Protected with Student Role Middleware
+// ============================================================
+Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
+    Route::get('/siswa/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
+    
+    // Materi & Mapel
+    Route::get('/siswa/materi', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'index'])->name('siswa.materi.index');
+    Route::get('/siswa/materi/mapel/{id_mapel}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMapel'])->name('siswa.materi.mapel');
+    Route::get('/siswa/materi/{id}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMateri'])->name('siswa.materi.show');
+    
+    // Tugas
+    Route::get('/siswa/tugas', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'index'])->name('siswa.tugas.index');
+    Route::get('/siswa/tugas/{id}', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'show'])->name('siswa.tugas.show');
+    Route::post('/siswa/tugas/{id}/submit', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'store'])->name('siswa.tugas.store');
+    
+    // Kuis
+    Route::get('/siswa/kuis', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'index'])->name('siswa.kuis.index');
+    Route::get('/siswa/kuis/{kuis}', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'show'])->name('siswa.kuis.show');
+    Route::post('/siswa/kuis/{kuis}/mulai', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'mulai'])->name('siswa.kuis.mulai');
+    Route::get('/siswa/kuis/{kuis}/kerjakan', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'kerjakan'])->name('siswa.kuis.kerjakan');
+    Route::post('/siswa/kuis/{kuis}/submit', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'submit'])->name('siswa.kuis.submit');
+    Route::get('/siswa/kuis/{kuis}/hasil', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'hasil'])->name('siswa.kuis.hasil');
+    
+    // Absensi
+    Route::get('/siswa/absensi', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'index'])->name('siswa.absensi.index');
+    
+    // Jadwal Belajar
+    Route::get('/siswa/jadwal', [\App\Http\Controllers\Siswa\SiswaJadwalController::class, 'index'])->name('siswa.jadwal.index');
+
+    // Pertemuan
+    Route::get('/siswa/pertemuan', [\App\Http\Controllers\Siswa\SiswaPertemuanController::class, 'index'])->name('siswa.pertemuan.index');
+    Route::get('/siswa/pertemuan/{id}', [\App\Http\Controllers\Siswa\SiswaPertemuanController::class, 'show'])->name('siswa.pertemuan.show');
+
+    // Profil Siswa
+    Route::get('/siswa/profil', [\App\Http\Controllers\Siswa\SiswaProfileController::class, 'show'])->name('siswa.profil');
+    Route::put('/siswa/profil/password', [\App\Http\Controllers\Siswa\SiswaProfileController::class, 'updatePassword'])->name('siswa.profil.password');
 });
 
 require __DIR__ . '/auth.php';

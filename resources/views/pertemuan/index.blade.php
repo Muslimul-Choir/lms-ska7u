@@ -224,7 +224,29 @@
 
                         <tbody class="divide-y divide-gray-100">
 
-                            @forelse ($pertemuans as $pertemuan)
+                            @if ($isGuru && $jadwalBelajars->isEmpty())
+                                {{-- Guru belum diassign ke mapel apapun --}}
+                                <tr>
+                                    <td colspan="6" class="px-6 py-16">
+                                        <div class="flex flex-col items-center justify-center text-center gap-3">
+                                            <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <svg class="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p class="text-blue-600 text-sm font-semibold">Belum Ada Jadwal yang Ditugaskan</p>
+                                                <p class="text-blue-400 text-xs max-w-xs mt-1">Anda belum diassign ke mapel apapun. Hubungi administrator untuk diassign mengajar di kelas-kelas tertentu.</p>
+                                                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-left text-xs text-blue-700 max-w-xs">
+                                                    <p class="font-semibold mb-1">📋 Langkah untuk administrator:</p>
+                                                    <p>Buka menu <strong>Guru Mapel</strong>, lalu tambahkan guru ini.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @else
+                                @forelse ($pertemuans as $pertemuan)
 
                                 <tr class="hover:bg-amber-50/40 transition">
 
@@ -348,6 +370,7 @@
                                 </tr>
 
                             @endforelse
+                            @endif
 
                         </tbody>
                     </table>
@@ -519,5 +542,4 @@
         @endif
 
     </script>
-
 </x-app-layout>

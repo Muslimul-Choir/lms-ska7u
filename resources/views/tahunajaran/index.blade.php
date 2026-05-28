@@ -393,5 +393,4 @@
         @endif
 
     </script>
-
 </x-app-layout>

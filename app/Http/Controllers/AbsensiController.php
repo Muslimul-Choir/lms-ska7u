@@ -15,11 +15,14 @@ class AbsensiController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
         $search           = $request->get('search');
         $pertemuan_filter = $request->get('id_pertemuan');
         $status_filter    = $request->get('status');
 
-        $absensis = Absensi::with(['pertemuan', 'siswa'])
+        $absensiQuery = Absensi::with(['pertemuan', 'siswa'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('siswa', function ($q) use ($search) {
                     $q->where('nama_lengkap', 'like', '%' . $search . '%')
@@ -31,8 +34,16 @@ class AbsensiController extends Controller
             })
             ->when($status_filter, function ($query, $status_filter) {
                 return $query->where('status', $status_filter);
-            })
-            ->latest()
+            });
+
+        if ($isGuru) {
+            $guru = $user->guru;
+            $absensiQuery->whereHas('pertemuan.jadwalBelajar.guruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            });
+        }
+
+        $absensis = $absensiQuery->latest()
             ->paginate(5)
             ->withQueryString();
 
@@ -44,8 +55,21 @@ class AbsensiController extends Controller
             ]);
         }
 
-        $pertemuans = Pertemuan::all();
-        $siswas     = Siswa::all();
+        $pertemuanQuery = Pertemuan::query();
+        $siswaQuery = Siswa::query();
+
+        if ($isGuru) {
+            $guru = $user->guru;
+            $myClassIds = \App\Models\GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            
+            $pertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            });
+            $siswaQuery->whereIn('id_kelas', $myClassIds);
+        }
+
+        $pertemuans = $pertemuanQuery->get();
+        $siswas     = $siswaQuery->get();
 
         return view('absensi.index', compact(
             'absensis',
@@ -59,8 +83,24 @@ class AbsensiController extends Controller
 
     public function create(): View
     {
-        $pertemuans = Pertemuan::all();
-        $siswas     = Siswa::all();
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        $pertemuanQuery = Pertemuan::query();
+        $siswaQuery = Siswa::query();
+
+        if ($isGuru) {
+            $guru = $user->guru;
+            $myClassIds = \App\Models\GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            
+            $pertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            });
+            $siswaQuery->whereIn('id_kelas', $myClassIds);
+        }
+
+        $pertemuans = $pertemuanQuery->get();
+        $siswas     = $siswaQuery->get();
 
         return view('absensi.create', compact('pertemuans', 'siswas'));
     }
@@ -83,8 +123,24 @@ class AbsensiController extends Controller
 
     public function edit(Absensi $absensi): View
     {
-        $pertemuans = Pertemuan::all();
-        $siswas     = Siswa::all();
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        $pertemuanQuery = Pertemuan::query();
+        $siswaQuery = Siswa::query();
+
+        if ($isGuru) {
+            $guru = $user->guru;
+            $myClassIds = \App\Models\GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            
+            $pertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            });
+            $siswaQuery->whereIn('id_kelas', $myClassIds);
+        }
+
+        $pertemuans = $pertemuanQuery->get();
+        $siswas     = $siswaQuery->get();
 
         return view('absensi.edit', compact('absensi', 'pertemuans', 'siswas'));
     }

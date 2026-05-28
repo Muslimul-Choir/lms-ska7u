@@ -109,12 +109,16 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
-                <span class="flex-shrink-0 w-7 h-7 rounded-md bg-amber-500 flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-orange-100" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-                    </svg>
-                </span>
+            <a href="@auth{{ Auth::user()->role === 'siswa' ? route('siswa.dashboard') : route('dashboard') }}@else{{ route('dashboard') }}@endauth" class="flex items-center gap-2.5">
+                @if(Auth::user() && Auth::user()->role === 'siswa')
+                    <x-student-logo class="w-8 h-8 flex-shrink-0" />
+                @else
+                    <span class="flex-shrink-0 w-7 h-7 rounded-md bg-amber-500 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-orange-100" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+                        </svg>
+                    </span>
+                @endif
                 <span class="font-heading font-semibold text-white text-sm">{{ config('app.name', 'LMS SKA7U') }}</span>
             </a>
             @auth
@@ -127,21 +131,28 @@
         </header>
 
         {{-- Desktop page header --}}
-        @isset($header)
-            <div class=" bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        @hasSection('header')
+            <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 py-5">
-                    {{ $header }}
+                    {{-- Breadcrumb --}}
+                    @hasSection('breadcrumb')
+                        <nav class="flex items-center gap-2 text-xs text-slate-500 mb-3" aria-label="Breadcrumb">
+                            @yield('breadcrumb')
+                        </nav>
+                    @endif
+                    
+                    @yield('header')
                 </div>
             </div>
-        @endisset
+        @endif
 
         {{-- Content --}}
         <main
             class="flex-1 w-full max-w-screen-2xl mx-auto
-                         px-4 pt-4 pb-8
+                         px-4 pt-4 pb-8 @auth @if(Auth::user()->role === 'siswa') pb-24 lg:pb-8 @endif @endauth
                          sm:px-6 sm:pt-6
                          lg:px-8 lg:py-8">
-            {{ $slot }}
+            @yield('content')
         </main>
 
         {{-- Footer --}}
@@ -154,7 +165,154 @@
         </footer>
     </div>
 
+    @auth
+        @if(Auth::user()->role === 'siswa')
+            {{-- Modern Mobile Bottom Nav --}}
+            <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pb-safe">
+                <div class="flex justify-around items-center h-16 max-w-md mx-auto px-2">
+                    {{-- Home / Dashboard --}}
+                    <a href="{{ route('siswa.dashboard') }}" class="flex flex-col items-center justify-center flex-1 text-[10px] gap-1 transition-colors {{ request()->routeIs('siswa.dashboard') ? 'text-amber-500 font-semibold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg>
+                        <span>Home</span>
+                    </a>
+                    
+                    {{-- Materi --}}
+                    <a href="{{ route('siswa.materi.index') }}" class="flex flex-col items-center justify-center flex-1 text-[10px] gap-1 transition-colors {{ request()->routeIs('siswa.materi.*') ? 'text-amber-500 font-semibold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <span>Materi</span>
+                    </a>
+                    
+                    {{-- Absensi --}}
+                    <a href="{{ route('siswa.absensi.index') }}" class="flex flex-col items-center justify-center flex-1 text-[10px] gap-1 transition-colors {{ request()->routeIs('siswa.absensi.*') ? 'text-amber-500 font-semibold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="9" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                        </svg>
+                        <span>Absensi</span>
+                    </a>
+                    
+                    {{-- Jadwal --}}
+                    <a href="{{ route('siswa.jadwal.index') }}" class="flex flex-col items-center justify-center flex-1 text-[10px] gap-1 transition-colors {{ request()->routeIs('siswa.jadwal.*') ? 'text-amber-500 font-semibold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
+                        <span>Jadwal</span>
+                    </a>
+
+                    {{-- Pertemuan --}}
+                    <a href="{{ route('siswa.pertemuan.index') }}" class="flex flex-col items-center justify-center flex-1 text-[10px] gap-1 transition-colors {{ request()->routeIs('siswa.pertemuan.*') ? 'text-amber-500 font-semibold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        <span>Pertemuan</span>
+                    </a>
+
+                    {{-- Tugas --}}
+                    <a href="{{ route('siswa.tugas.index') }}" class="flex flex-col items-center justify-center flex-1 text-[10px] gap-1 transition-colors {{ request()->routeIs('siswa.tugas.*') ? 'text-amber-500 font-semibold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span>Tugas</span>
+                    </a>
+                </div>
+            </div>
+        @endif
+    @endauth
+
     @stack('scripts')
+    
+    {{-- Preserve sidebar scroll position --}}
+    <script>
+        (function() {
+            'use strict';
+            
+            const SCROLL_KEY = 'lms_sidebar_scroll';
+            let sidebar = null;
+            let restoreAttempts = 0;
+            const MAX_ATTEMPTS = 10;
+            
+            // Function to get sidebar element
+            function getSidebar() {
+                if (!sidebar) {
+                    sidebar = document.querySelector('aside nav.overflow-y-auto');
+                }
+                return sidebar;
+            }
+            
+            // Restore scroll position
+            function restoreScroll() {
+                const nav = getSidebar();
+                if (!nav) {
+                    // Retry if sidebar not found yet
+                    if (restoreAttempts < MAX_ATTEMPTS) {
+                        restoreAttempts++;
+                        setTimeout(restoreScroll, 50);
+                    }
+                    return;
+                }
+                
+                const savedScroll = sessionStorage.getItem(SCROLL_KEY);
+                if (savedScroll !== null) {
+                    const scrollValue = parseInt(savedScroll, 10);
+                    nav.scrollTop = scrollValue;
+                    console.log('Restored scroll to:', scrollValue);
+                }
+            }
+            
+            // Save scroll position
+            function saveScroll() {
+                const nav = getSidebar();
+                if (nav && nav.scrollTop !== undefined) {
+                    sessionStorage.setItem(SCROLL_KEY, nav.scrollTop.toString());
+                    console.log('Saved scroll:', nav.scrollTop);
+                }
+            }
+            
+            // Initialize
+            function init() {
+                // Restore scroll position
+                restoreScroll();
+                
+                const nav = getSidebar();
+                if (!nav) return;
+                
+                // Save on scroll
+                nav.addEventListener('scroll', saveScroll, { passive: true });
+                
+                // Save on any link click in sidebar
+                nav.addEventListener('click', function(e) {
+                    if (e.target.closest('a')) {
+                        saveScroll();
+                    }
+                }, true);
+            }
+            
+            // Run on DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            
+            // Save before page unload
+            window.addEventListener('beforeunload', saveScroll);
+            
+            // Also save on visibility change (when switching tabs)
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    saveScroll();
+                }
+            });
+        })();
+    </script>
 </body>
 
 </html>
