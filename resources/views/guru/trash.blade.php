@@ -59,6 +59,51 @@
             @endif
         </div>
 
+        {{-- Filter Section --}}
+        <form method="GET" action="{{ route('guru.trash') }}"
+            class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm mb-6">
+            <div class="flex flex-wrap items-center gap-2 md:gap-3">
+                {{-- Search --}}
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Cari nama atau email..."
+                    class="flex-1 min-w-[200px] rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200
+                           focus:ring-2 focus:ring-red-600/20 focus:border-red-600 dark:focus:border-red-400 transition duration-200">
+
+                {{-- Filter Status --}}
+                <select name="status_pengajar"
+                    class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200
+                           focus:ring-2 focus:ring-red-600/20 focus:border-red-600 dark:focus:border-red-400 transition duration-200">
+                    <option value="">Semua Status</option>
+                    <option value="pengajar" {{ request('status_pengajar') == 'pengajar' ? 'selected' : '' }}>Pengajar
+                    </option>
+                    <option value="walikelas" {{ request('status_pengajar') == 'walikelas' ? 'selected' : '' }}>Wali
+                        Kelas</option>
+                    <option value="keduanya" {{ request('status_pengajar') == 'keduanya' ? 'selected' : '' }}>Keduanya
+                    </option>
+                </select>
+
+                {{-- Buttons --}}
+                <button type="submit"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg
+                           bg-red-600 hover:bg-red-700 text-white transition-all duration-200">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Filter
+                </button>
+
+                <a href="{{ route('guru.trash') }}"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg
+                           bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all duration-200">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Reset
+                </a>
+            </div>
+        </form>
+
         {{-- Alert --}}
         @if (session('success'))
             <div
@@ -88,7 +133,8 @@
                     @forelse($gurus as $guru)
                         <tr class="hover:bg-red-50/40 transition">
                             <td class="px-4 py-3 text-gray-400">{{ $loop->iteration }}</td>
-                            <td class="px-4 py-3 font-medium text-gray-400 line-through">{{ $guru->nama_lengkap }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-400 line-through">{{ $guru->nama_lengkap }}
+                            </td>
                             <td class="px-4 py-3 text-gray-400">{{ $guru->email }}</td>
                             <td class="px-4 py-3">
                                 @php
@@ -99,7 +145,8 @@
                                             'keduanya' => 'bg-green-100 text-green-600',
                                         ][$guru->status_pengajar] ?? 'bg-gray-100 text-gray-500';
                                 @endphp
-                                <span class="px-2 py-1 rounded-full text-xs font-medium {{ $badge }} opacity-50">
+                                <span
+                                    class="px-2 py-1 rounded-full text-xs font-medium {{ $badge }} opacity-50">
                                     {{ ucfirst($guru->status_pengajar) }}
                                 </span>
                             </td>
