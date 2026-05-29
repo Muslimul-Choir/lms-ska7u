@@ -1,3 +1,4 @@
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -46,11 +47,8 @@
                 {{-- Card Header --}}
                 <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                            <span class="w-1 h-5 rounded-full bg-amber-500 inline-block"></span>
-                            Daftar Bagian
-                        </h3>
-                        <p class="text-xs text-gray-400 mt-0.5 ml-3"> Kelola data bagian kelas berdasarkan tingkat dan program pembelajaran</p>
+                        <h3 class="text-white font-semibold text-sm tracking-wide">Daftar Bagian</h3>
+                        <p class="text-blue-200 text-xs mt-0.5">Kelola data unit/divisi organisasi</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('bagian.trash') }}"
@@ -239,8 +237,9 @@
 
     bindEditButtons();
 
-    @if ($errors->any())
-        modalCreate.style.display = 'flex';
-    @endif
-</script>
+        @if ($errors->any())
+            modalCreate.style.display = 'block';
+        @endif
+    </script>
+
 </x-app-layout>
