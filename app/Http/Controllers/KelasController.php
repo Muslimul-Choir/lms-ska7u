@@ -16,29 +16,14 @@ use Illuminate\Support\Facades\DB;
 
 class KelasController extends Controller
 {
-    
+
     /**
      * Tampilkan daftar kelas (aktif).
      */
     public function index(Request $request)
     {
-        $query = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian', 'TahunAjaran', 'WaliKelas'])
-            ->withCount('Siswa');
+        $query = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian', 'TahunAjaran', 'WaliKelas']);
 
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('Tingkatan', fn($q) => $q->where('nama_tingkatan', 'like', "%{$search}%"))
-                    ->orWhereHas('Jurusan',   fn($q) => $q->where('nama_jurusan',   'like', "%{$search}%"))
-                    ->orWhereHas('Bagian',    fn($q) => $q->where('nama_bagian',    'like', "%{$search}%"));
-            });
-        }
-
-        // Filter tahun ajaran
-        if ($request->filled('id_tahun_ajaran')) {
-            $query->where('id_tahun_ajaran', $request->id_tahun_ajaran);
-        }
 
         // Filter tingkatan
         if ($request->filled('id_tingkatan')) {
@@ -48,6 +33,16 @@ class KelasController extends Controller
         // Filter jurusan
         if ($request->filled('id_jurusan')) {
             $query->where('id_jurusan', $request->id_jurusan);
+        }
+
+        // Filter bagian
+        if ($request->filled('id_bagian')) {
+            $query->where('id_bagian', $request->id_bagian);
+        }
+
+        // Filter tahun ajaran
+        if ($request->filled('id_tahun_ajaran')) {
+            $query->where('id_tahun_ajaran', $request->id_tahun_ajaran);
         }
 
         $kelas = $query->latest()->paginate(10)->withQueryString();
@@ -89,16 +84,6 @@ class KelasController extends Controller
                 ->with('error', 'Gagal menambahkan kelas. Silakan coba lagi.');
         }
     }
-
-    /**
-     * Tampilkan form edit (digunakan oleh modal).
-     */
-    public function edit(Kelas $kelas)
-    {
-        $kelas->load(['Tingkatan', 'Jurusan', 'Bagian', 'TahunAjaran', 'WaliKelas']);
-        return response()->json($kelas);
-    }
-
     /**
      * Update kelas.
      */
@@ -122,10 +107,23 @@ class KelasController extends Controller
      */
     public function destroy(Kelas $kelas)
     {
-        // Pastikan tidak ada relasi aktif sebelum hapus
+        $errors = [];
+
         if ($kelas->Siswa()->exists()) {
+            $errors[] = 'masih memiliki ' . $kelas->Siswa()->count() . ' siswa terdaftar';
+        }
+
+        if ($kelas->JadwalBelajar()->exists()) {
+            $errors[] = 'masih memiliki ' . $kelas->JadwalBelajar()->count() . ' jadwal belajar';
+        }
+
+        if ($kelas->GuruMapel()->exists()) {
+            $errors[] = 'masih memiliki ' . $kelas->GuruMapel()->count() . ' guru mapel';
+        }
+
+        if (!empty($errors)) {
             return redirect()->route('kelas.index')
-                ->with('error', 'Kelas tidak dapat dihapus karena masih memiliki siswa terdaftar.');
+                ->with('error', 'Kelas "' . $kelas->nama_kelas . '" tidak dapat dihapus karena ' . implode(', ', $errors) . '.');
         }
 
         $kelas->delete();
@@ -141,15 +139,35 @@ class KelasController extends Controller
         $query = Kelas::onlyTrashed()
             ->with(['Tingkatan', 'Jurusan', 'Bagian', 'TahunAjaran', 'WaliKelas']);
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('Tingkatan', fn($q) => $q->where('nama_tingkatan', 'like', "%{$search}%"))
-                ->orWhereHas('Jurusan', fn($q) => $q->where('nama_jurusan', 'like', "%{$search}%"));
+        // Filter tingkatan
+        if ($request->filled('id_tingkatan')) {
+            $query->where('id_tingkatan', $request->id_tingkatan);
+        }
+
+        // Filter jurusan
+        if ($request->filled('id_jurusan')) {
+            $query->where('id_jurusan', $request->id_jurusan);
+        }
+
+        // Filter bagian
+        if ($request->filled('id_bagian')) {
+            $query->where('id_bagian', $request->id_bagian);
+        }
+
+        // Filter tahun ajaran
+        if ($request->filled('id_tahun_ajaran')) {
+            $query->where('id_tahun_ajaran', $request->id_tahun_ajaran);
         }
 
         $kelasTrashed = $query->latest('deleted_at')->paginate(10)->withQueryString();
 
-        return view('kelas.trash', compact('kelasTrashed'));
+        // Data untuk dropdown form
+        $tingkatanList  = Tingkatan::orderBy('nama_tingkatan')->get();
+        $jurusanList    = Jurusan::orderBy('nama_jurusan')->get();
+        $bagianList     = Bagian::orderBy('nama_bagian')->get();
+        $tahunAjaranList = TahunAjaran::orderBy('nama_tahun', 'desc')->get();
+
+        return view('kelas.trash', compact('kelasTrashed', 'tingkatanList', 'jurusanList', 'bagianList', 'tahunAjaranList'));
     }
 
     /**
@@ -163,6 +181,18 @@ class KelasController extends Controller
     }
 
     /**
+     * Restore all kelas dari trash.
+     */
+    public function restoreAll(): RedirectResponse
+    {
+        $count = Kelas::onlyTrashed()->count();
+        Kelas::onlyTrashed()->restore();
+
+        return redirect()->route('kelas.trash')
+            ->with('success', "Berhasil memulihkan $count kelas dari trash.");
+    }
+
+    /**
      * Hapus permanen.
      */
     public function forceDelete(Kelas $kelas): RedirectResponse
@@ -170,5 +200,17 @@ class KelasController extends Controller
         $kelas->forceDelete();
         return redirect()->route('kelas.trash')
             ->with('success', 'Kelas berhasil dihapus secara permanen.');
+    }
+
+    /**
+     * Hapus permanen semua kelas.
+     */
+    public function forceDeleteAll(): RedirectResponse
+    {
+        $count = Kelas::onlyTrashed()->count();
+        Kelas::onlyTrashed()->forceDelete();
+
+        return redirect()->route('kelas.trash')
+            ->with('success', "Berhasil menghapus permanen $count kelas dari trash.");
     }
 }

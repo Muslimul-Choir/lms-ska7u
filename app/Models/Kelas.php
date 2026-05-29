@@ -65,6 +65,15 @@ class Kelas extends Model
         return $this->hasMany(Siswa::class, 'id_kelas');
     }
 
+    public function JadwalBelajar()
+    {
+        return $this->hasMany(JadwalBelajar::class, 'id_kelas');
+    }
+    public function GuruMapel()
+    {
+        return $this->hasMany(GuruMapel::class, 'id_kelas');
+    }
+
     public function jadwalBelajars()
     {
         return $this->hasMany(JadwalBelajar::class, 'id_kelas');
