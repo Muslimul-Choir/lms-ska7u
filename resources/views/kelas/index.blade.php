@@ -63,7 +63,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tingkatan</label>
                                 <select name="id_tingkatan"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tingkat</option>
                                     @foreach ($tingkatanList as $t)
@@ -78,7 +78,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jurusan</label>
                                 <select name="id_jurusan"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Jurusan</option>
                                     @foreach ($jurusanList as $j)
@@ -93,7 +93,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bagian</label>
                                 <select name="id_bagian"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Bagian</option>
                                     @foreach ($bagianList as $j)
@@ -108,7 +108,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tahun Ajaran</label>
                                 <select name="id_tahun_ajaran"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tahun</option>
                                     @foreach ($tahunAjaranList as $ta)

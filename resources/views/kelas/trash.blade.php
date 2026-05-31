@@ -8,7 +8,7 @@
                 </svg>
             </div>
             <div>
-                <h2 class="font-bold text-[15px] text-gray-800 tracking-wide leading-none">Tempat Sampah — Kelas</h2>
+                <h2 class="font-bold text-[15px] text-gray-800 tracking-wide leading-none">Arsip Kelas</h2>
                 <p class="text-[11px] text-gray-400 mt-0.5 uppercase tracking-widest">Data Terhapus Sementara</p>
             </div>
         </div>
@@ -23,7 +23,7 @@
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
-                        Restore Semua
+                        Pulihkan Semua
                     </button>
                 </form>
                 <form action="{{ route('kelas.forceDeleteAll') }}" method="POST" id="forceDeleteAllForm">
@@ -53,18 +53,19 @@
                 <span class="text-gray-300">/</span>
                 <a href="{{ route('kelas.index') }}" class="hover:text-amber-600 transition">Kelas</a>
                 <span class="text-gray-300">/</span>
-                <span class="text-gray-600 font-semibold">Tempat Sampah</span>
+                <span class="text-gray-600 font-semibold">Arsip</span>
             </nav>
 
           
             {{-- Warning Banner --}}
-            <div class="flex items-start gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm">
-                <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            <div class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm">
+                <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
                 </svg>
-                <p class="text-red-600 text-xs font-medium leading-relaxed">
-                    Data dalam tempat sampah telah dihapus sementara. Gunakan <span class="font-bold">Pulihkan</span> untuk mengembalikan,
-                    atau <span class="font-bold">Hapus Permanen</span> untuk menghapus selamanya tanpa bisa dipulihkan.
+                <p class="text-xs tracking-widest font-medium leading-relaxed text-red-700">
+                    Data dalam arsip telah dihapus sementara. Gunakan tombol aksi untuk memulihkan data dan menghapus data secara permanen.
                 </p>
             </div>
 
@@ -78,7 +79,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tingkatan</label>
                                 <select name="id_tingkatan"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tingkat</option>
                                     @foreach ($tingkatanList as $t)
@@ -93,7 +94,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jurusan</label>
                                 <select name="id_jurusan"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Jurusan</option>
                                     @foreach ($jurusanList as $j)
@@ -108,7 +109,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bagian</label>
                                 <select name="id_bagian"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Bagian</option>
                                     @foreach ($bagianList as $b)
@@ -123,7 +124,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tahun Ajaran</label>
                                 <select name="id_tahun_ajaran"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tahun</option>
                                     @foreach ($tahunAjaranList as $ta)
@@ -167,7 +168,7 @@
                             <span class="w-1 h-5 rounded-full bg-red-400 inline-block"></span>
                             Data Kelas Terhapus
                         </h3>
-                        <p class="text-xs text-gray-400 mt-0.5 ml-3">Daftar record yang dipindahkan ke tempat sampah</p>
+                        <p class="text-xs text-gray-400 mt-0.5 ml-3">Daftar record yang dipindahkan ke arsip</p>
                     </div>
                 </div>
 
@@ -231,10 +232,9 @@
                                                 @method('PATCH')
                                                 <button type="submit"
                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-lg transition">
-                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                                     </svg>
-                                                    Pulihkan
                                                 </button>
                                             </form>
                                             {{-- Force Delete --}}
@@ -244,10 +244,9 @@
                                                 @method('DELETE')
                                                 <button type="submit"
                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
-                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
-                                                    Hapus Permanen
                                                 </button>
                                             </form>
                                         </div>

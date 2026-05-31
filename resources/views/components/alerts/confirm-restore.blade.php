@@ -3,7 +3,7 @@
 function showConfirmRestore(label = 'data') {
     return Swal.fire({
         title: 'Pulihkan Data?',
-        text: `Data ${label} ini akan dikembalikan ke daftar utama.`,
+        text: `Data ${label} ini akan dikembalikan ke data utama.`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#16a34a',

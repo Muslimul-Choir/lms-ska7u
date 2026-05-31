@@ -72,14 +72,11 @@ class KelasController extends Controller
      */
     public function store(StoreKelasRequest $request)
     {
-        DB::beginTransaction();
         try {
             Kelas::create($request->validated());
-            DB::commit();
             return redirect()->route('kelas.index')
                 ->with('success', 'Kelas berhasil ditambahkan.');
         } catch (\Exception $e) {
-            DB::rollBack();
             return redirect()->route('kelas.index')
                 ->with('error', 'Gagal menambahkan kelas. Silakan coba lagi.');
         }
@@ -89,14 +86,11 @@ class KelasController extends Controller
      */
     public function update(UpdateKelasRequest $request, Kelas $kelas)
     {
-        DB::beginTransaction();
         try {
             $kelas->update($request->validated());
-            DB::commit();
             return redirect()->route('kelas.index')
                 ->with('success', 'Kelas berhasil diperbarui.');
         } catch (\Exception $e) {
-            DB::rollBack();
             return redirect()->route('kelas.index')
                 ->with('error', 'Gagal memperbarui kelas. Silakan coba lagi.');
         }
