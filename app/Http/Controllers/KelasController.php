@@ -47,6 +47,7 @@ class KelasController extends Controller
 
         $kelas = $query->latest()->paginate(10)->withQueryString();
 
+        $trashCount = Kelas::onlyTrashed()->count();
 
         // Data untuk dropdown form
         $tingkatanList  = Tingkatan::orderBy('nama_tingkatan')->get();
@@ -63,6 +64,7 @@ class KelasController extends Controller
             'jurusanList',
             'bagianList',
             'tahunAjaranList',
+            'trashCount',
             'guruList'
         ));
     }
