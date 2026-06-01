@@ -42,7 +42,11 @@
                             <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            Tempat Sampah
+                            Arsip
+                            @if ($trashCount > 0)
+                                <span
+                                    class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">{{ $trashCount }}</span>
+                            @endif
                         </a>
                         <button type="button" onclick="openCreateModal()"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
@@ -63,7 +67,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tingkatan</label>
                                 <select name="id_tingkatan"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tingkat</option>
                                     @foreach ($tingkatanList as $t)
@@ -78,7 +82,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jurusan</label>
                                 <select name="id_jurusan"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Jurusan</option>
                                     @foreach ($jurusanList as $j)
@@ -93,7 +97,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bagian</label>
                                 <select name="id_bagian"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Bagian</option>
                                     @foreach ($bagianList as $j)
@@ -108,7 +112,7 @@
                             <div class="flex flex-col gap-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tahun Ajaran</label>
                                 <select name="id_tahun_ajaran"
-                                    class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                    class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tahun</option>
                                     @foreach ($tahunAjaranList as $ta)
