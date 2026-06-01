@@ -176,8 +176,8 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
         Route::delete('/trash/{kelas}/force', 'forceDelete')
             ->name('force-delete')
             ->withTrashed();
-Route::patch('/restore-all',        [KelasController::class, 'restoreAll'])->name('restoreAll');
-    Route::delete('/force-delete-all',  [KelasController::class, 'forceDeleteAll'])->name('forceDeleteAll');
+        Route::patch('/restore-all',        [KelasController::class, 'restoreAll'])->name('restoreAll');
+        Route::delete('/force-delete-all',  [KelasController::class, 'forceDeleteAll'])->name('forceDeleteAll');
         
 
         Route::get('/',                'index')->name('index');
@@ -194,9 +194,9 @@ Route::patch('/restore-all',        [KelasController::class, 'restoreAll'])->nam
         Route::post('/send-email-all',         'sendEmailAll')->name('sendEmailAll');
 
         Route::get('/trash',                   'trash')->name('trash');
-        Route::post('/trash/restore-all',      'restoreAll')->name('restoreAll');
+        Route::patch('/trash/restore-all',      'restoreAll')->name('restoreAll');
         Route::post('/trash/force-delete-all', 'forceDeleteAll')->name('forceDeleteAll');
-        Route::post('/trash/{id}/restore',     'restore')->name('restore');
+        Route::patch('/trash/{id}/restore',     'restore')->name('restore');
         Route::delete('/trash/{id}/force',     'forceDelete')->name('forceDelete');
 
         Route::get('/',                        'index')->name('index');

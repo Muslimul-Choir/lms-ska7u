@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\Failure;
+use Throwable;
 
 class GuruController extends Controller
 {
@@ -48,51 +49,61 @@ class GuruController extends Controller
     // ── STORE ────────────────────────────────────────────────
     public function store(StoreGuruRequest $request)
     {
-        DB::transaction(function () use ($request) {
-            $plainPassword = Str::random(6) . rand(100, 999);
+        try {
+            DB::transaction(function () use ($request) {
+                $plainPassword = Str::random(6) . rand(100, 999);
 
-            $user = User::create([
-                'name'     => $request->nama_lengkap,
-                'email'    => $request->email,
-                'password' => Hash::make($plainPassword),
-                'role'     => 'guru',
-            ]);
+                $user = User::create([
+                    'name'     => $request->nama_lengkap,
+                    'email'    => $request->email,
+                    'password' => Hash::make($plainPassword),
+                    'role'     => 'guru',
+                ]);
 
-            $guru = Guru::create([
-                'id_user'         => $user->id,
-                'nama_lengkap'    => $request->nama_lengkap,
-                'email'           => $request->email,
-                'status_pengajar' => $request->status_pengajar,
-            ]);
+                $guru = Guru::create([
+                    'id_user'         => $user->id,
+                    'nama_lengkap'    => $request->nama_lengkap,
+                    'email'           => $request->email,
+                    'status_pengajar' => $request->status_pengajar,
+                ]);
 
-            // Simpan plain password sementara di session untuk ditampilkan/dikirim
-            session()->flash('plain_password', $plainPassword);
-            session()->flash('guru_id', $guru->id);
-        });
+                // Simpan plain password sementara di session untuk ditampilkan/dikirim
+                session()->flash('plain_password', $plainPassword);
+                session()->flash('guru_id', $guru->id);
+            });
 
-        return redirect()->route('guru.index')
-            ->with('success', 'Data guru berhasil ditambahkan.');
+            return redirect()->route('guru.index')
+                ->with('success', 'Data guru berhasil ditambahkan.');
+        } catch (Throwable $e) {
+            return redirect()->route('guru.index')
+                ->with('error', 'Gagal menambahkan data guru. Silakan coba lagi.');
+        }
     }
 
     // ── UPDATE ───────────────────────────────────────────────
     public function update(UpdateGuruRequest $request, Guru $guru)
     {
-        DB::transaction(function () use ($request, $guru) {
+        try {
+            DB::transaction(function () use ($request, $guru) {
 
-            $guru->update([
-                'nama_lengkap' => $request->nama_lengkap,
-                'email' => $request->email,
-                'status_pengajar' => $request->status_pengajar,
-            ]);
+                $guru->update([
+                    'nama_lengkap' => $request->nama_lengkap,
+                    'email' => $request->email,
+                    'status_pengajar' => $request->status_pengajar,
+                ]);
 
-            $guru->user->update([
-                'name' => $request->nama_lengkap,
-                'email' => $request->email,
-            ]);
-        });
+                $guru->user->update([
+                    'name' => $request->nama_lengkap,
+                    'email' => $request->email,
+                ]);
+            });
 
-        return redirect()->route('guru.index')
-            ->with('success', 'Data guru berhasil diperbarui.');
+            return redirect()->route('guru.index')
+                ->with('success', 'Data guru berhasil diperbarui.');
+        } catch (Throwable $e) {
+            return redirect()->route('guru.index')
+                ->with('error', 'Gagal memperbarui data guru. Silakan coba lagi.');
+        }
     }
 
 
@@ -124,14 +135,14 @@ class GuruController extends Controller
         }
 
         DB::transaction(function () use ($guru) {
-         
+
             Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
 
-       
+
             if ($guru->user) {
                 $guru->user->delete();
             }
-       
+
             $guru->delete();
         });
 
@@ -152,10 +163,10 @@ class GuruController extends Controller
             Mail::to($guru->email)
                 ->send(new KirimAkunGuru($guru, $plainPassword));
 
-            return back()->with('success', "✅ Email akun berhasil dikirim ke {$guru->email} dengan password baru.");
-        } catch (\Throwable $e) {
+            return back()->with('success', "Email akun berhasil dikirim ke {$guru->email} dengan password baru.");
+        } catch (Throwable $e) {
             Log::error('Gagal kirim email guru: ' . $e->getMessage());
-            return back()->with('error', "❌ Gagal mengirim email ke {$guru->email}. Pesan error: " . $e->getMessage());
+            return back()->with('error', "Gagal mengirim email ke {$guru->email}. Pesan error: " . $e->getMessage());
         }
     }
 
@@ -172,16 +183,16 @@ class GuruController extends Controller
                 try {
                     Mail::to($guru->email)->send(new KirimAkunGuru($guru, $plainPassword));
                     $berhasil++;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::error("Gagal kirim email guru {$guru->email}: " . $e->getMessage());
                     $gagal++;
                 }
             }
         });
 
-        $msg = "✅ {$berhasil} email akun guru berhasil dikirim.";
+        $msg = "{$berhasil} email akun guru berhasil dikirim.";
         if ($gagal > 0) {
-            $msg .= " ⚠️ {$gagal} email gagal dikirim (lihat log untuk detail).";
+            $msg .= " {$gagal} email gagal dikirim.";
         }
 
         return redirect()->route('guru.index')->with('success', $msg);
@@ -190,7 +201,12 @@ class GuruController extends Controller
     // ── EXPORT EXCEL ─────────────────────────────────────────
     public function export()
     {
-        return Excel::download(new GuruExport, 'data-guru-' . now()->format('dmY') . '.xlsx');
+        try {
+            return Excel::download(new GuruExport, 'data-guru-' . now()->format('dmY') . '.xlsx');
+        } catch (Throwable $e) {
+            return redirect()->route('guru.index')
+                ->with('error', 'Gagal mengekspor data guru. Silakan coba lagi.');
+        }
     }
 
 
@@ -204,7 +220,7 @@ class GuruController extends Controller
             $import = new GuruImport();
             Excel::import($import, $request->file('file'));
 
-           
+
             $validationFailures = collect($import->failures())
                 ->map(fn(Failure $f) => [
                     'row'    => $f->row(),
@@ -223,7 +239,7 @@ class GuruController extends Controller
                 $summary['skipped'] = count($summary['skipped_details']);
             }
 
-         
+
             $messages = [];
 
             if ($summary['created'] > 0) {
@@ -253,7 +269,7 @@ class GuruController extends Controller
                 ->with($status, $mainMessage)
                 ->with('skipped_details', $skippedDetails)
                 ->with('skipped_truncated', $summary['skipped'] > 100);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Import Guru Error', [
                 'message' => $e->getMessage(),
                 'trace'   => $e->getTraceAsString(),
@@ -287,70 +303,90 @@ class GuruController extends Controller
     }
 
     // ── RESTORE satu ─────────────────────────────────────────
-    public function restore(string $id)
+    public function restore(int $id)
     {
-        $guru = Guru::onlyTrashed()->findOrFail($id);
+        try {
+            $guru = Guru::onlyTrashed()->findOrFail($id);
 
-        DB::transaction(function () use ($guru) {
-            $guru->restore();
-            $guru->user()->withTrashed()->restore();
-        });
+            DB::transaction(function () use ($guru) {
+                $guru->restore();
+                $guru->user()->withTrashed()->restore();
+            });
 
-        return redirect()->route('guru.trash')
-            ->with('success', "Data guru {$guru->nama_lengkap} berhasil dikembalikan.");
+            return redirect()->route('guru.trash')
+                ->with('success', "Data guru {$guru->nama_lengkap} berhasil dikembalikan.");
+        } catch (Throwable $e) {
+            return redirect()->route('guru.trash')
+                ->with('error', 'Gagal mengembalikan data guru. Silakan coba lagi.');
+        }
     }
 
     // ── RESTORE SEMUA ────────────────────────────────────────
     public function restoreAll()
     {
-        DB::transaction(function () {
-            $gurus = Guru::onlyTrashed()->with(['user' => function ($q) {
-                $q->withTrashed();
-            }])->get();
-            foreach ($gurus as $guru) {
-                $guru->restore();
-                $guru->user()->withTrashed()->restore();
-            }
-        });
+        try {
+            DB::transaction(function () {
+                $gurus = Guru::onlyTrashed()->with(['user' => function ($q) {
+                    $q->withTrashed();
+                }])->get();
+                foreach ($gurus as $guru) {
+                    $guru->restore();
+                    $guru->user()->withTrashed()->restore();
+                }
+            });
 
-        return redirect()->route('guru.trash')
-            ->with('success', 'Semua data guru berhasil dikembalikan.');
+            return redirect()->route('guru.trash')
+                ->with('success', 'Semua data guru berhasil dikembalikan.');
+        } catch (Throwable $e) {
+            return redirect()->route('guru.trash')
+                ->with('error', 'Gagal mengembalikan data guru. Silakan coba lagi.');
+        }
     }
 
     // ── FORCE DELETE satu ────────────────────────────────────
-    public function forceDelete(string $id)
+    public function forceDelete(int $id)
     {
-        $guru = Guru::onlyTrashed()->findOrFail($id);
+        try {
+            $guru = Guru::onlyTrashed()->findOrFail($id);
 
-        DB::transaction(function () use ($guru) {
-            // Hapus referensi guru di kelas (wali_kelas)
-            Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
-            
-            $guru->user()->withTrashed()->forceDelete();
-            $guru->forceDelete();
-        });
+            DB::transaction(function () use ($guru) {
+                // Hapus referensi guru di kelas (wali_kelas)
+                Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
 
-        return redirect()->route('guru.trash')
-            ->with('success', "Data guru {$guru->nama_lengkap} berhasil dihapus permanen.");
+                $guru->user()->withTrashed()->forceDelete();
+                $guru->forceDelete();
+            });
+
+            return redirect()->route('guru.trash')
+                ->with('success', "Data guru {$guru->nama_lengkap} berhasil dihapus permanen.");
+        } catch (Throwable $e) {
+            return redirect()->route('guru.trash')
+                ->with('error', 'Gagal menghapus data guru secara permanen. Silakan coba lagi.');
+        }
     }
 
     // ── FORCE DELETE SEMUA ───────────────────────────────────
     public function forceDeleteAll()
     {
-        DB::transaction(function () {
-            $gurus = Guru::onlyTrashed()->with(['user' => function ($q) {
-                $q->withTrashed();
-            }])->get();
-            foreach ($gurus as $guru) {
-                // Hapus referensi guru di kelas (wali_kelas)
-                Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
-                
-                $guru->user()->withTrashed()->forceDelete();
-                $guru->forceDelete();
-            }
-        });
+        try {
+            DB::transaction(function () {
+                $gurus = Guru::onlyTrashed()->with(['user' => function ($q) {
+                    $q->withTrashed();
+                }])->get();
+                foreach ($gurus as $guru) {
+                    // Hapus referensi guru di kelas (wali_kelas)
+                    Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
 
-        return redirect()->route('guru.trash')
-            ->with('success', 'Semua data guru berhasil dihapus permanen.');
+                    $guru->user()->withTrashed()->forceDelete();
+                    $guru->forceDelete();
+                }
+            });
+
+            return redirect()->route('guru.trash')
+                ->with('success', 'Semua data guru berhasil dihapus permanen.');
+        } catch (Throwable $e) {
+            return redirect()->route('guru.trash')
+                ->with('error', 'Gagal menghapus data guru secara permanen. Silakan coba lagi.');
+        }
     }
 }

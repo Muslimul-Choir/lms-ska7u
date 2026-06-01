@@ -250,7 +250,7 @@ class SiswaController extends Controller
     }
 
     // ── RESTORE satu ─────────────────────────────────────────
-    public function restore(string $id)
+    public function restore(int $id)
     {
         $siswa = Siswa::onlyTrashed()->findOrFail($id);
 
@@ -282,7 +282,7 @@ class SiswaController extends Controller
     }
 
     // ── FORCE DELETE satu ────────────────────────────────────
-    public function forceDelete(string $id)
+    public function forceDelete(int $id)
     {
         $siswa = Siswa::onlyTrashed()->findOrFail($id);
 
