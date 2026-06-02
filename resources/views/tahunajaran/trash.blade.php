@@ -134,7 +134,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             {{-- Restore --}}
-                                            <form action="{{ route('tahunajaran.restore', $tahun->id) }}" method="POST"
+                                            <form action="{{ route('tahunajaran.restore', $tahun) }}" method="POST"
                                                 onsubmit="confirmRestore(event)">
                                                 @csrf
                                                 @method('PATCH')
@@ -146,7 +146,7 @@
                                                 </button>
                                             </form>
                                             {{-- Force Delete --}}
-                                            <form action="{{ route('tahunajaran.force-delete', $tahun->id) }}" method="POST"
+                                            <form action="{{ route('tahunajaran.force-delete', $tahun) }}" method="POST"
                                                 onsubmit="confirmForceDelete(event)">
                                                 @csrf
                                                 @method('DELETE')

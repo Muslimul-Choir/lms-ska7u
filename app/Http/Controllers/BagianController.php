@@ -92,22 +92,18 @@ class BagianController extends Controller
         return view('bagian.trash', compact('bagians'));
     }
 
-    public function restore($id): RedirectResponse
+    public function restore(Bagian $bagian): RedirectResponse
     {
-        Bagian::onlyTrashed()
-            ->findOrFail($id)
-            ->restore();
+        $bagian->restore();
 
         return redirect()
             ->route('bagian.trash')
             ->with('success', 'Bagian berhasil dipulihkan.');
     }
 
-    public function forceDelete($id): RedirectResponse
+    public function forceDelete(Bagian $bagian): RedirectResponse
     {
-        Bagian::onlyTrashed()
-            ->findOrFail($id)
-            ->forceDelete();
+        $bagian->forceDelete();
 
         return redirect()
             ->route('bagian.trash')

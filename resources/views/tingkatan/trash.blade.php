@@ -135,7 +135,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             {{-- Restore --}}
-                                            <form action="{{ route('tingkatan.restore', $tingkatan->id) }}" method="POST"
+                                            <form action="{{ route('tingkatan.restore', $tingkatan) }}" method="POST"
                                                 onsubmit="confirmRestore(event)">
                                                 @csrf
                                                 @method('PATCH')
@@ -147,7 +147,7 @@
                                                 </button>
                                             </form>
                                             {{-- Force Delete --}}
-                                            <form action="{{ route('tingkatan.force-delete', $tingkatan->id) }}" method="POST"
+                                            <form action="{{ route('tingkatan.force-delete', $tingkatan) }}" method="POST"
                                                 onsubmit="confirmForceDelete(event)">
                                                 @csrf
                                                 @method('DELETE')
