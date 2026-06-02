@@ -89,6 +89,28 @@
                     </a>
                 </div>
 
+                {{-- Search / Filter --}}
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
+                    <form method="GET" action="{{ route('semester.trash') }}" class="flex items-center gap-2 w-full">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama semester..."
+                            class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm w-72" />
+
+                        <select name="tahun_ajaran" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm">
+                            <option value="">Semua Tahun Ajaran</option>
+                            @foreach($tahunAjarans as $ta)
+                                <option value="{{ $ta->id }}" {{ (string) request('tahun_ajaran') === (string) $ta->id ? 'selected' : '' }}>{{ $ta->nama_tahun }}</option>
+                            @endforeach
+                        </select>
+
+                        <button type="submit"
+                            class="px-3 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg">Cari</button>
+                        @if(request('search') || request('tahun_ajaran'))
+                            <a href="{{ route('semester.trash') }}"
+                                class="px-3 py-2 bg-gray-100 text-xs text-gray-600 rounded-lg">Reset</a>
+                        @endif
+                    </form>
+                </div>
+
                 {{-- Table --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
