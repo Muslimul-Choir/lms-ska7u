@@ -3,14 +3,16 @@
 namespace App\Mail\Guru;
 
 use App\Models\Guru;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class KirimAkunGuru extends Mailable
+class KirimAkunGuru extends Mailable implements ShouldQueue
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
  
     public function __construct(
         public Guru   $guru,
