@@ -191,9 +191,11 @@
                                         <div class="flex items-center justify-center gap-2">
 
                                             {{-- Restore --}}
-                                        <form action="{{ route('jurusan.restore', $jurusan->id) }}"
+                                        <form action="{{ route('jurusan.restore', $jurusan) }}"
                                             method="POST"
-                                            onsubmit="confirmRestore(event)">                                                @method('PATCH')
+                                            onsubmit="confirmRestore(event)">
+                                                @csrf
+                                                @method('PATCH')
                                                 <button type="submit"
                                                         class="inline-flex items-center gap-1 px-3 py-1.5
                                                                bg-emerald-50 hover:bg-emerald-100
@@ -207,7 +209,7 @@
                                             </form>
 
                                             {{-- Force Delete --}}
-                                            <form action="{{ route('jurusan.force-delete', $jurusan->id) }}" method="POST"
+                                            <form action="{{ route('jurusan.force-delete', $jurusan) }}" method="POST"
                                                   onsubmit="confirmForceDelete(event)">
                                                 @csrf
                                                 @method('DELETE')

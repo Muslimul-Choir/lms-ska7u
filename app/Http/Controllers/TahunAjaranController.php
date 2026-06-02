@@ -92,22 +92,18 @@ class TahunAjaranController extends Controller
         return view('tahunajaran.trash', compact('tahunAjarans'));
     }
 
-    public function restore($id): RedirectResponse
+    public function restore(TahunAjaran $tahunajaran): RedirectResponse
     {
-        TahunAjaran::onlyTrashed()
-            ->findOrFail($id)
-            ->restore();
+        $tahunajaran->restore();
 
         return redirect()
             ->route('tahunajaran.trash')
             ->with('success', 'Tahun ajaran berhasil dipulihkan.');
     }
 
-    public function forceDelete($id): RedirectResponse
+    public function forceDelete(TahunAjaran $tahunajaran): RedirectResponse
     {
-        TahunAjaran::onlyTrashed()
-            ->findOrFail($id)
-            ->forceDelete();
+        $tahunajaran->forceDelete();
 
         return redirect()
             ->route('tahunajaran.trash')
