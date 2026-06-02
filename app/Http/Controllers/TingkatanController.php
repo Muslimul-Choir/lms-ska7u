@@ -89,13 +89,19 @@ class TingkatanController extends Controller
             ->with('success', 'Tingkatan berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $tingkatans = Tingkatan::onlyTrashed()
-            ->latest('deleted_at')
-            ->paginate(10);
+        $search = $request->get('search');
 
-        return view('tingkatan.trash', compact('tingkatans'));
+        $tingkatans = Tingkatan::onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_tingkatan', 'like', '%' . $search . '%');
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('tingkatan.trash', compact('tingkatans', 'search'));
     }
 
     public function restore(Tingkatan $tingkatan): RedirectResponse

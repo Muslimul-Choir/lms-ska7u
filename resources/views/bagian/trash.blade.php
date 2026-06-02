@@ -89,6 +89,20 @@
                     </a>
                 </div>
 
+                {{-- Search / Filter --}}
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
+                    <form method="GET" action="{{ route('bagian.trash') }}" class="flex items-center gap-2 max-w-md">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama bagian..."
+                            class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm" />
+                        <button type="submit"
+                            class="px-3 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg">Cari</button>
+                        @if(request('search'))
+                            <a href="{{ route('bagian.trash') }}"
+                                class="px-3 py-2 bg-gray-100 text-xs text-gray-600 rounded-lg">Reset</a>
+                        @endif
+                    </form>
+                </div>
+
                 {{-- Table --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
