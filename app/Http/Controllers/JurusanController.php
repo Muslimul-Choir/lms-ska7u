@@ -11,7 +11,6 @@ use Illuminate\View\View;
 
 class JurusanController extends Controller
 {
-    
     public function index(Request $request)
     {
         $search = $request->get('search');
@@ -23,6 +22,8 @@ class JurusanController extends Controller
             ->paginate(5)
             ->withQueryString();
 
+        $trashCount = Jurusan::onlyTrashed()->count();
+
         if ($request->ajax()) {
             return response()->json([
                 'jurusans' => $jurusans->items(),
@@ -31,7 +32,11 @@ class JurusanController extends Controller
             ]);
         }
 
-        return view('jurusan.index', compact('jurusans', 'search'));
+        return view('jurusan.index', compact(
+            'jurusans',
+            'search',
+            'trashCount'
+        ));
     }
 
     public function create(): View
@@ -58,8 +63,10 @@ class JurusanController extends Controller
         return view('jurusan.edit', compact('jurusan'));
     }
 
-    public function update(UpdateJurusanRequest $request, Jurusan $jurusan): RedirectResponse
-    {
+    public function update(
+        UpdateJurusanRequest $request,
+        Jurusan $jurusan
+    ): RedirectResponse {
         $jurusan->update($request->validated());
 
         return redirect()
@@ -73,31 +80,55 @@ class JurusanController extends Controller
 
         return redirect()
             ->route('jurusan.index')
-            ->with('success', 'Jurusan berhasil dihapus.');
+            ->with('success', 'Jurusan berhasil dipindahkan ke arsip.');
     }
 
     public function trash(): View
     {
-        $jurusans = Jurusan::onlyTrashed()->latest()->paginate(10);
+        $jurusans = Jurusan::onlyTrashed()
+            ->latest('deleted_at')
+            ->paginate(10);
 
         return view('jurusan.trash', compact('jurusans'));
     }
 
-    public function restore(Jurusan $jurusan): RedirectResponse
+    public function restore($id): RedirectResponse
     {
-        $jurusan->restore();
+        Jurusan::onlyTrashed()
+            ->findOrFail($id)
+            ->restore();
 
         return redirect()
             ->route('jurusan.trash')
             ->with('success', 'Jurusan berhasil dipulihkan.');
     }
 
-    public function forceDelete(Jurusan $jurusan): RedirectResponse
+    public function forceDelete($id): RedirectResponse
     {
-        $jurusan->forceDelete();
+        Jurusan::onlyTrashed()
+            ->findOrFail($id)
+            ->forceDelete();
 
         return redirect()
             ->route('jurusan.trash')
             ->with('success', 'Jurusan berhasil dihapus permanen.');
+    }
+
+    public function restoreAll(): RedirectResponse
+    {
+        Jurusan::onlyTrashed()->restore();
+
+        return redirect()
+            ->route('jurusan.trash')
+            ->with('success', 'Semua data jurusan berhasil dipulihkan.');
+    }
+
+    public function forceDeleteAll(): RedirectResponse
+    {
+        Jurusan::onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('jurusan.trash')
+            ->with('success', 'Semua data jurusan berhasil dihapus permanen.');
     }
 }
