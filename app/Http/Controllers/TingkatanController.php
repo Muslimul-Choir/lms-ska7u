@@ -76,6 +76,12 @@ class TingkatanController extends Controller
 
     public function destroy(Tingkatan $tingkatan): RedirectResponse
     {
+        if ($tingkatan->Kelas()->exists() || $tingkatan->JamBelajars()->exists()) {
+            return redirect()
+                ->route('tingkatan.index')
+                ->with('error', 'Tingkatan tidak dapat dihapus karena masih digunakan di kelas atau jam belajar. Hapus atau ubah data terkait terlebih dahulu.');
+        }
+
         $tingkatan->delete();
 
         return redirect()
