@@ -261,8 +261,21 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
                                             </div>
-                                            <p class="text-gray-400 text-sm font-semibold">Tempat sampah kosong</p>
-                                            <p class="text-gray-300 text-xs">Tidak ada data kelas yang dihapus sementara</p>
+                                            <p class="text-gray-400 text-sm font-semibold">
+                                                {{ request()->hasAny(['id_bagian', 'id_jurusan', 'id_tingkatan', 'id_tahun_ajaran']) ? 'Tidak ada data yang sesuai filter.' : 'Arsip kosong' }}
+                                            </p>
+                                            @if (request()->hasAny(['id_bagian', 'id_jurusan', 'id_tingkatan', 'id_tahun_ajaran']))
+                                                <a href="{{ route('kelas.trash') }}" 
+                                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                                </svg>
+                                                Reset
+                                            </a>
+                                            @else
+                                                <p class="text-gray-300 text-xs">Tidak ada kelas yang dihapus sementara</p>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

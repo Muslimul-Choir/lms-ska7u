@@ -110,7 +110,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                Kirim Email Semua
+                                Kirim Semua Email
                             </button>
                         </form>
                         {{-- Export --}}
@@ -209,7 +209,12 @@
 
                             @if (request()->filled('search') || request()->filled('id_kelas') || request()->filled('agama'))
                                 <a href="{{ route('siswa.index') }}"
-                                    class="px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-medium rounded-xl border border-gray-200 transition">
+                                    class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
                                     Reset
                                 </a>
                             @endif
@@ -295,11 +300,11 @@
                                                 <button type="button"
                                                     onclick="confirmSendEmailSiswa(event, '{{ addslashes($siswa->nama_lengkap) }}')"
                                                     title="Kirim Email"
-                                                    class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition">
+                                                    class="w-8 h-8 flex items-center justify-center bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200 rounded-lg transition">
                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                                                         stroke="currentColor" stroke-width="2">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                            d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                                                     </svg>
                                                 </button>
                                             </form>

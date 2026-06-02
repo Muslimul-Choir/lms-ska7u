@@ -42,12 +42,12 @@ if (config('app.debug')) {
     Route::get('/test-email', function () {
         return view('test-email');
     })->name('test-email');
-    
+
     Route::post('/test-email-send', function (\Illuminate\Http\Request $request) {
         try {
             $email = $request->input('email');
             $password = $request->input('password', '12345678');
-            
+
             \Illuminate\Support\Facades\Log::info("Testing email send to: $email");
             \Illuminate\Support\Facades\Log::info("Mail config: " . json_encode([
                 'mailer' => config('mail.default'),
@@ -55,15 +55,15 @@ if (config('app.debug')) {
                 'port' => config('mail.mailers.smtp.port'),
                 'from' => config('mail.from.address'),
             ]));
-            
+
             $testSiswa = new \App\Models\Siswa();
             $testSiswa->nama_lengkap = 'Test User';
             $testSiswa->email = $email;
-            
+
             \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\Siswa\KirimAkunSiswa($testSiswa, $password));
-            
+
             \Illuminate\Support\Facades\Log::info("Email test sent successfully to: $email");
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => "✅ Email test berhasil dikirim ke: $email",
@@ -71,7 +71,7 @@ if (config('app.debug')) {
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Email test failed: " . $e->getMessage());
-            
+
             return response()->json([
                 'status' => 'error',
                 'message' => "❌ Gagal mengirim email: " . $e->getMessage(),
@@ -101,7 +101,7 @@ Route::bind('hasil', fn($v) => HasilKuis::withTrashed()->findOrFail($v));
 // 👤 ADMIN/GURU ROUTES - Protected with Role Middleware
 // ============================================================
 Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(function () {
-    
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -151,6 +151,8 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
 
     // Mapel Routes
     Route::get('mapel/trash', [MapelController::class, 'trash'])->name('mapel.trash');
+    Route::patch('mapel/trash/restore-all', [MapelController::class, 'restoreAll'])->name('mapel.restoreAll');
+    Route::delete('mapel/trash/force-delete-all', [MapelController::class, 'forceDeleteAll'])->name('mapel.forceDeleteAll');
     Route::patch('mapel/trash/{mapel}/restore', [MapelController::class, 'restore'])->name('mapel.restore');
     Route::delete('mapel/trash/{mapel}/force-delete', [MapelController::class, 'forceDelete'])->name('mapel.force-delete');
     Route::resource('mapel', MapelController::class);
@@ -178,7 +180,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
             ->withTrashed();
         Route::patch('/restore-all',        [KelasController::class, 'restoreAll'])->name('restoreAll');
         Route::delete('/force-delete-all',  [KelasController::class, 'forceDeleteAll'])->name('forceDeleteAll');
-        
+
 
         Route::get('/',                'index')->name('index');
         Route::post('/',               'store')->name('store');
@@ -319,17 +321,17 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
 // ============================================================
 Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     Route::get('/siswa/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
-    
+
     // Materi & Mapel
     Route::get('/siswa/materi', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'index'])->name('siswa.materi.index');
     Route::get('/siswa/materi/mapel/{id_mapel}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMapel'])->name('siswa.materi.mapel');
     Route::get('/siswa/materi/{id}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMateri'])->name('siswa.materi.show');
-    
+
     // Tugas
     Route::get('/siswa/tugas', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'index'])->name('siswa.tugas.index');
     Route::get('/siswa/tugas/{id}', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'show'])->name('siswa.tugas.show');
     Route::post('/siswa/tugas/{id}/submit', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'store'])->name('siswa.tugas.store');
-    
+
     // Kuis
     Route::get('/siswa/kuis', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'index'])->name('siswa.kuis.index');
     Route::get('/siswa/kuis/{kuis}', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'show'])->name('siswa.kuis.show');
@@ -337,10 +339,10 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     Route::get('/siswa/kuis/{kuis}/kerjakan', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'kerjakan'])->name('siswa.kuis.kerjakan');
     Route::post('/siswa/kuis/{kuis}/submit', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'submit'])->name('siswa.kuis.submit');
     Route::get('/siswa/kuis/{kuis}/hasil', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'hasil'])->name('siswa.kuis.hasil');
-    
+
     // Absensi
     Route::get('/siswa/absensi', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'index'])->name('siswa.absensi.index');
-    
+
     // Jadwal Belajar
     Route::get('/siswa/jadwal', [\App\Http\Controllers\Siswa\SiswaJadwalController::class, 'index'])->name('siswa.jadwal.index');
 
