@@ -92,22 +92,18 @@ class JurusanController extends Controller
         return view('jurusan.trash', compact('jurusans'));
     }
 
-    public function restore($id): RedirectResponse
+    public function restore(Jurusan $jurusan): RedirectResponse
     {
-        Jurusan::onlyTrashed()
-            ->findOrFail($id)
-            ->restore();
+        $jurusan->restore();
 
         return redirect()
             ->route('jurusan.trash')
             ->with('success', 'Jurusan berhasil dipulihkan.');
     }
 
-    public function forceDelete($id): RedirectResponse
+    public function forceDelete(Jurusan $jurusan): RedirectResponse
     {
-        Jurusan::onlyTrashed()
-            ->findOrFail($id)
-            ->forceDelete();
+        $jurusan->forceDelete();
 
         return redirect()
             ->route('jurusan.trash')
