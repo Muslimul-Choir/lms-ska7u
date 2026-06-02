@@ -28,6 +28,8 @@ class SemesterController extends Controller
             ->paginate(5)
             ->withQueryString();
 
+        $trashCount = Semester::onlyTrashed()->count();
+
         if ($request->ajax()) {
             return response()->json([
                 'semesters' => $semesters->items(),
@@ -38,7 +40,13 @@ class SemesterController extends Controller
 
         $tahunAjarans = TahunAjaran::all();
 
-        return view('semester.index', compact('semesters', 'search', 'tahunAjarans', 'tahun_ajaran_filter'));
+        return view('semester.index', compact(
+            'semesters',
+            'search',
+            'tahunAjarans',
+            'tahun_ajaran_filter',
+            'trashCount'
+        ));
     }
 
     public function create(): View
@@ -65,8 +73,10 @@ class SemesterController extends Controller
         return view('semester.edit', compact('semester'));
     }
 
-    public function update(UpdateSemesterRequest $request, Semester $semester): RedirectResponse
-    {
+    public function update(
+        UpdateSemesterRequest $request,
+        Semester $semester
+    ): RedirectResponse {
         $semester->update($request->validated());
 
         return redirect()
@@ -80,31 +90,56 @@ class SemesterController extends Controller
 
         return redirect()
             ->route('semester.index')
-            ->with('success', 'Semester berhasil dihapus.');
+            ->with('success', 'Semester berhasil dipindahkan ke arsip.');
     }
 
     public function trash(): View
     {
-        $semesters = Semester::onlyTrashed()->latest()->paginate(10);
+        $semesters = Semester::with('tahunAjaran')
+            ->onlyTrashed()
+            ->latest('deleted_at')
+            ->paginate(10);
 
         return view('semester.trash', compact('semesters'));
     }
 
-    public function restore(Semester $semester): RedirectResponse
+    public function restore($id): RedirectResponse
     {
-        $semester->restore();
+        Semester::onlyTrashed()
+            ->findOrFail($id)
+            ->restore();
 
         return redirect()
             ->route('semester.trash')
             ->with('success', 'Semester berhasil dipulihkan.');
     }
 
-    public function forceDelete(Semester $semester): RedirectResponse
+    public function forceDelete($id): RedirectResponse
     {
-        $semester->forceDelete();
+        Semester::onlyTrashed()
+            ->findOrFail($id)
+            ->forceDelete();
 
         return redirect()
             ->route('semester.trash')
             ->with('success', 'Semester berhasil dihapus permanen.');
+    }
+
+    public function restoreAll(): RedirectResponse
+    {
+        Semester::onlyTrashed()->restore();
+
+        return redirect()
+            ->route('semester.trash')
+            ->with('success', 'Semua data semester berhasil dipulihkan.');
+    }
+
+    public function forceDeleteAll(): RedirectResponse
+    {
+        Semester::onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('semester.trash')
+            ->with('success', 'Semua data semester berhasil dihapus permanen.');
     }
 }
