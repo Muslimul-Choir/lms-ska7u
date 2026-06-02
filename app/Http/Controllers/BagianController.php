@@ -76,6 +76,12 @@ class BagianController extends Controller
 
     public function destroy(Bagian $bagian): RedirectResponse
     {
+        if ($bagian->Kelas()->exists()) {
+            return redirect()
+                ->route('bagian.index')
+                ->with('error', 'Bagian tidak dapat dihapus karena masih digunakan oleh kelas. Hapus atau pindahkan kelas terkait terlebih dahulu.');
+        }
+
         $bagian->delete();
 
         return redirect()

@@ -60,6 +60,11 @@ class JamBelajarController extends Controller
 
     public function destroy(JamBelajar $jambelajar): RedirectResponse
     {
+        if ($jambelajar->JadwalBelajars()->exists()) {
+            return redirect()->route('jambelajar.index')
+                ->with('error', 'Jam belajar tidak dapat dihapus karena masih digunakan di jadwal belajar.');
+        }
+
         $jambelajar->delete();
 
         return redirect()->route('jambelajar.index')

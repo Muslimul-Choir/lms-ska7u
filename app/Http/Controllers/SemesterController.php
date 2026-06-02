@@ -86,6 +86,12 @@ class SemesterController extends Controller
 
     public function destroy(Semester $semester): RedirectResponse
     {
+        if ($semester->GuruMapels()->exists()) {
+            return redirect()
+                ->route('semester.index')
+                ->with('error', 'Semester tidak dapat dihapus karena masih digunakan di guru mapel. Hapus atau ubah data terkait terlebih dahulu.');
+        }
+
         $semester->delete();
 
         return redirect()

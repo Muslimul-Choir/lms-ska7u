@@ -86,6 +86,12 @@ class MapelController extends Controller
 
     public function destroy(Mapel $mapel): RedirectResponse
     {
+        if ($mapel->GuruMapel()->exists() || $mapel->JadwalBelajar()->exists() || $mapel->Tugas()->exists() || $mapel->Materi()->exists()) {
+            return redirect()
+                ->route('mapel.index')
+                ->with('error', 'Mata pelajaran tidak dapat dihapus karena masih digunakan di relasi guru mapel, jadwal belajar, tugas, atau materi. Hapus atau ubah data terkait terlebih dahulu.');
+        }
+
         $mapel->delete();
 
         return redirect()

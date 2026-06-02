@@ -76,6 +76,12 @@ class TahunAjaranController extends Controller
 
     public function destroy(TahunAjaran $tahunajaran): RedirectResponse
     {
+        if ($tahunajaran->Semester()->exists() || $tahunajaran->Kelas()->exists()) {
+            return redirect()
+                ->route('tahunajaran.index')
+                ->with('error', 'Tahun ajaran tidak dapat dihapus karena masih digunakan di semester atau kelas. Hapus atau ubah data terkait terlebih dahulu.');
+        }
+
         $tahunajaran->delete();
 
         return redirect()
