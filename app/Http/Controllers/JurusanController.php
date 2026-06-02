@@ -89,13 +89,19 @@ class JurusanController extends Controller
             ->with('success', 'Jurusan berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $jurusans = Jurusan::onlyTrashed()
-            ->latest('deleted_at')
-            ->paginate(10);
+        $search = $request->get('search');
 
-        return view('jurusan.trash', compact('jurusans'));
+        $jurusans = Jurusan::onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_jurusan', 'like', '%' . $search . '%');
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('jurusan.trash', compact('jurusans', 'search'));
     }
 
     public function restore(Jurusan $jurusan): RedirectResponse

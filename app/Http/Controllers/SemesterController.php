@@ -99,14 +99,26 @@ class SemesterController extends Controller
             ->with('success', 'Semester berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
+        $search = $request->get('search');
+        $tahun_ajaran_filter = $request->get('tahun_ajaran');
+
         $semesters = Semester::with('tahunAjaran')
             ->onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_semester', 'like', '%' . $search . '%');
+            })
+            ->when($tahun_ajaran_filter, function ($query, $tahun_ajaran_filter) {
+                return $query->where('id_tahun_ajaran', $tahun_ajaran_filter);
+            })
             ->latest('deleted_at')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('semester.trash', compact('semesters'));
+        $tahunAjarans = TahunAjaran::all();
+
+        return view('semester.trash', compact('semesters', 'search', 'tahunAjarans', 'tahun_ajaran_filter'));
     }
 
     public function restore(Semester $semester): RedirectResponse
