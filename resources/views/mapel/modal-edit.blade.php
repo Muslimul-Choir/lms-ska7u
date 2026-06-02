@@ -1,5 +1,5 @@
 {{-- Modal Edit Mapel --}}
-<div id="modalEdit" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
+<div id="modalEdit" style="display:none; position:fixed; inset:0; z-index:999; align-items:center; justify-content:center;">
 
     {{-- Overlay --}}
     <div id="overlayEdit"
@@ -154,10 +154,9 @@
                             onmouseout="this.style.background='#F9FAFB'">
                         Batal
                     </button>
-                    <button type="submit"
-                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-size:13.5px; font-weight:700; background:linear-gradient(135deg,#6B1A2B,#9B3045); color:#fff; border:none; border-radius:10px; cursor:pointer; transition:opacity .2s; box-shadow:0 2px 8px rgba(107,26,43,0.25);"
-                            onmouseover="this.style.opacity='.88'"
-                            onmouseout="this.style.opacity='1'">
+                    <button type="submit" id="submitEditBtn"
+                    class="inline-flex items-center gap-[6px] px-[22px] py-[9px] text-[13.5px] font-bold text-white border-none rounded-[10px] cursor-pointer transition-all duration-200 shadow-[0_2px_8px_rgba(107,26,43,0.25)] disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90"
+                        style="background: linear-gradient(135deg,#6B1A2B,#9B3045);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -198,4 +197,29 @@ function closeEditModal() {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeEditModal();
 });
+
+ // CONFIRM UPDATE
+        document.addEventListener('DOMContentLoaded', () => {
+            const editForm = document.getElementById('formEdit');
+            const submitBtn = document.getElementById('submitEditBtn');
+
+            if (editForm && submitBtn) {
+                editForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    showConfirmUpdate().then((result) => {
+                        if (result.isConfirmed) {
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML = `
+                                <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                    </svg>
+                                    Menyimpan...
+                                `;
+                            editForm.submit();
+                        }
+                    });
+                });
+            }
+        });
 </script>
