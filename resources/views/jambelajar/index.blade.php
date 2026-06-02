@@ -47,6 +47,23 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="flex items-center justify-between px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-4a1 1 0 112 0 1 1 0 01-2 0zm0-8a1 1 0 011 1v4a1 1 0 11-2 0V7a1 1 0 011-1z"
+                                clip-rule="evenodd"/>
+                        </svg>
+                        <span>{{ session('error') }}</span>
+                    </div>
+
+                    <button onclick="this.parentElement.remove()">
+                        ✕
+                    </button>
+                </div>
+            @endif
+
             {{-- Card --}}
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 

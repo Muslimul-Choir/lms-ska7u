@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\JadwalBelajar;
 
 class JamBelajar extends Model
 {
@@ -32,4 +33,8 @@ class JamBelajar extends Model
         return $this->belongsTo(Tingkatan::class, 'id_tingkatan');
     }
 
+    public function JadwalBelajars()
+    {
+        return $this->hasMany(JadwalBelajar::class, 'id_jam');
+    }
 }
