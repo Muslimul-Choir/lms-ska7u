@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\GuruMapel;
+use App\Models\JadwalBelajar;
+use App\Models\Materi;
+use App\Models\Tugas;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -36,6 +40,11 @@ class Mapel extends Model
     public function Tugas()
     {
         return $this->hasMany(Tugas::class, 'id_mapel');
+    }
+
+    public function Materi()
+    {
+        return $this->hasMany(Materi::class, 'id_mapel');
     }
 
     public function JadwalBelajar()

@@ -123,30 +123,40 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::get('bagian/trash', [BagianController::class, 'trash'])->name('bagian.trash');
     Route::patch('bagian/trash/{bagian}/restore', [BagianController::class, 'restore'])->name('bagian.restore');
     Route::delete('bagian/trash/{bagian}/force-delete', [BagianController::class, 'forceDelete'])->name('bagian.force-delete');
+    Route::patch('bagian/trash/restore-all', [BagianController::class, 'restoreAll'])->name('bagian.restoreAll');
+    Route::delete('bagian/trash/force-delete-all', [BagianController::class, 'forceDeleteAll'])->name('bagian.forceDeleteAll');
     Route::resource('bagian', BagianController::class);
 
     // Jurusan Routes
     Route::get('jurusan/trash', [JurusanController::class, 'trash'])->name('jurusan.trash');
     Route::patch('jurusan/trash/{jurusan}/restore', [JurusanController::class, 'restore'])->name('jurusan.restore');
     Route::delete('jurusan/trash/{jurusan}/force-delete', [JurusanController::class, 'forceDelete'])->name('jurusan.force-delete');
+    Route::patch('jurusan/trash/restore-all', [JurusanController::class, 'restoreAll'])->name('jurusan.restoreAll');
+    Route::delete('jurusan/trash/force-delete-all', [JurusanController::class, 'forceDeleteAll'])->name('jurusan.forceDeleteAll');
     Route::resource('jurusan', JurusanController::class);
 
     // Semester Routes
     Route::get('semester/trash', [SemesterController::class, 'trash'])->name('semester.trash');
     Route::patch('semester/trash/{semester}/restore', [SemesterController::class, 'restore'])->name('semester.restore');
     Route::delete('semester/trash/{semester}/force-delete', [SemesterController::class, 'forceDelete'])->name('semester.force-delete');
+    Route::patch('semester/trash/restore-all', [SemesterController::class, 'restoreAll'])->name('semester.restoreAll');
+    Route::delete('semester/trash/force-delete-all', [SemesterController::class, 'forceDeleteAll'])->name('semester.forceDeleteAll');
     Route::resource('semester', SemesterController::class);
 
     // Tahun Ajaran Routes
     Route::get('tahunajaran/trash', [TahunAjaranController::class, 'trash'])->name('tahunajaran.trash');
     Route::patch('tahunajaran/trash/{tahunajaran}/restore', [TahunAjaranController::class, 'restore'])->name('tahunajaran.restore');
     Route::delete('tahunajaran/trash/{tahunajaran}/force-delete', [TahunAjaranController::class, 'forceDelete'])->name('tahunajaran.force-delete');
+    Route::patch('tahunajaran/trash/restore-all', [TahunAjaranController::class, 'restoreAll'])->name('tahunajaran.restoreAll');
+    Route::delete('tahunajaran/trash/force-delete-all', [TahunAjaranController::class, 'forceDeleteAll'])->name('tahunajaran.forceDeleteAll');
     Route::resource('tahunajaran', TahunAjaranController::class);
 
     // Tingkatan Routes
     Route::get('tingkatan/trash', [TingkatanController::class, 'trash'])->name('tingkatan.trash');
     Route::patch('tingkatan/trash/{tingkatan}/restore', [TingkatanController::class, 'restore'])->name('tingkatan.restore');
     Route::delete('tingkatan/trash/{tingkatan}/force-delete', [TingkatanController::class, 'forceDelete'])->name('tingkatan.force-delete');
+    Route::patch('tingkatan/trash/restore-all', [TingkatanController::class, 'restoreAll'])->name('tingkatan.restoreAll');
+    Route::delete('tingkatan/trash/force-delete-all', [TingkatanController::class, 'forceDeleteAll'])->name('tingkatan.forceDeleteAll');
     Route::resource('tingkatan', TingkatanController::class);
 
     // Mapel Routes

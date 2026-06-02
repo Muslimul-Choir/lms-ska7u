@@ -28,6 +28,8 @@ class SemesterController extends Controller
             ->paginate(5)
             ->withQueryString();
 
+        $trashCount = Semester::onlyTrashed()->count();
+
         if ($request->ajax()) {
             return response()->json([
                 'semesters' => $semesters->items(),
@@ -38,7 +40,13 @@ class SemesterController extends Controller
 
         $tahunAjarans = TahunAjaran::all();
 
-        return view('semester.index', compact('semesters', 'search', 'tahunAjarans', 'tahun_ajaran_filter'));
+        return view('semester.index', compact(
+            'semesters',
+            'search',
+            'tahunAjarans',
+            'tahun_ajaran_filter',
+            'trashCount'
+        ));
     }
 
     public function create(): View
@@ -65,8 +73,10 @@ class SemesterController extends Controller
         return view('semester.edit', compact('semester'));
     }
 
-    public function update(UpdateSemesterRequest $request, Semester $semester): RedirectResponse
-    {
+    public function update(
+        UpdateSemesterRequest $request,
+        Semester $semester
+    ): RedirectResponse {
         $semester->update($request->validated());
 
         return redirect()
@@ -76,18 +86,39 @@ class SemesterController extends Controller
 
     public function destroy(Semester $semester): RedirectResponse
     {
+        if ($semester->GuruMapels()->exists()) {
+            return redirect()
+                ->route('semester.index')
+                ->with('error', 'Semester tidak dapat dihapus karena masih digunakan di guru mapel. Hapus atau ubah data terkait terlebih dahulu.');
+        }
+
         $semester->delete();
 
         return redirect()
             ->route('semester.index')
-            ->with('success', 'Semester berhasil dihapus.');
+            ->with('success', 'Semester berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $semesters = Semester::onlyTrashed()->latest()->paginate(10);
+        $search = $request->get('search');
+        $tahun_ajaran_filter = $request->get('tahun_ajaran');
 
-        return view('semester.trash', compact('semesters'));
+        $semesters = Semester::with('tahunAjaran')
+            ->onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_semester', 'like', '%' . $search . '%');
+            })
+            ->when($tahun_ajaran_filter, function ($query, $tahun_ajaran_filter) {
+                return $query->where('id_tahun_ajaran', $tahun_ajaran_filter);
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        $tahunAjarans = TahunAjaran::all();
+
+        return view('semester.trash', compact('semesters', 'search', 'tahunAjarans', 'tahun_ajaran_filter'));
     }
 
     public function restore(Semester $semester): RedirectResponse
@@ -106,5 +137,23 @@ class SemesterController extends Controller
         return redirect()
             ->route('semester.trash')
             ->with('success', 'Semester berhasil dihapus permanen.');
+    }
+
+    public function restoreAll(): RedirectResponse
+    {
+        Semester::onlyTrashed()->restore();
+
+        return redirect()
+            ->route('semester.trash')
+            ->with('success', 'Semua data semester berhasil dipulihkan.');
+    }
+
+    public function forceDeleteAll(): RedirectResponse
+    {
+        Semester::onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('semester.trash')
+            ->with('success', 'Semua data semester berhasil dihapus permanen.');
     }
 }
