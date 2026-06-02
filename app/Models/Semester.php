@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\GuruMapel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -30,5 +31,10 @@ class Semester extends Model
     public function TahunAjaran()
     {
         return $this->belongsTo(TahunAjaran::class, 'id_tahun_ajaran');
+    }
+
+    public function GuruMapels()
+    {
+        return $this->hasMany(GuruMapel::class, 'id_semester');
     }
 }
