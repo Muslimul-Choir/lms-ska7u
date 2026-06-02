@@ -89,13 +89,19 @@ class TahunAjaranController extends Controller
             ->with('success', 'Tahun ajaran berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $tahunAjarans = TahunAjaran::onlyTrashed()
-            ->latest('deleted_at')
-            ->paginate(10);
+        $search = $request->get('search');
 
-        return view('tahunajaran.trash', compact('tahunAjarans'));
+        $tahunAjarans = TahunAjaran::onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_tahun', 'like', '%' . $search . '%');
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('tahunajaran.trash', compact('tahunAjarans', 'search'));
     }
 
     public function restore(TahunAjaran $tahunajaran): RedirectResponse
