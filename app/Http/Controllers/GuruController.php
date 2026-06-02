@@ -114,19 +114,19 @@ class GuruController extends Controller
         // Cek apakah guru masih menjadi wali kelas
         if ($guru->kelas()->exists()) {
             $kelasCount = $guru->kelas()->count();
-            $errors[] = "Guru ini masih menjadi wali kelas untuk {$kelasCount} kelas. Ubah wali kelas terlebih dahulu.";
+            $errors[] = "Guru ini masih menjadi wali kelas untuk {$kelasCount} kelas.";
         }
 
         // Cek apakah guru masih mengajar mapel
         if ($guru->guruMapel()->exists()) {
             $mapelCount = $guru->guruMapel()->count();
-            $errors[] = "Guru ini masih mengajar {$mapelCount} mapel. Hapus relasi guru-mapel terlebih dahulu.";
+            $errors[] = "Guru ini masih mengajar {$mapelCount} mapel.";
         }
 
         // Cek apakah guru masih memiliki tugas
         if ($guru->Tugas()->exists()) {
             $tugasCount = $guru->Tugas()->count();
-            $errors[] = "Guru ini masih memiliki {$tugasCount} tugas. Hapus tugas terlebih dahulu.";
+            $errors[] = "Guru ini masih memiliki {$tugasCount} tugas.";
         }
 
         if (!empty($errors)) {
