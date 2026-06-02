@@ -22,6 +22,8 @@ class TahunAjaranController extends Controller
             ->paginate(5)
             ->withQueryString();
 
+        $trashCount = TahunAjaran::onlyTrashed()->count();
+
         if ($request->ajax()) {
             return response()->json([
                 'tahunAjarans' => $tahunAjarans->items(),
@@ -30,7 +32,11 @@ class TahunAjaranController extends Controller
             ]);
         }
 
-        return view('tahunajaran.index', compact('tahunAjarans', 'search'));
+        return view('tahunajaran.index', compact(
+            'tahunAjarans',
+            'search',
+            'trashCount'
+        ));
     }
 
     public function create(): View
@@ -57,8 +63,10 @@ class TahunAjaranController extends Controller
         return view('tahunajaran.edit', compact('tahunajaran'));
     }
 
-    public function update(UpdateTahunAjaranRequest $request, TahunAjaran $tahunajaran): RedirectResponse
-    {
+    public function update(
+        UpdateTahunAjaranRequest $request,
+        TahunAjaran $tahunajaran
+    ): RedirectResponse {
         $tahunajaran->update($request->validated());
 
         return redirect()
@@ -72,31 +80,55 @@ class TahunAjaranController extends Controller
 
         return redirect()
             ->route('tahunajaran.index')
-            ->with('success', 'Tahun ajaran berhasil dihapus.');
+            ->with('success', 'Tahun ajaran berhasil dipindahkan ke arsip.');
     }
 
     public function trash(): View
     {
-        $tahunAjarans = TahunAjaran::onlyTrashed()->latest()->paginate(10);
+        $tahunAjarans = TahunAjaran::onlyTrashed()
+            ->latest('deleted_at')
+            ->paginate(10);
 
         return view('tahunajaran.trash', compact('tahunAjarans'));
     }
 
-    public function restore(TahunAjaran $tahunajaran): RedirectResponse
+    public function restore($id): RedirectResponse
     {
-        $tahunajaran->restore();
+        TahunAjaran::onlyTrashed()
+            ->findOrFail($id)
+            ->restore();
 
         return redirect()
             ->route('tahunajaran.trash')
             ->with('success', 'Tahun ajaran berhasil dipulihkan.');
     }
 
-    public function forceDelete(TahunAjaran $tahunajaran): RedirectResponse
+    public function forceDelete($id): RedirectResponse
     {
-        $tahunajaran->forceDelete();
+        TahunAjaran::onlyTrashed()
+            ->findOrFail($id)
+            ->forceDelete();
 
         return redirect()
             ->route('tahunajaran.trash')
             ->with('success', 'Tahun ajaran berhasil dihapus permanen.');
+    }
+
+    public function restoreAll(): RedirectResponse
+    {
+        TahunAjaran::onlyTrashed()->restore();
+
+        return redirect()
+            ->route('tahunajaran.trash')
+            ->with('success', 'Semua data tahun ajaran berhasil dipulihkan.');
+    }
+
+    public function forceDeleteAll(): RedirectResponse
+    {
+        TahunAjaran::onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('tahunajaran.trash')
+            ->with('success', 'Semua data tahun ajaran berhasil dihapus permanen.');
     }
 }
