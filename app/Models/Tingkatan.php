@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\JamBelajar;
 use App\Models\Kelas;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,5 +31,10 @@ class Tingkatan extends Model
     public function Kelas()
     {
         return $this->hasMany(Kelas::class, 'id_tingkatan');
+    }
+
+    public function JamBelajars()
+    {
+        return $this->hasMany(JamBelajar::class, 'id_tingkatan');
     }
 }
