@@ -89,13 +89,19 @@ class BagianController extends Controller
             ->with('success', 'Bagian berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $bagians = Bagian::onlyTrashed()
-            ->latest('deleted_at')
-            ->paginate(10);
+        $search = $request->get('search');
 
-        return view('bagian.trash', compact('bagians'));
+        $bagians = Bagian::onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_bagian', 'like', '%' . $search . '%');
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('bagian.trash', compact('bagians', 'search'));
     }
 
     public function restore(Bagian $bagian): RedirectResponse
