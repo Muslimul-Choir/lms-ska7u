@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -32,7 +33,7 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
+        $users      = $query->latest()->paginate(10)->withQueryString();
         $trashCount = User::onlyTrashed()
             ->whereIn('role', ['super_admin', 'admin'])
             ->count();
@@ -45,10 +46,17 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        $validated = $request->validated();
-        $validated['password'] = Hash::make($validated['password']);
-        User::create($validated);
-        return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
+        try {
+            $validated             = $request->validated();
+            $validated['password'] = Hash::make($validated['password']);
+            User::create($validated);
+
+            return redirect()->route('users.index')
+                ->with('success', 'Akun berhasil ditambahkan.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Gagal menambahkan akun. Silakan coba lagi.');
+        }
     }
 
     /**
@@ -56,18 +64,27 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $validated = $request->validated();
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
+        try {
+            $validated = $request->validated();
+
+            if (!empty($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            } else {
+                unset($validated['password']);
+            }
+
+            $user->update($validated);
+
+            return redirect()->route('users.index')
+                ->with('success', 'Akun berhasil diperbarui.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Gagal memperbarui akun. Silakan coba lagi.');
         }
-        $user->update($validated);
-        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(User $user)
     {
@@ -75,27 +92,20 @@ class UserController extends Controller
             return back()->with('error', 'Tidak bisa menghapus akun sendiri.');
         }
 
-        $errors = [];
+        try {
+            $user->delete();
 
-        // Check relasi dengan guru
-        if ($user->guru()->exists()) {
-            $errors[] = 'masih terdaftar sebagai guru';
-        }
-
-        // Check relasi dengan siswa
-        if ($user->siswa()->exists()) {
-            $errors[] = 'masih terdaftar sebagai siswa';
-        }
-
-        if (!empty($errors)) {
             return redirect()->route('users.index')
-                ->with('error', 'User "' . $user->name . '" tidak dapat dihapus karena ' . implode(', ', $errors) . '.');
+                ->with('success', 'Akun berhasil dihapus.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Gagal menghapus akun. Silakan coba lagi.');
         }
-
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
     }
 
+    /**
+     * Display trashed users.
+     */
     public function trash(Request $request)
     {
         $query = User::onlyTrashed()
@@ -119,90 +129,73 @@ class UserController extends Controller
         return view('users.trash', compact('users'));
     }
 
-    public function restore(string $id)
+    /**
+     * Restore a single trashed user.
+     */
+    public function restore(int $id)
     {
-        $user = User::onlyTrashed()->findOrFail($id);
-        $user->restore();
+        try {
+            $user = User::onlyTrashed()->findOrFail($id);
+            $user->restore();
 
-        return redirect()->route('users.trash')
-            ->with('success', 'User berhasil direstore.');
+            return redirect()->route('users.trash')
+                ->with('success', 'Akun berhasil dipulihkan.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.trash')
+                ->with('error', 'Gagal memulihkan akun. Silakan coba lagi.');
+        }
     }
 
+    /**
+     * Restore all trashed users.
+     */
     public function restoreAll()
     {
-        User::onlyTrashed()
-            ->whereIn('role', ['super_admin', 'admin'])
-            ->restore();
+        try {
+            User::onlyTrashed()
+                ->whereIn('role', ['super_admin', 'admin'])
+                ->restore();
 
-        return redirect()->route('users.trash')
-            ->with('success', 'Semua user berhasil direstore.');
-    }
-
-    public function forceDelete(string $id)
-    {
-        $user = User::onlyTrashed()->findOrFail($id);
-
-        $errors = [];
-
-        // Check relasi dengan guru
-        if ($user->guru()->exists()) {
-            $errors[] = 'masih terdaftar sebagai guru';
-        }
-
-        // Check relasi dengan siswa
-        if ($user->siswa()->exists()) {
-            $errors[] = 'masih terdaftar sebagai siswa';
-        }
-
-        if (!empty($errors)) {
             return redirect()->route('users.trash')
-                ->with('error', 'User "' . $user->name . '" tidak dapat dihapus permanen karena ' . implode(', ', $errors) . '.');
+                ->with('success', 'Semua akun berhasil dipulihkan.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.trash')
+                ->with('error', 'Gagal memulihkan semua akun. Silakan coba lagi.');
         }
-
-        $user->forceDelete();
-
-        return redirect()->route('users.trash')
-            ->with('success', 'User berhasil dihapus permanen.');
     }
 
+    /**
+     * Permanently delete a single trashed user.
+     */
+    public function forceDelete(int $id)
+    {
+        try {
+            $user = User::onlyTrashed()->findOrFail($id);
+            $user->forceDelete();
+
+            return redirect()->route('users.trash')
+                ->with('success', 'Akun berhasil dihapus permanen.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.trash')
+                ->with('error', 'Gagal menghapus akun secara permanen. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Permanently delete all trashed users.
+     */
     public function forceDeleteAll()
     {
-        $trashedUsers = User::onlyTrashed()
-            ->whereIn('role', ['super_admin', 'admin'])
-            ->get();
+        try {
+            User::onlyTrashed()
+                ->whereIn('role', ['super_admin', 'admin'])
+                ->forceDelete();
 
-        $deletedCount = 0;
-        $skippedCount = 0;
-        $failedUsers = [];
-
-        foreach ($trashedUsers as $user) {
-            $errors = [];
-
-            // Check relasi dengan guru
-            if ($user->guru()->exists()) {
-                $errors[] = 'guru';
-            }
-
-            // Check relasi dengan siswa
-            if ($user->siswa()->exists()) {
-                $errors[] = 'siswa';
-            }
-
-            if (empty($errors)) {
-                $user->forceDelete();
-                $deletedCount++;
-            } else {
-                $skippedCount++;
-                $failedUsers[] = $user->name;
-            }
+            return redirect()->route('users.trash')
+                ->with('success', 'Semua akun berhasil dihapus permanen.');
+        } catch (Throwable $e) {
+            return redirect()->route('users.trash')
+                ->with('error', 'Gagal menghapus semua akun secara permanen. Silakan coba lagi.');
         }
-
-        $message = "Berhasil menghapus $deletedCount user";
-        if ($skippedCount > 0) {
-            $message .= " ($skippedCount user dilewati karena masih memiliki relasi: " . implode(', ', $failedUsers) . ")";
-        }
-
-        return redirect()->route('users.trash')
-            ->with('success', $message . '.');
     }
 }

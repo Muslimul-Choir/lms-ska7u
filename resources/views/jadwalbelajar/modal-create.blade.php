@@ -249,21 +249,21 @@ function syncMapelFromGuru() {
     const selectedOpt = guruSelect.options[guruSelect.selectedIndex];
     const mapelId     = selectedOpt?.dataset?.mapelId ?? '';
     if (guruSelect.value && mapelId) {
-        mapelSelect.value    = mapelId;
-        mapelSelect.disabled = true;
+        mapelSelect.value = mapelId;
+        mapelSelect.style.pointerEvents = 'none';
         mapelSelect.style.background = '#F9FAFB';
-        mapelSelect.style.color      = '#9CA3AF';
-        mapelSelect.style.cursor     = 'not-allowed';
+        mapelSelect.style.color = '#9CA3AF';
+        mapelSelect.style.cursor = 'not-allowed';
         badge.style.display = 'block';
-        hint.style.display  = 'flex';
+        hint.style.display = 'flex';
     } else {
-        mapelSelect.value    = '';
-        mapelSelect.disabled = false;
+        mapelSelect.value = '';
+        mapelSelect.style.pointerEvents = 'auto';
         mapelSelect.style.background = '#F9FAFB';
-        mapelSelect.style.color      = '#111827';
-        mapelSelect.style.cursor     = 'pointer';
+        mapelSelect.style.color = '#111827';
+        mapelSelect.style.cursor = 'pointer';
         badge.style.display = 'none';
-        hint.style.display  = 'none';
+        hint.style.display = 'none';
     }
 }
 document.getElementById('createIdGuruMapel')?.addEventListener('change', syncMapelFromGuru);

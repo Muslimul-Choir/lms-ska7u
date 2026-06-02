@@ -22,19 +22,21 @@ class TingkatanController extends Controller
             ->paginate(5)
             ->withQueryString();
 
+        $trashCount = Tingkatan::onlyTrashed()->count();
+
         if ($request->ajax()) {
             return response()->json([
                 'tingkatans' => $tingkatans->items(),
-                'pagination' => [
-                    'current_page' => $tingkatans->currentPage(),
-                    'last_page' => $tingkatans->lastPage(),
-                    'per_page' => $tingkatans->perPage(),
-                    'total' => $tingkatans->total(),
-                ]
+                'pagination' => $tingkatans->links()->toHtml(),
+                'total' => $tingkatans->total()
             ]);
         }
 
-        return view('tingkatan.index', compact('tingkatans', 'search'));
+        return view('tingkatan.index', compact(
+            'tingkatans',
+            'search',
+            'trashCount'
+        ));
     }
 
     public function create(): View
@@ -61,8 +63,10 @@ class TingkatanController extends Controller
         return view('tingkatan.edit', compact('tingkatan'));
     }
 
-    public function update(UpdateTingkatanRequest $request, Tingkatan $tingkatan): RedirectResponse
-    {
+    public function update(
+        UpdateTingkatanRequest $request,
+        Tingkatan $tingkatan
+    ): RedirectResponse {
         $tingkatan->update($request->validated());
 
         return redirect()
@@ -72,18 +76,32 @@ class TingkatanController extends Controller
 
     public function destroy(Tingkatan $tingkatan): RedirectResponse
     {
+        if ($tingkatan->Kelas()->exists() || $tingkatan->JamBelajars()->exists()) {
+            return redirect()
+                ->route('tingkatan.index')
+                ->with('error', 'Tingkatan tidak dapat dihapus karena masih digunakan di kelas atau jam belajar. Hapus atau ubah data terkait terlebih dahulu.');
+        }
+
         $tingkatan->delete();
 
         return redirect()
             ->route('tingkatan.index')
-            ->with('success', 'Tingkatan berhasil dihapus.');
+            ->with('success', 'Tingkatan berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $tingkatans = Tingkatan::onlyTrashed()->latest()->paginate(10);
+        $search = $request->get('search');
 
-        return view('tingkatan.trash', compact('tingkatans'));
+        $tingkatans = Tingkatan::onlyTrashed()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_tingkatan', 'like', '%' . $search . '%');
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('tingkatan.trash', compact('tingkatans', 'search'));
     }
 
     public function restore(Tingkatan $tingkatan): RedirectResponse
@@ -102,5 +120,23 @@ class TingkatanController extends Controller
         return redirect()
             ->route('tingkatan.trash')
             ->with('success', 'Tingkatan berhasil dihapus permanen.');
+    }
+
+    public function restoreAll(): RedirectResponse
+    {
+        Tingkatan::onlyTrashed()->restore();
+
+        return redirect()
+            ->route('tingkatan.trash')
+            ->with('success', 'Semua data tingkatan berhasil dipulihkan.');
+    }
+
+    public function forceDeleteAll(): RedirectResponse
+    {
+        Tingkatan::onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('tingkatan.trash')
+            ->with('success', 'Semua data tingkatan berhasil dihapus permanen.');
     }
 }
