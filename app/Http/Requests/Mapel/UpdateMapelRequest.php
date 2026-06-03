@@ -41,7 +41,7 @@ class UpdateMapelRequest extends FormRequest
             'kode_mapel' => [
                 'required',
                 'string',
-                'max:50',
+                'max:20',
                 Rule::unique('mapel', 'kode_mapel')
                     ->ignore($mapelId)
                     ->whereNull('deleted_at'),
