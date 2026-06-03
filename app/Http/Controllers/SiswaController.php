@@ -118,6 +118,28 @@ class SiswaController extends Controller
     // ── DESTROY ──────────────────────────────────────────────
     public function destroy(Siswa $siswa)
     {
+        $errors = [];
+
+        if ($siswa->Absensi()->exists()) {
+            $absensiCount = $siswa->Absensi()->count();
+            $errors[] = "Siswa ini masih memiliki {$absensiCount} absensi.";
+        }
+
+        if ($siswa->PengumpulanTugas()->exists()) {
+            $pengumpulanTugasCount = $siswa->PengumpulanTugas()->count();
+            $errors[] = "Siswa ini masih memiliki {$pengumpulanTugasCount} pengumpulan tugas.";
+        }
+
+        if ($siswa->HasilKuis()->exists()) {
+            $hasilKuisCount = $siswa->HasilKuis()->count();
+            $errors[] = "Siswa ini masih memiliki {$hasilKuisCount} hasil kuis.";
+        }
+
+        if (!empty($errors)) {
+            return redirect()->route('siswa.index')
+                ->with('error', implode(' | ', $errors));
+        }
+
         try {
             DB::transaction(function () use ($siswa) {
                 if ($siswa->user) {

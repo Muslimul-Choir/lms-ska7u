@@ -39,7 +39,7 @@ class StoreMapelRequest extends FormRequest
             'kode_mapel' => [
                 'required',
                 'string',
-                'max:50',
+                'max:20',
                 Rule::unique('mapel', 'kode_mapel')
                     ->whereNull('deleted_at'),
             ],
