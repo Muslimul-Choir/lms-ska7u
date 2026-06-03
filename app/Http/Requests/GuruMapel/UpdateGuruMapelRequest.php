@@ -17,18 +17,39 @@ class UpdateGuruMapelRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        $guruMapelId = $this->route('guru_mapel')->id ?? null;
+        $guruMapelId = $this->route('guru_mapel')->id;
 
         return [
-            'id_mapel' => 'required|exists:mapel,id',
-            'id_guru' => 'required|exists:guru,id',
-            'id_kelas' => 'required|exists:kelas,id',
-            'id_semester' => 'required|exists:semester,id',
+            'id_mapel' => [
+                'required',
+                'exists:mapel,id',
+                Rule::unique('guru_mapel')
+                    ->ignore($guruMapelId)
+                    ->where(function ($query) {
+                        return $query
+                            ->where('id_guru', $this->id_guru)
+                            ->where('id_kelas', $this->id_kelas)
+                            ->where('id_semester', $this->id_semester);
+                    }),
+            ],
+
+            'id_guru' => [
+                'required',
+                'exists:guru,id',
+            ],
+
+            'id_kelas' => [
+                'required',
+                'exists:kelas,id',
+            ],
+
+            'id_semester' => [
+                'required',
+                'exists:semester,id',
+            ],
         ];
     }
 
@@ -37,7 +58,7 @@ class UpdateGuruMapelRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Sanitize input if needed
+        // Tambahkan sanitasi jika diperlukan
     }
 
     /**
@@ -47,13 +68,30 @@ class UpdateGuruMapelRequest extends FormRequest
     {
         return [
             'id_mapel.required' => 'Mapel wajib dipilih.',
-            'id_mapel.exists' => 'Mapel tidak valid.',
+            'id_mapel.exists'   => 'Mapel tidak valid.',
+            'id_mapel.unique'   => 'Data guru mapel dengan kombinasi guru, mapel, kelas, dan semester tersebut sudah terdaftar.',
+
             'id_guru.required' => 'Guru wajib dipilih.',
-            'id_guru.exists' => 'Guru tidak valid.',
+            'id_guru.exists'   => 'Guru tidak valid.',
+
             'id_kelas.required' => 'Kelas wajib dipilih.',
-            'id_kelas.exists' => 'Kelas tidak valid.',
+            'id_kelas.exists'   => 'Kelas tidak valid.',
+
             'id_semester.required' => 'Semester wajib dipilih.',
-            'id_semester.exists' => 'Semester tidak valid.',
+            'id_semester.exists'   => 'Semester tidak valid.',
+        ];
+    }
+
+    /**
+     * Custom attribute names.
+     */
+    public function attributes(): array
+    {
+        return [
+            'id_mapel'    => 'mapel',
+            'id_guru'     => 'guru',
+            'id_kelas'    => 'kelas',
+            'id_semester' => 'semester',
         ];
     }
 }

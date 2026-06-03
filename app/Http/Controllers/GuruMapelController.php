@@ -34,18 +34,20 @@ class GuruMapelController extends Controller
             ])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('Mapel', function ($q) use ($search) {
-                    $q->where('nama_mapel', 'like', '%' . $search . '%');
+                    $q->where('nama_mapel', 'like', "%{$search}%");
                 })->orWhereHas('Guru', function ($q) use ($search) {
-                    $q->where('nama_lengkap', 'like', '%' . $search . '%');
+                    $q->where('nama_lengkap', 'like', "%{$search}%");
                 });
             })
             ->latest()
             ->paginate(5)
             ->withQueryString();
 
+        $trashCount = GuruMapel::onlyTrashed()->count();
+
         if ($request->ajax()) {
             return response()->json([
-                'guru_mapels' => $guruMapels->map(function ($item) {
+                'guru_mapel' => $guruMapels->map(function ($item) {
                     return [
                         'id'          => $item->id,
                         'id_mapel'    => $item->id_mapel,
@@ -59,9 +61,15 @@ class GuruMapelController extends Controller
                             'nama_lengkap' => $item->Guru->nama_lengkap ?? '-',
                         ],
                         'kelas' => [
-                            'tingkatan' => ['nama_tingkatan' => $item->Kelas->Tingkatan->nama_tingkatan ?? ''],
-                            'jurusan'   => ['nama_jurusan'   => $item->Kelas->Jurusan->nama_jurusan ?? ''],
-                            'bagian'    => ['nama_bagian'    => $item->Kelas->Bagian->nama_bagian ?? ''],
+                            'tingkatan' => [
+                                'nama_tingkatan' => $item->Kelas->Tingkatan->nama_tingkatan ?? ''
+                            ],
+                            'jurusan' => [
+                                'nama_jurusan' => $item->Kelas->Jurusan->nama_jurusan ?? ''
+                            ],
+                            'bagian' => [
+                                'nama_bagian' => $item->Kelas->Bagian->nama_bagian ?? ''
+                            ],
                         ],
                         'semester' => [
                             'nama_semester' => $item->Semester->nama_semester ?? '-',
@@ -69,7 +77,7 @@ class GuruMapelController extends Controller
                     ];
                 }),
                 'pagination' => $guruMapels->links()->toHtml(),
-                'total'      => $guruMapels->total(),
+                'total' => $guruMapels->total(),
             ]);
         }
 
@@ -79,7 +87,8 @@ class GuruMapelController extends Controller
             'mapels',
             'gurus',
             'kelas',
-            'semesters'
+            'semesters',
+            'trashCount'
         ));
     }
 
@@ -90,7 +99,12 @@ class GuruMapelController extends Controller
         $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
         $semesters = Semester::all();
 
-        return view('guru_mapel.create', compact('mapels', 'gurus', 'kelas', 'semesters'));
+        return view('guru_mapel.create', compact(
+            'mapels',
+            'gurus',
+            'kelas',
+            'semesters'
+        ));
     }
 
     public function store(StoreGuruMapelRequest $request): RedirectResponse
@@ -113,12 +127,7 @@ class GuruMapelController extends Controller
             'Semester',
         ]);
 
-        $mapels    = Mapel::all();
-        $gurus     = Guru::all();
-        $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
-        $semesters = Semester::all();
-
-        return view('guru_mapel.show', compact('guru_mapel', 'mapels', 'gurus', 'kelas', 'semesters'));
+        return view('guru_mapel.show', compact('guru_mapel'));
     }
 
     public function edit(GuruMapel $guru_mapel): View
@@ -128,11 +137,19 @@ class GuruMapelController extends Controller
         $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
         $semesters = Semester::all();
 
-        return view('guru_mapel.edit', compact('guru_mapel', 'mapels', 'gurus', 'kelas', 'semesters'));
+        return view('guru_mapel.edit', compact(
+            'guru_mapel',
+            'mapels',
+            'gurus',
+            'kelas',
+            'semesters'
+        ));
     }
 
-    public function update(UpdateGuruMapelRequest $request, GuruMapel $guru_mapel): RedirectResponse
-    {
+    public function update(
+        UpdateGuruMapelRequest $request,
+        GuruMapel $guru_mapel
+    ): RedirectResponse {
         $guru_mapel->update($request->validated());
 
         return redirect()
@@ -146,41 +163,79 @@ class GuruMapelController extends Controller
 
         return redirect()
             ->route('guru_mapel.index')
-            ->with('success', 'Guru Mapel berhasil dihapus.');
+            ->with('success', 'Guru Mapel berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
-    {
-        $guruMapels = GuruMapel::onlyTrashed()
-            ->with([
-                'Mapel',
-                'Guru',
-                'Kelas.Tingkatan',
-                'Kelas.Jurusan',
-                'Kelas.Bagian',
-                'Semester',
-            ])
-            ->latest()
-            ->paginate(10);
+    public function trash(Request $request): View
+{
+    $search = $request->search;
 
-        return view('guru_mapel.trash', compact('guruMapels'));
-    }
+    $guruMapels = GuruMapel::onlyTrashed()
+        ->with([
+            'Mapel',
+            'Guru',
+            'Kelas.Tingkatan',
+            'Kelas.Jurusan',
+            'Kelas.Bagian',
+            'Semester',
+        ])
+        ->when($search, function ($query) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('Mapel', function ($sub) use ($search) {
+                    $sub->where('nama_mapel', 'like', "%{$search}%");
+                })
+                ->orWhereHas('Guru', function ($sub) use ($search) {
+                    $sub->where('nama_lengkap', 'like', "%{$search}%");
+                })
+                ->orWhereHas('Semester', function ($sub) use ($search) {
+                    $sub->where('nama_semester', 'like', "%{$search}%");
+                });
+            });
+        })
+        ->latest('deleted_at')
+        ->paginate(10)
+        ->withQueryString();
 
-    public function restore(GuruMapel $guru_mapel): RedirectResponse
+    return view('guru_mapel.trash', compact('guruMapels'));
+}
+
+    public function restore($id): RedirectResponse
     {
-        $guru_mapel->restore();
+        GuruMapel::onlyTrashed()
+            ->findOrFail($id)
+            ->restore();
 
         return redirect()
             ->route('guru_mapel.trash')
             ->with('success', 'Guru Mapel berhasil dipulihkan.');
     }
 
-    public function forceDelete(GuruMapel $guru_mapel): RedirectResponse
+    public function restoreAll(): RedirectResponse
     {
-        $guru_mapel->forceDelete();
+        GuruMapel::onlyTrashed()->restore();
+
+        return redirect()
+            ->route('guru_mapel.trash')
+            ->with('success', 'Semua Guru Mapel berhasil dipulihkan.');
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        GuruMapel::onlyTrashed()
+            ->findOrFail($id)
+            ->forceDelete();
 
         return redirect()
             ->route('guru_mapel.trash')
             ->with('success', 'Guru Mapel berhasil dihapus permanen.');
+    }
+
+    public function forceDeleteAll(): RedirectResponse
+    {
+        GuruMapel::onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('guru_mapel.trash')
+            ->with('success', 'Semua Guru Mapel berhasil dihapus permanen.');
     }
 }

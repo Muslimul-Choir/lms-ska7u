@@ -171,32 +171,36 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::get('jambelajar/trash', [JamBelajarController::class, 'trash'])->name('jambelajar.trash');
     Route::patch('jambelajar/trash/{jambelajar}/restore', [JamBelajarController::class, 'restore'])->name('jambelajar.restore');
     Route::delete('jambelajar/trash/{jambelajar}/force-delete', [JamBelajarController::class, 'forceDelete'])->name('jambelajar.force-delete');
+    Route::patch('jambelajar/trash/restore-all', [JamBelajarController::class, 'restoreAll'])->name('jambelajar.restoreAll');
+    Route::delete('jambelajar/trash/force-delete-all', [JamBelajarController::class, 'forceDeleteAll'])->name('jambelajar.forceDeleteAll');
     Route::resource('jambelajar', JamBelajarController::class);
 
     // Guru Mapel Routes
     Route::get('guru_mapel/trash', [GuruMapelController::class, 'trash'])->name('guru_mapel.trash');
     Route::patch('guru_mapel/trash/{guru_mapel}/restore', [GuruMapelController::class, 'restore'])->name('guru_mapel.restore');
     Route::delete('guru_mapel/trash/{guru_mapel}/force-delete', [GuruMapelController::class, 'forceDelete'])->name('guru_mapel.force-delete');
+    Route::patch('guru_mapel/trash/restore-all', [GuruMapelController::class, 'restoreAll'])->name('guru_mapel.restoreAll');
+    Route::delete('guru_mapel/trash/force-delete-all', [GuruMapelController::class, 'forceDeleteAll'])->name('guru_mapel.forceDeleteAll');
     Route::resource('guru_mapel', GuruMapelController::class)->except(['show']);
 
     // Kelas Routes
     Route::prefix('kelas')->name('kelas.')->controller(KelasController::class)->group(function () {
-        Route::get('/trash', 'trash')->name('trash');
+        Route::get('/trash',           'trash')->name('trash');
         Route::patch('/trash/{kelas}/restore', 'restore')
             ->name('restore')
             ->withTrashed();
         Route::delete('/trash/{kelas}/force', 'forceDelete')
             ->name('force-delete')
             ->withTrashed();
-        Route::patch('/restore-all', [KelasController::class, 'restoreAll'])->name('restoreAll');
-        Route::delete('/force-delete-all', [KelasController::class, 'forceDeleteAll'])->name('forceDeleteAll');
+        Route::patch('/restore-all',        [KelasController::class, 'restoreAll'])->name('restoreAll');
+        Route::delete('/force-delete-all',  [KelasController::class, 'forceDeleteAll'])->name('forceDeleteAll');
 
 
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{kelas}/edit', 'edit')->name('edit');
-        Route::put('/{kelas}', 'update')->name('update');
-        Route::delete('/{kelas}', 'destroy')->name('destroy');
+        Route::get('/',                'index')->name('index');
+        Route::post('/',               'store')->name('store');
+        Route::get('/{kelas}/edit',    'edit')->name('edit');
+        Route::put('/{kelas}',         'update')->name('update');
+        Route::delete('/{kelas}',      'destroy')->name('destroy');
     });
 
     // Guru Routes
@@ -246,15 +250,15 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
 
     // Jadwal Belajar Routes
     Route::prefix('jadwalbelajar')->name('jadwalbelajar.')->controller(JadwalBelajarController::class)->group(function () {
-        Route::get('/trash', 'trash')->name('trash');
-        Route::patch('/trash/{id}/restore', 'restore')->name('restore');
-        Route::delete('/trash/{id}/force', 'forceDelete')->name('force-delete');
+        Route::get('/trash',                    'trash')->name('trash');
+        Route::patch('/trash/{id}/restore',     'restore')->name('restore');
+        Route::delete('/trash/{id}/force',      'forceDelete')->name('force-delete');
 
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{jadwalbelajar}/edit', 'edit')->name('edit');
-        Route::put('/{jadwalbelajar}', 'update')->name('update');
-        Route::delete('/{jadwalbelajar}', 'destroy')->name('destroy');
+        Route::get('/',                         'index')->name('index');
+        Route::post('/',                        'store')->name('store');
+        Route::get('/{jadwalbelajar}/edit',    'edit')->name('edit');
+        Route::put('/{jadwalbelajar}',         'update')->name('update');
+        Route::delete('/{jadwalbelajar}',      'destroy')->name('destroy');
     });
 
     // Pertemuan Routes
