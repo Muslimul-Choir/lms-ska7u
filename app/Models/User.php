@@ -58,4 +58,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function log() {
         return $this->hasMany(ActivityLog::class, 'id_user');
     }
+
+    public function pertemuan()
+    {
+        return $this->hasMany(Pertemuan::class, 'created_by');
+    }
 }
