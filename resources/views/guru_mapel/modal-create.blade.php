@@ -1,210 +1,153 @@
-<div id="modalCreate" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
+<div id="modalCreate" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5">
 
     {{-- Overlay --}}
-    <div id="overlayCreate"
-         style="position:absolute; inset:0; background:rgba(45,8,16,0.55); backdrop-filter:blur(4px);"
-         onclick="closeCreateModal()">
+    <div onclick="closeCreateModal()"
+        class="absolute inset-0 bg-[rgba(45,8,16,0.55)] backdrop-blur-[4px]">
     </div>
 
     {{-- Dialog --}}
-    <div style="position:relative; z-index:10; width:100%; max-width:480px; margin:1rem;">
-        <div style="background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(107,26,43,0.22), 0 4px 16px rgba(0,0,0,0.08); overflow:hidden; border:1px solid rgba(107,26,43,0.1);">
+    <div class="relative z-10 w-full max-w-lg">
+        <div class="bg-white rounded-[18px] shadow-[0_24px_60px_rgba(107,26,43,0.22),0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden border border-[rgba(107,26,43,0.1)]">
 
-            {{-- ── Header ── --}}
-            <div style="padding:18px 24px; background:linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%); display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden;">
-                {{-- Deco circles --}}
-                <div style="position:absolute; width:120px; height:120px; border-radius:50%; top:-40px; right:10px; border:1.5px solid rgba(232,147,10,0.2); pointer-events:none;"></div>
-                <div style="position:absolute; width:70px;  height:70px;  border-radius:50%; top:10px;  right:70px; border:1.5px solid rgba(232,147,10,0.12); pointer-events:none;"></div>
+            {{-- Header --}}
+            <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden"
+                style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
+                <div class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none"></div>
+                <div class="absolute w-[70px] h-[70px] rounded-full top-[10px] right-[70px] border border-[rgba(232,147,10,0.12)] pointer-events-none"></div>
 
-                <div style="display:flex; align-items:center; gap:12px; position:relative;">
-                    <div style="width:38px; height:38px; border-radius:10px; background:rgba(232,147,10,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <div class="flex items-center gap-3 relative">
+                    <div class="w-[38px] h-[38px] rounded-[10px] bg-[rgba(232,147,10,0.2)] flex items-center justify-center flex-shrink-0">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 style="color:#fff; font-weight:700; font-size:15px; margin:0 0 2px;">Tambah Guru Mapel</h3>
-                        <p style="color:rgba(255,255,255,0.5); font-size:11px; margin:0;">Isi data penugasan guru ke mapel</p>
+                        <h3 class="text-white font-bold text-[15px] m-0 mb-[2px]">Tambah Guru Mapel</h3>
+                        <p class="text-[rgba(255,255,255,0.5)] text-[11px] m-0">Isi data penugasan guru ke mapel</p>
                     </div>
                 </div>
 
                 <button type="button" onclick="closeCreateModal()"
-                        style="width:30px; height:30px; border-radius:8px; background:rgba(255,255,255,0.12); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s; position:relative;"
-                        onmouseover="this.style.background='rgba(255,255,255,0.22)'"
-                        onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+                    class="w-[30px] h-[30px] rounded-lg bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.22)] border-none cursor-pointer flex items-center justify-center relative transition-all duration-200">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            {{-- ── Gold accent bar ── --}}
-            <div style="height:3px; background:linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
+            {{-- Gold accent bar --}}
+            <div class="h-[3px]" style="background: linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
 
-            {{-- ── Body ── --}}
-            <form action="{{ route('guru_mapel.store') }}" method="POST" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+            {{-- Body --}}
+            <form action="{{ route('guru_mapel.store') }}" id="createFormAction" method="POST" class="p-6 flex flex-col gap-[16px]">
                 @csrf
+                <input type="hidden" name="_modal" value="create">
 
                 {{-- Mata Pelajaran --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Mata Pelajaran <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Mata Pelajaran <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                            </svg>
-                        </span>
-                        <select name="id_mapel"
-                                style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid {{ $errors->has('id_mapel') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('id_mapel') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">Pilih Mata Pelajaran</option>
-                            @foreach($mapels as $mapel)
-                                <option value="{{ $mapel->id }}" {{ old('id_mapel') == $mapel->id ? 'selected' : '' }}>
-                                    {{ $mapel->nama_mapel }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </span>
-                    </div>
-                    @error('id_mapel')
-                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
-                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ $message }}
+                    <select name="id_mapel"
+                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                        {{ $errors->has('id_mapel') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                        <option value="">Pilih Mata Pelajaran</option>
+                        @foreach($mapels as $mapel)
+                            <option value="{{ $mapel->id }}" {{ old('id_mapel') == $mapel->id ? 'selected' : '' }}>
+                                {{ $mapel->nama_mapel }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('id_mapel') && old('_modal') === 'create')
+                        <p class="flex items-center gap-1 text-xs text-red-600">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ $errors->first('id_mapel') }}
                         </p>
-                    @enderror
+                    @endif
                 </div>
 
                 {{-- Guru --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Guru <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Guru <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </span>
-                        <select name="id_guru"
-                                style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid {{ $errors->has('id_guru') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('id_guru') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">Pilih Guru</option>
-                            @foreach($gurus as $guru)
-                                <option value="{{ $guru->id }}" {{ old('id_guru') == $guru->id ? 'selected' : '' }}>
-                                    {{ $guru->nama_lengkap }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </span>
-                    </div>
-                    @error('id_guru')
-                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
-                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ $message }}
+                    <select name="id_guru"
+                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                        {{ $errors->has('id_guru') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                        <option value="">Pilih Guru</option>
+                        @foreach($gurus as $guru)
+                            <option value="{{ $guru->id }}" {{ old('id_guru') == $guru->id ? 'selected' : '' }}>
+                                {{ $guru->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('id_guru') && old('_modal') === 'create')
+                        <p class="flex items-center gap-1 text-xs text-red-600">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ $errors->first('id_guru') }}
                         </p>
-                    @enderror
+                    @endif
                 </div>
 
                 {{-- Kelas --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Kelas <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Kelas <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                            </svg>
-                        </span>
-                        <select name="id_kelas"
-                                style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid {{ $errors->has('id_kelas') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('id_kelas') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">Pilih Kelas</option>
-                            @forelse($kelas as $kls)
-                                <option value="{{ $kls->id }}">
-                                    {{ $kls->Tingkatan->nama_tingkatan ?? '' }} -
-                                    {{ $kls->Jurusan->nama_jurusan ?? '' }} -
-                                    {{ $kls->Bagian->nama_bagian ?? '' }}
-                                </option>
-                            @empty
-                                <option disabled>Tidak ada data kelas</option>
-                            @endforelse
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </span>
-                    </div>
-                    @error('id_kelas')
-                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
-                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ $message }}
+                    <select name="id_kelas"
+                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                        {{ $errors->has('id_kelas') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                        <option value="">Pilih Kelas</option>
+                        @forelse($kelas as $kls)
+                            <option value="{{ $kls->id }}" {{ old('id_kelas') == $kls->id ? 'selected' : '' }}>
+                                {{ $kls->Tingkatan->nama_tingkatan ?? '' }} -
+                                {{ $kls->Jurusan->nama_jurusan ?? '' }} -
+                                {{ $kls->Bagian->nama_bagian ?? '' }}
+                            </option>
+                        @empty
+                            <option disabled>Tidak ada data kelas</option>
+                        @endforelse
+                    </select>
+                    @if ($errors->has('id_kelas') && old('_modal') === 'create')
+                        <p class="flex items-center gap-1 text-xs text-red-600">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ $errors->first('id_kelas') }}
                         </p>
-                    @enderror
+                    @endif
                 </div>
 
                 {{-- Semester --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Semester <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Semester <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </span>
-                        <select name="id_semester"
-                                style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid {{ $errors->has('id_semester') ? '#FCA5A5' : '#E5E7EB' }}; border-radius:10px; font-size:14px; color:#111827; background:{{ $errors->has('id_semester') ? '#FEF2F2' : '#F9FAFB' }}; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">Pilih Semester</option>
-                            @foreach($semesters as $semester)
-                                <option value="{{ $semester->id }}" {{ old('id_semester') == $semester->id ? 'selected' : '' }}>
-                                    {{ $semester->nama_semester }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </span>
-                    </div>
-                    @error('id_semester')
-                        <p style="margin-top:5px; display:flex; align-items:center; gap:4px; font-size:12px; color:#DC2626;">
-                            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ $message }}
+                    <select name="id_semester"
+                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                        {{ $errors->has('id_semester') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                        <option value="">Pilih Semester</option>
+                        @foreach($semesters as $semester)
+                            <option value="{{ $semester->id }}" {{ old('id_semester') == $semester->id ? 'selected' : '' }}>
+                                {{ $semester->nama_semester }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if ($errors->has('id_semester') && old('_modal') === 'create')
+                        <p class="flex items-center gap-1 text-xs text-red-600">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ $errors->first('id_semester') }}
                         </p>
-                    @enderror
+                    @endif
                 </div>
 
-                {{-- ── Footer Buttons ── --}}
-                <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:6px; border-top:1px solid #F3F4F6;">
+                {{-- Footer --}}
+                <div class="flex items-center justify-end gap-[10px] pt-[6px] border-t border-gray-100">
                     <button type="button" onclick="closeCreateModal()"
-                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 20px; font-size:13.5px; font-weight:600; background:#F9FAFB; color:#374151; border:1.5px solid #E5E7EB; border-radius:10px; cursor:pointer; transition:background .2s;"
-                            onmouseover="this.style.background='#F3F4F6'"
-                            onmouseout="this.style.background='#F9FAFB'">
+                        class="inline-flex items-center gap-[6px] px-5 py-[9px] text-[13.5px] font-semibold bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-[10px] cursor-pointer transition-all duration-200">
                         Batal
                     </button>
-                    <button type="submit"
-                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-size:13.5px; font-weight:700; background:linear-gradient(135deg,#6B1A2B,#9B3045); color:#fff; border:none; border-radius:10px; cursor:pointer; transition:opacity .2s; box-shadow:0 2px 8px rgba(107,26,43,0.25);"
-                            onmouseover="this.style.opacity='.88'"
-                            onmouseout="this.style.opacity='1'">
+                    <button type="submit" id="createSubmitBtn"
+                        class="inline-flex items-center gap-[6px] px-[22px] py-[9px] text-[13.5px] font-bold text-white border-none rounded-[10px] cursor-pointer transition-all duration-200 shadow-[0_2px_8px_rgba(107,26,43,0.25)] disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90"
+                        style="background: linear-gradient(135deg,#6B1A2B,#9B3045);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
                             <polyline points="17 21 17 13 7 13 7 21"/>
@@ -218,19 +161,3 @@
         </div>
     </div>
 </div>
-
-<script>
-function openCreateModal() {
-    var m = document.getElementById('modalCreate');
-    m.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-function closeCreateModal() {
-    var m = document.getElementById('modalCreate');
-    m.style.display = 'none';
-    document.body.style.overflow = '';
-}
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeCreateModal();
-});
-</script>
