@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         text: @json(session('error')),
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'OK',
-        timer: 2500,
+        timer: 5000,
         timerProgressBar: true,
     });
 });
