@@ -1,4 +1,3 @@
-{{-- layouts/app.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" >
 
@@ -164,9 +163,6 @@
             </p>
         </footer>
     </div>
-
-    <x-alerts.success />
-    <x-alerts.error />
 
     @auth
         @if(Auth::user()->role === 'siswa')
