@@ -42,19 +42,31 @@
         </div>
     </x-slot>
 
-    <div class="py-7 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+    <div class="bg-slate-50 min-h-screen">
+        <div class="max-w-7xl mx-auto space-y-5">
 
-            {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                <a href="#" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
-                <span class="text-gray-300">/</span>
-                <span>Master Data</span>
-                <span class="text-gray-300">/</span>
-                <a href="{{ route('guru_mapel.index') }}" class="hover:text-amber-600 transition">Guru Mapel</a>
-                <span class="text-gray-300">/</span>
-                <span class="text-gray-600 font-semibold">Arsip</span>
-            </nav>
+            {{-- Alert Success --}}
+            @if (session('success'))
+                <div
+                    class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">{{ session('success') }}</span>
+                    </div>
+                    <button onclick="this.parentElement.remove()"
+                        class="text-emerald-400 hover:text-emerald-700 transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            @endif
 
             {{-- Warning Banner --}}
             <div class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm">
