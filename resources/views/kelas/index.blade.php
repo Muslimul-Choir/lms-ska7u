@@ -3,8 +3,9 @@
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
                 <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h12a1 1 0 011 1v16M9 21v-6h6v6"/>
-                    <circle cx="12" cy="11" r="1" fill="currentColor"/>
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3 21h18M5 21V5a1 1 0 011-1h12a1 1 0 011 1v16M9 21v-6h6v6" />
+                    <circle cx="12" cy="11" r="1" fill="currentColor" />
                 </svg>
             </div>
             <div>
@@ -14,33 +15,26 @@
         </div>
     </x-slot>
 
-    <div class="py-7 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
-
-            {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                <a href="#" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
-                <span class="text-gray-300">/</span>
-                <span>Master Data</span>
-                <span class="text-gray-300">/</span>
-                <span class="text-gray-600 font-semibold">Kelas</span>
-            </nav>
-
+    <div class="bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto space-y-5">
 
             {{-- Main Card --}}
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
                 {{-- Card Header --}}
-                <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div
+                    class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Daftar Kelas</h3>
                         <p class="text-gray-400 text-xs mt-0.5">Kelola data kelas dan unit organisasi</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('kelas.trash') }}"
-                           class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                            <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                            <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                             Arsip
                             @if ($trashCount > 0)
@@ -49,9 +43,10 @@
                             @endif
                         </a>
                         <button type="button" onclick="openCreateModal()"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
                             Tambah Kelas
                         </button>
@@ -65,13 +60,15 @@
 
                             {{-- Tingkatan --}}
                             <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tingkatan</label>
+                                <label
+                                    class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tingkatan</label>
                                 <select name="id_tingkatan"
                                     class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tingkat</option>
                                     @foreach ($tingkatanList as $t)
-                                        <option value="{{ $t->id }}" {{ request('id_tingkatan') == $t->id ? 'selected' : '' }}>
+                                        <option value="{{ $t->id }}"
+                                            {{ request('id_tingkatan') == $t->id ? 'selected' : '' }}>
                                             {{ $t->nama_tingkatan }}
                                         </option>
                                     @endforeach
@@ -80,13 +77,15 @@
 
                             {{-- Jurusan --}}
                             <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jurusan</label>
+                                <label
+                                    class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jurusan</label>
                                 <select name="id_jurusan"
                                     class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Jurusan</option>
                                     @foreach ($jurusanList as $j)
-                                        <option value="{{ $j->id }}" {{ request('id_jurusan') == $j->id ? 'selected' : '' }}>
+                                        <option value="{{ $j->id }}"
+                                            {{ request('id_jurusan') == $j->id ? 'selected' : '' }}>
                                             {{ $j->nama_jurusan }}
                                         </option>
                                     @endforeach
@@ -95,13 +94,15 @@
 
                             {{-- Bagian --}}
                             <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bagian</label>
+                                <label
+                                    class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bagian</label>
                                 <select name="id_bagian"
                                     class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Bagian</option>
                                     @foreach ($bagianList as $j)
-                                        <option value="{{ $j->id }}" {{ request('id_bagian') == $j->id ? 'selected' : '' }}>
+                                        <option value="{{ $j->id }}"
+                                            {{ request('id_bagian') == $j->id ? 'selected' : '' }}>
                                             {{ $j->nama_bagian }}
                                         </option>
                                     @endforeach
@@ -110,13 +111,15 @@
 
                             {{-- Tahun Ajaran --}}
                             <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tahun Ajaran</label>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tahun
+                                    Ajaran</label>
                                 <select name="id_tahun_ajaran"
                                     class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                     onchange="document.getElementById('filterForm').submit()">
                                     <option value="">Semua Tahun</option>
                                     @foreach ($tahunAjaranList as $ta)
-                                        <option value="{{ $ta->id }}" {{ request('id_tahun_ajaran') == $ta->id ? 'selected' : '' }}>
+                                        <option value="{{ $ta->id }}"
+                                            {{ request('id_tahun_ajaran') == $ta->id ? 'selected' : '' }}>
                                             {{ $ta->nama_tahun }}{{ $ta->is_aktif ? ' (Aktif)' : '' }}
                                         </option>
                                     @endforeach
@@ -124,12 +127,15 @@
                             </div>
 
                             {{-- Reset --}}
-                            @if (request()->filled('id_tahun_ajaran') || request()->filled('id_tingkatan') || request()->filled('id_jurusan') || request()->filled('id_bagian'))
+                            @if (request()->filled('id_tahun_ajaran') ||
+                                    request()->filled('id_tingkatan') ||
+                                    request()->filled('id_jurusan') ||
+                                    request()->filled('id_bagian'))
                                 <a href="{{ route('kelas.index') }}"
                                     class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                                     </svg>
                                     Reset
                                 </a>
@@ -144,12 +150,24 @@
                     <table class="min-w-full text-sm">
                         <thead>
                             <tr class="bg-gray-50 border-b border-gray-200">
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest w-12">#</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Kelas</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden md:table-cell">Jurusan</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden lg:table-cell">Tahun Ajaran</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden lg:table-cell">Wali Kelas</th>
-                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-24">Aksi</th>
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest w-12">
+                                    #</th>
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                                    Kelas</th>
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden md:table-cell">
+                                    Jurusan</th>
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden lg:table-cell">
+                                    Tahun Ajaran</th>
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden lg:table-cell">
+                                    Wali Kelas</th>
+                                <th
+                                    class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-24">
+                                    Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -160,14 +178,17 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                                <span class="text-[11px] font-extrabold text-white tracking-tight leading-none">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                <span
+                                                    class="text-[11px] font-extrabold text-white tracking-tight leading-none">
                                                     {{ $k->Tingkatan?->nama_tingkatan ?? '?' }}
                                                 </span>
                                             </div>
                                             <div>
                                                 <p class="font-semibold text-gray-800 text-sm leading-tight">
-                                                    {{ $k->Tingkatan?->nama_tingkatan ?? '-' }} {{ $k->Bagian?->nama_bagian ?? '-' }}
+                                                    {{ $k->Tingkatan?->nama_tingkatan ?? '-' }}
+                                                    {{ $k->Bagian?->nama_bagian ?? '-' }}
                                                 </p>
                                                 <p class="text-xs text-gray-400 mt-0.5 md:hidden">
                                                     {{ $k->Jurusan?->nama_jurusan ?? '-' }}
@@ -176,7 +197,8 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 hidden md:table-cell">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
                                             {{ $k->Jurusan?->nama_jurusan ?? '-' }}
                                         </span>
                                     </td>
@@ -185,29 +207,31 @@
                                     </td>
                                     <td class="px-6 py-4 hidden lg:table-cell">
                                         <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0">
+                                            <div
+                                                class="w-7 h-7 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0">
                                                 <span class="text-[10px] font-bold text-amber-600">
                                                     {{ strtoupper(substr($k->WaliKelas?->nama_lengkap ?? '?', 0, 1)) }}
                                                 </span>
                                             </div>
-                                            <span class="text-sm text-gray-600">{{ $k->WaliKelas?->nama_lengkap ?? '-' }}</span>
+                                            <span
+                                                class="text-sm text-gray-600">{{ $k->WaliKelas?->nama_lengkap ?? '-' }}</span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-1.5">
                                             {{-- Edit --}}
-                                            <button onclick="openEditModal(this)"
-                                                data-id="{{ $k->id }}"
+                                            <button onclick="openEditModal(this)" data-id="{{ $k->id }}"
                                                 data-route="{{ route('kelas.update', $k->id) }}"
                                                 data-id-tingkatan="{{ $k->id_tingkatan }}"
                                                 data-id-jurusan="{{ $k->id_jurusan }}"
                                                 data-id-bagian="{{ $k->id_bagian }}"
                                                 data-id-tahun-ajaran="{{ $k->id_tahun_ajaran }}"
-                                                data-id-wali-kelas="{{ $k->id_wali_kelas ?? '' }}"
-                                                title="Edit"
+                                                data-id-wali-kelas="{{ $k->id_wali_kelas ?? '' }}" title="Edit"
                                                 class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
                                             {{-- Delete --}}
@@ -217,8 +241,10 @@
                                                 @method('DELETE')
                                                 <button type="submit" title="Hapus"
                                                     class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition">
-                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor" stroke-width="2.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
                                                 </button>
                                             </form>
@@ -229,17 +255,23 @@
                                 <tr>
                                     <td colspan="6" class="px-6 py-20 text-center">
                                         <div class="flex flex-col items-center gap-3">
-                                            <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-                                                <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h12a1 1 0 011 1v16M9 21v-6h6v6"/>
+                                            <div
+                                                class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="1.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M3 21h18M5 21V5a1 1 0 011-1h12a1 1 0 011 1v16M9 21v-6h6v6" />
                                                 </svg>
                                             </div>
                                             <p class="text-gray-400 text-sm font-semibold">Belum ada data kelas</p>
-                                            <p class="text-gray-300 text-xs">Ubah filter atau klik <span class="font-semibold text-gray-400">+ Tambah Kelas</span></p>
+                                            <p class="text-gray-300 text-xs">Ubah filter atau klik <span
+                                                    class="font-semibold text-gray-400">+ Tambah Kelas</span></p>
                                             <button type="button" onclick="openCreateModal()"
                                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm mt-1">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M12 4v16m8-8H4" />
                                                 </svg>
                                                 Tambah Kelas
                                             </button>
@@ -256,7 +288,8 @@
                     <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
                         <p class="text-xs text-gray-500">
                             Menampilkan
-                            <span class="font-semibold text-gray-700">{{ $kelas->firstItem() }}–{{ $kelas->lastItem() }}</span>
+                            <span
+                                class="font-semibold text-gray-700">{{ $kelas->firstItem() }}–{{ $kelas->lastItem() }}</span>
                             dari
                             <span class="font-semibold text-gray-700">{{ $kelas->total() }}</span>
                             entri
@@ -275,19 +308,19 @@
     @include('components.alerts.confirm-delete')
 
     @include('kelas.modal-create', [
-        'tingkatanList'   => $tingkatanList,
-        'jurusanList'     => $jurusanList,
-        'bagianList'      => $bagianList,
+        'tingkatanList' => $tingkatanList,
+        'jurusanList' => $jurusanList,
+        'bagianList' => $bagianList,
         'tahunAjaranList' => $tahunAjaranList,
-        'guruList'        => $guruList,
+        'guruList' => $guruList,
     ])
 
     @include('kelas.modal-edit', [
-        'tingkatanList'   => $tingkatanList,
-        'jurusanList'     => $jurusanList,
-        'bagianList'      => $bagianList,
+        'tingkatanList' => $tingkatanList,
+        'jurusanList' => $jurusanList,
+        'bagianList' => $bagianList,
         'tahunAjaranList' => $tahunAjaranList,
-        'guruList'        => $guruList,
+        'guruList' => $guruList,
     ])
 
     @push('scripts')
@@ -307,17 +340,17 @@
             function openEditModal(button) {
                 const d = button.dataset;
                 const modal = document.getElementById('modalEdit');
-                const form  = document.getElementById('editFormAction');
-                const btn   = document.getElementById('editSubmitBtn');
+                const form = document.getElementById('editFormAction');
+                const btn = document.getElementById('editSubmitBtn');
 
                 form.action = d.route;
                 document.getElementById('edit_route').value = d.route;
 
-                document.getElementById('edit_id_tingkatan').value   = d.idTingkatan   ?? '';
-                document.getElementById('edit_id_jurusan').value     = d.idJurusan     ?? '';
-                document.getElementById('edit_id_bagian').value      = d.idBagian      ?? '';
+                document.getElementById('edit_id_tingkatan').value = d.idTingkatan ?? '';
+                document.getElementById('edit_id_jurusan').value = d.idJurusan ?? '';
+                document.getElementById('edit_id_bagian').value = d.idBagian ?? '';
                 document.getElementById('edit_id_tahun_ajaran').value = d.idTahunAjaran ?? '';
-                document.getElementById('edit_id_wali_kelas').value  = d.idWaliKelas   ?? '';
+                document.getElementById('edit_id_wali_kelas').value = d.idWaliKelas ?? '';
 
                 btn.disabled = false;
                 btn.innerHTML = `
@@ -351,10 +384,10 @@
             document.addEventListener('DOMContentLoaded', () => {
 
                 /* Anti double-submit */
-                const editForm   = document.getElementById('editFormAction');
-                const editBtn    = document.getElementById('editSubmitBtn');
+                const editForm = document.getElementById('editFormAction');
+                const editBtn = document.getElementById('editSubmitBtn');
                 const createForm = document.getElementById('createFormAction');
-                const createBtn  = document.getElementById('createSubmitBtn');
+                const createBtn = document.getElementById('createSubmitBtn');
 
                 if (createForm) {
                     createForm.addEventListener('submit', () => {
@@ -407,7 +440,7 @@
                 ['modalCreate', 'modalEdit'].forEach(id => {
                     const modal = document.getElementById(id);
                     if (modal) {
-                        modal.addEventListener('click', function (e) {
+                        modal.addEventListener('click', function(e) {
                             if (e.target === this) {
                                 this.classList.add('hidden');
                                 document.body.classList.remove('overflow-hidden');
