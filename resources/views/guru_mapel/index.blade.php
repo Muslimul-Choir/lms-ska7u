@@ -47,11 +47,8 @@
                 <div
                     class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                            <span class="w-1 h-5 rounded-full bg-amber-500 inline-block"></span>
-                            Daftar Guru Mapel
-                        </h3>
-                        <p class="text-xs text-gray-400 mt-0.5 ml-3">Kelola penugasan guru ke mata pelajaran</p>
+                        <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Daftar Guru Mapel</h3>
+                        <p class="text-gray-400 text-xs mt-0.5">Kelola penugasan guru ke mata pelajaran</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('guru_mapel.trash') }}"
@@ -61,7 +58,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            Tempat Sampah
+                            Arsip
+                            @if ($trashCount > 0)
+                                <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">{{ $trashCount }}</span>
+                            @endif
                         </a>
                         <button type="button" onclick="openCreateModal()"
                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
@@ -87,18 +87,21 @@
                             </div>
                             <input type="text" id="searchInput" value="{{ request('search') }}"
                                 placeholder="Cari nama mapel atau guru..."
-                                onkeypress="if(event.key==='Enter') doSearch()"
                                 class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition">
                         </div>
-                        <button type="button" onclick="doSearch()"
-                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
+                        <button type="button" id="btnSearch"
+                                class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
                             Cari
                         </button>
-                        @if (request('search'))
-                            <button type="button" onclick="window.location.href='{{ route('guru_mapel.index') }}'"
-                                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-xl transition">
+                        @if(request('search'))
+                            <a href="{{ route('guru_mapel.index') }}"
+                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                </svg>
                                 Reset
-                            </button>
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -131,7 +134,6 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse ($guruMapels as $guruMapel)
                                 <tr class="hover:bg-amber-50/40 transition">
-
                                     <td class="px-6 py-4 text-gray-400 text-xs font-mono">
                                         {{ str_pad($loop->iteration + ($guruMapels->currentPage() - 1) * $guruMapels->perPage(), 3, '0', STR_PAD_LEFT) }}
                                     </td>
@@ -175,9 +177,8 @@
                                                     ($guruMapel->Kelas->Bagian->nama_bagian ?? ''),
                                             );
                                         @endphp
-                                        @if ($namaKelas)
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg">
+                                        @if($namaKelas)
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
                                                 {{ $namaKelas }}
                                             </span>
                                         @else
@@ -199,61 +200,50 @@
 
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center justify-center gap-2">
+                                        <div class="flex items-center justify-center gap-1.5">
 
-                                            {{-- Detail (Modal) --}}
+                                            {{-- Detail --}}
                                             <button type="button"
-                                                onclick="openDetailModal(
-                                                        '{{ $guruMapel->Mapel->nama_mapel ?? '-' }}',
-                                                        '{{ $guruMapel->Guru->nama_lengkap ?? '-' }}',
-                                                        '{{ trim(($guruMapel->Kelas->Tingkatan->nama_tingkatan ?? '') . ' - ' . ($guruMapel->Kelas->Jurusan->nama_jurusan ?? '') . ' - ' . ($guruMapel->Kelas->Bagian->nama_bagian ?? '')) }}',
-                                                        '{{ $guruMapel->Semester->nama_semester ?? '-' }}',
-                                                        '{{ $guruMapel->created_at->format('d F Y, H:i') }}',
-                                                        '{{ $guruMapel->updated_at->format('d F Y, H:i') }}'
-                                                    )"
-                                                class="w-8 h-8 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-500 border border-blue-200 rounded-lg transition"
-                                                title="Detail">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-3.5 h-3.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                onclick="openDetailModal(this)"
+                                                data-mapel="{{ $guruMapel->Mapel->nama_mapel ?? '-' }}"
+                                                data-guru="{{ $guruMapel->Guru->nama_lengkap ?? '-' }}"
+                                                data-kelas="{{ trim(($guruMapel->Kelas->Tingkatan->nama_tingkatan ?? '') . ' - ' . ($guruMapel->Kelas->Jurusan->nama_jurusan ?? '') . ' - ' . ($guruMapel->Kelas->Bagian->nama_bagian ?? '')) }}"
+                                                data-semester="{{ $guruMapel->Semester->nama_semester ?? '-' }}"
+                                                data-created="{{ $guruMapel->created_at->format('d F Y, H:i') }}"
+                                                data-updated="{{ $guruMapel->updated_at->format('d F Y, H:i') }}"
+                                                title="Detail"
+                                                class="w-8 h-8 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-500 border border-blue-200 rounded-lg transition">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                                                 </svg>
                                             </button>
 
                                             {{-- Edit --}}
                                             <button type="button"
-                                                onclick="openEditModal(
-                                                        '{{ $guruMapel->id }}',
-                                                        '{{ $guruMapel->id_mapel }}',
-                                                        '{{ $guruMapel->id_guru }}',
-                                                        '{{ $guruMapel->id_kelas }}',
-                                                        '{{ $guruMapel->id_semester }}'
-                                                    )"
-                                                class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
-                                                title="Edit">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                onclick="openEditModal(this)"
+                                                data-id="{{ $guruMapel->id }}"
+                                                data-route="{{ route('guru_mapel.update', $guruMapel->id) }}"
+                                                data-id-mapel="{{ $guruMapel->id_mapel }}"
+                                                data-id-guru="{{ $guruMapel->id_guru }}"
+                                                data-id-kelas="{{ $guruMapel->id_kelas }}"
+                                                data-id-semester="{{ $guruMapel->id_semester }}"
+                                                title="Edit"
+                                                class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
                                             </button>
 
                                             {{-- Hapus --}}
-                                            <form action="{{ route('guru_mapel.destroy', $guruMapel) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus penugasan ini?')">
+                                            <form action="{{ route('guru_mapel.destroy', $guruMapel->id) }}" method="POST"
+                                                onsubmit="return confirmDelete(event)">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit"
-                                                    class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition"
-                                                    title="Hapus">
-                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor" stroke-width="2.5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <button type="submit" title="Hapus"
+                                                    class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition">
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                 </button>
                                             </form>
@@ -272,11 +262,15 @@
                                                         d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                                 </svg>
                                             </div>
-                                            <p class="text-gray-400 text-sm font-semibold">Belum ada data guru mapel
-                                            </p>
-                                            <p class="text-gray-300 text-xs">Klik <span
-                                                    class="font-semibold text-gray-400">+ Tambah Guru Mapel</span>
-                                                untuk mulai menambahkan</p>
+                                            <p class="text-gray-400 text-sm font-semibold">Belum ada data guru mapel</p>
+                                            <p class="text-gray-300 text-xs">Klik <span class="font-semibold text-gray-400">+ Tambah Guru Mapel</span> untuk mulai menambahkan</p>
+                                            <button type="button" onclick="openCreateModal()"
+                                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm mt-1">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                Tambah Guru Mapel
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -299,185 +293,169 @@
                         {{ $guruMapels->links() }}
                     </div>
                 @endif
+
             </div>
         </div>
     </div>
+
+    @include('components.alerts.confirm-delete')
+    @include('components.alerts.confirm-update')
+    @include('components.alerts.success')
+    @include('components.alerts.error')
 
     @include('guru_mapel.modal-create')
     @include('guru_mapel.modal-edit')
+    @include('guru_mapel.modal-detail')
 
-    {{-- ===================== MODAL DETAIL ===================== --}}
-    <div id="detailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style="display:none !important;">
+    @push('scripts')
+        <script>
+            /* ── Search ── */
+            const searchInput = document.getElementById('searchInput');
+            const btnSearch   = document.getElementById('btnSearch');
 
-        {{-- Backdrop --}}
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            style="position:absolute; inset:0; background:rgba(45,8,16,0.55); backdrop-filter:blur(4px);"
-            onclick="closeDetailModal()"></div>
+            btnSearch.addEventListener('click', () => {
+                window.location.href = `{{ route('guru_mapel.index') }}?search=${encodeURIComponent(searchInput.value)}`;
+            });
 
-        {{-- Modal Box --}}
-        <div
-            class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 animate-fade-in">
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') btnSearch.click();
+            });
 
-            {{-- Header --}}
-            <div class="px-6 py-5 flex items-center justify-between relative overflow-hidden"
-                style="background: linear-gradient(135deg, #6B1A2B 0%, #4A0F1E 55%, #2D0810 100%);">
-                {{-- Decorative circles --}}
-                <div
-                    class="absolute w-36 h-36 rounded-full border border-amber-500/20 -top-12 right-6 pointer-events-none">
-                </div>
-                <div
-                    class="absolute w-20 h-20 rounded-full border border-amber-500/10 top-4 right-24 pointer-events-none">
-                </div>
+            /* ── Modal Create ── */
+            function openCreateModal() {
+                document.getElementById('modalCreate').classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
 
-                <div class="flex items-center gap-3 relative">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style="background: rgba(232,147,10,0.2);">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#F5A623"
-                            stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-white font-bold text-base leading-none">Informasi Penugasan</h3>
-                        <p class="text-white/50 text-xs mt-1">Detail lengkap guru mata pelajaran</p>
-                    </div>
-                </div>
+            function closeCreateModal() {
+                document.getElementById('modalCreate').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
 
-                <button type="button" onclick="closeDetailModal()"
-                    class="relative w-8 h-8 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            /* ── Modal Edit ── */
+            function openEditModal(button) {
+                const d    = button.dataset;
+                const modal = document.getElementById('modalEdit');
+                const form  = document.getElementById('editFormAction');
+                const btn   = document.getElementById('editSubmitBtn');
+
+                form.action = d.route;
+                document.getElementById('edit_route').value       = d.route;
+                document.getElementById('edit_id_mapel').value    = d.idMapel;
+                document.getElementById('edit_id_guru').value     = d.idGuru;
+                document.getElementById('edit_id_kelas').value    = d.idKelas;
+                document.getElementById('edit_id_semester').value = d.idSemester;
+
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
-                </button>
-            </div>
+                    Update
+                `;
 
-            {{-- Gold accent bar --}}
-            <div class="h-0.5" style="background: linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
 
-            {{-- Body --}}
-            <div class="px-6 py-5 space-y-4">
+            function closeEditModal() {
+                document.getElementById('modalEdit').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
 
-                {{-- Mata Pelajaran --}}
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Mata
-                        Pelajaran</label>
-                    <div
-                        class="flex items-center gap-2.5 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl min-h-[42px]">
-                        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        <span id="detail-mapel" class="font-semibold text-gray-800 text-sm"></span>
-                    </div>
-                </div>
+            /* ── Modal Detail ── */
+            function openDetailModal(button) {
+                const d = button.dataset;
+                document.getElementById('detail-mapel').textContent    = d.mapel;
+                document.getElementById('detail-guru').textContent     = d.guru;
+                document.getElementById('detail-kelas').textContent    = d.kelas;
+                document.getElementById('detail-semester').textContent = d.semester;
+                document.getElementById('detail-created').textContent  = d.created;
+                document.getElementById('detail-updated').textContent  = d.updated;
 
-                {{-- Guru --}}
-                <div>
-                    <label
-                        class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Guru</label>
-                    <div
-                        class="flex items-center gap-2.5 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl min-h-[42px]">
-                        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <span id="detail-guru" class="font-semibold text-gray-800 text-sm"></span>
-                    </div>
-                </div>
+                document.getElementById('modalDetail').classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
 
-                {{-- Kelas --}}
-                <div>
-                    <label
-                        class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Kelas</label>
-                    <div
-                        class="flex items-center gap-2.5 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl min-h-[42px]">
-                        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span id="detail-kelas" class="font-semibold text-gray-800 text-sm"></span>
-                    </div>
-                </div>
+            function closeDetailModal() {
+                document.getElementById('modalDetail').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
 
-                {{-- Semester --}}
-                <div>
-                    <label
-                        class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Semester</label>
-                    <div
-                        class="flex items-center gap-2.5 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl min-h-[42px]">
-                        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span id="detail-semester" class="font-semibold text-gray-800 text-sm"></span>
-                    </div>
-                </div>
+            /* ── Confirm Delete ── */
+            function confirmDelete(event) {
+                event.preventDefault();
+                const form = event.target.closest('form');
+                showConfirmDelete(true).then((result) => {
+                    if (result.isConfirmed) form.submit();
+                });
+            }
 
-                {{-- Timestamps --}}
-                <div class="grid grid-cols-2 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-100">
-                    <div>
-                        <p class="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider mb-1">Dibuat Pada</p>
-                        <p id="detail-created" class="text-sm font-semibold text-gray-700"></p>
-                    </div>
-                    <div>
-                        <p class="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider mb-1">Diupdate Pada
-                        </p>
-                        <p id="detail-updated" class="text-sm font-semibold text-gray-700"></p>
-                    </div>
-                </div>
-            </div>
+            document.addEventListener('DOMContentLoaded', () => {
 
-            {{-- Footer --}}
-            <div class="px-6 pb-5 flex justify-end border-t border-gray-100 pt-4">
-                <button type="button" onclick="closeDetailModal()"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition shadow-sm"
-                    style="background: linear-gradient(135deg, #6B1A2B, #9B3045);">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Tutup Detail
-                </button>
-            </div>
-        </div>
-    </div>
-    {{-- =================== END MODAL DETAIL =================== --}}
+                /* Anti double-submit */
+                const createForm = document.getElementById('createFormAction');
+                const createBtn  = document.getElementById('createSubmitBtn');
+                const editForm   = document.getElementById('editFormAction');
+                const editBtn    = document.getElementById('editSubmitBtn');
 
-    <script>
-        function doSearch() {
-            var q = document.getElementById('searchInput').value;
-            window.location.href = '{{ route('guru_mapel.index') }}?search=' + encodeURIComponent(q);
-        }
+                if (createForm) {
+                    createForm.addEventListener('submit', () => {
+                        createBtn.disabled = true;
+                        createBtn.innerHTML = `
+                            <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                            </svg>
+                            Menyimpan...
+                        `;
+                    });
+                }
 
-        function openDetailModal(mapel, guru, kelas, semester, created, updated) {
-            document.getElementById('detail-mapel').textContent = mapel;
-            document.getElementById('detail-guru').textContent = guru;
-            document.getElementById('detail-kelas').textContent = kelas;
-            document.getElementById('detail-semester').textContent = semester;
-            document.getElementById('detail-created').textContent = created;
-            document.getElementById('detail-updated').textContent = updated;
+                if (editForm) {
+                    editForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        showConfirmUpdate().then((result) => {
+                            if (result.isConfirmed) {
+                                editBtn.disabled = true;
+                                editBtn.innerHTML = `
+                                    <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                    </svg>
+                                    Menyimpan...
+                                `;
+                                editForm.submit();
+                            }
+                        });
+                    });
+                }
 
-            var modal = document.getElementById('detailModal');
-            modal.style.setProperty('display', 'flex', 'important');
-            document.body.style.overflow = 'hidden';
-        }
+                /* Re-open modal on validation error */
+                @if ($errors->any())
+                    @if (old('_modal') === 'create')
+                        openCreateModal();
+                    @elseif (old('_modal') === 'edit')
+                        const savedRoute = document.getElementById('edit_route').value;
+                        if (savedRoute) document.getElementById('editFormAction').action = savedRoute;
+                        document.getElementById('modalEdit').classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                    @endif
+                @endif
 
-        function closeDetailModal() {
-            var modal = document.getElementById('detailModal');
-            modal.style.setProperty('display', 'none', 'important');
-            document.body.style.overflow = '';
-        }
-
-        // Tutup modal saat tekan Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeDetailModal();
-        });
-    </script>
+                /* Close modal on backdrop click */
+                ['modalCreate', 'modalEdit', 'modalDetail'].forEach(id => {
+                    const modal = document.getElementById(id);
+                    if (modal) {
+                        modal.addEventListener('click', function (e) {
+                            if (e.target === this) {
+                                this.classList.add('hidden');
+                                document.body.classList.remove('overflow-hidden');
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>
