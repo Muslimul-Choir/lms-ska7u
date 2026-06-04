@@ -45,7 +45,7 @@
                 <input type="hidden" name="hari"   id="createHari">
                 <input type="hidden" name="id_jam" id="createIdJam">
 
-                {{-- Hari (readonly) --}}
+                {{-- Hari (readonly display) --}}
                 <div class="flex flex-col gap-[7px]">
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">Hari</label>
                     <div class="relative">
@@ -59,7 +59,7 @@
                     </div>
                 </div>
 
-                {{-- Jam Belajar (readonly) --}}
+                {{-- Jam Belajar (readonly display) --}}
                 <div class="flex flex-col gap-[7px]">
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">Jam Belajar</label>
                     <div class="relative">
@@ -75,9 +75,19 @@
 
                 {{-- Kelas --}}
                 <div class="flex flex-col gap-[7px]">
-                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
-                        Kelas <span class="text-red-500">*</span>
-                    </label>
+                    <div class="flex items-center justify-between">
+                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                            Kelas <span class="text-red-500">*</span>
+                        </label>
+                        {{-- Badge muncul ketika kelas di-lock dari filter --}}
+                        <span id="createKelasBadge"
+                              class="hidden items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            Dari Filter
+                        </span>
+                    </div>
                     <select name="id_kelas" id="createIdKelas"
                         class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
                         {{ $errors->has('id_kelas') ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
