@@ -1,4 +1,4 @@
-<?php
+<!-- 
 
 namespace App\Http\Controllers\Auth;
 
@@ -15,9 +15,7 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
+    
     public function create(): View
     {
         return view('auth.register');
@@ -48,4 +46,4 @@ class RegisteredUserController extends Controller
 
         return redirect(route('dashboard', absolute: false));
     }
-}
+} -->

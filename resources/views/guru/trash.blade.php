@@ -48,19 +48,8 @@
         </div>
     </x-slot>
 
-    <div class="py-7 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
-
-            {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                <a href="#" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
-                <span class="text-gray-300">/</span>
-                <span>Master Data</span>
-                <span class="text-gray-300">/</span>
-                <a href="{{ route('guru.index') }}" class="hover:text-amber-600 transition">Manajemen Guru</a>
-                <span class="text-gray-300">/</span>
-                <span class="text-gray-600 font-semibold">Arsip</span>
-            </nav>
+    <div class="bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto space-y-5">
 
             {{-- Warning Banner --}}
             <div class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm">
@@ -130,7 +119,7 @@
                                     class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                                     </svg>
                                     Reset
                                 </a>
@@ -139,8 +128,8 @@
                             <div class="ml-auto">
                                 <a href="{{ route('guru.index') }}"
                                     class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="2">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                     </svg>
