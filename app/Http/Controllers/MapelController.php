@@ -157,38 +157,40 @@ class MapelController extends Controller
         }
     }
 
-    public function restore(Mapel $mapel): RedirectResponse
-    {
-        try {
-            $mapel->restore();
+    public function restore($id): RedirectResponse
+{
+    try {
+        $mapel = Mapel::onlyTrashed()->findOrFail($id);
+        $mapel->restore();
 
-            return redirect()
-                ->route('mapel.trash')
-                ->with('success', 'Mata pelajaran berhasil dipulihkan.');
-        } catch (Throwable $e) {
-            return redirect()
-                ->route('mapel.trash')
-                ->with('error', 'Gagal memulihkan mata pelajaran. Silakan coba lagi.');
-        }
+        return redirect()
+            ->route('mapel.trash')
+            ->with('success', 'Mata pelajaran berhasil dipulihkan.');
+    } catch (Throwable $e) {
+        return redirect()
+            ->route('mapel.trash')
+            ->with('error', 'Gagal memulihkan mata pelajaran. Silakan coba lagi.');
     }
+}
 
-    public function forceDelete(Mapel $mapel): RedirectResponse
-    {
-        try {
-            // Hapus foto jika ada
-            if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
-                Storage::disk('public')->delete($mapel->foto);
-            }
+public function forceDelete($id): RedirectResponse
+{
+    try {
+        $mapel = Mapel::onlyTrashed()->findOrFail($id);
 
-            $mapel->forceDelete();
-
-            return redirect()
-                ->route('mapel.trash')
-                ->with('success', 'Mata pelajaran berhasil dihapus permanen.');
-        } catch (Throwable $e) {
-            return redirect()
-                ->route('mapel.trash')
-                ->with('error', 'Gagal menghapus mata pelajaran. Silakan coba lagi.');
+        if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
+            Storage::disk('public')->delete($mapel->foto);
         }
+
+        $mapel->forceDelete();
+
+        return redirect()
+            ->route('mapel.trash')
+            ->with('success', 'Mata pelajaran berhasil dihapus permanen.');
+    } catch (Throwable $e) {
+        return redirect()
+            ->route('mapel.trash')
+            ->with('error', 'Gagal menghapus mata pelajaran. Silakan coba lagi.');
     }
+}
 }
