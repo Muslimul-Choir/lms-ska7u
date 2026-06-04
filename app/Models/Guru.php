@@ -44,9 +44,25 @@ class Guru extends Model
         return $this->hasMany(GuruMapel::class, 'id_guru');
     }
 
+    public function Pertemuan()
+    {
+        return $this->hasMany(Pertemuan::class, 'id_guru');
+    }
+
+    public function Kuis()
+    {
+        return $this->hasMany(Kuis::class, 'id_guru');
+    }
+
+    public function Penilaian()
+    {
+        return $this->hasMany(Penilaian::class, 'id_guru');
+    }
+
     public function Tugas()
     {
         return $this->hasMany(Tugas::class, 'id_guru');
     }
+
 }
 

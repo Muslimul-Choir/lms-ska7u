@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\Failure;
+use Throwable;
 
 class SiswaController extends Controller
 {
@@ -57,65 +58,102 @@ class SiswaController extends Controller
     // ── STORE ────────────────────────────────────────────────
     public function store(StoreSiswaRequest $request)
     {
-        DB::transaction(function () use ($request) {
-            $plainPassword = $this->generatePasswordFromBirthDate($request->tanggal_lahir);
+        try {
+            DB::transaction(function () use ($request) {
+                $plainPassword = $this->generatePasswordFromBirthDate($request->tanggal_lahir);
 
-            $user = User::create([
-                'name'              => $request->nama_lengkap,
-                'email'             => $request->email,
-                'password'          => Hash::make($plainPassword),
-                'role'              => 'siswa',
-                'email_verified_at' => now(),
-            ]);
+                $user = User::create([
+                    'name'              => $request->nama_lengkap,
+                    'email'             => $request->email,
+                    'password'          => Hash::make($plainPassword),
+                    'role'              => 'siswa',
+                    'email_verified_at' => now(),
+                ]);
 
-            Siswa::create([
-                'id_user'       => $user->id,
-                'nama_lengkap'  => $request->nama_lengkap,
-                'email'         => $request->email,
-                'agama'         => $request->agama,
-                'id_kelas'      => $request->id_kelas,
-                'tanggal_lahir' => $request->tanggal_lahir,
-            ]);
-        });
+                Siswa::create([
+                    'id_user'       => $user->id,
+                    'nama_lengkap'  => $request->nama_lengkap,
+                    'email'         => $request->email,
+                    'agama'         => $request->agama,
+                    'id_kelas'      => $request->id_kelas,
+                    'tanggal_lahir' => $request->tanggal_lahir,
+                ]);
+            });
 
-        return redirect()->route('siswa.index')
-            ->with('success', 'Data siswa berhasil ditambahkan.');
+            return redirect()->route('siswa.index')
+                ->with('success', 'Data siswa berhasil ditambahkan.');
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.index')
+                ->with('error', 'Gagal menambahkan data siswa. Silakan coba lagi.');
+        }
     }
 
     // ── UPDATE ───────────────────────────────────────────────
     public function update(UpdateSiswaRequest $request, Siswa $siswa)
     {
-        DB::transaction(function () use ($request, $siswa) {
-            $siswa->update([
-                'nama_lengkap' => $request->nama_lengkap,
-                'email'        => $request->email,
-                'agama'        => $request->agama,
-                'id_kelas'     => $request->id_kelas,
-                'tanggal_lahir' => $request->tanggal_lahir,
-            ]);
+        try {
+            DB::transaction(function () use ($request, $siswa) {
+                $siswa->update([
+                    'nama_lengkap' => $request->nama_lengkap,
+                    'email'        => $request->email,
+                    'agama'        => $request->agama,
+                    'id_kelas'     => $request->id_kelas,
+                    'tanggal_lahir' => $request->tanggal_lahir,
+                ]);
 
-            $siswa->User->update([
-                'name'  => $request->nama_lengkap,
-                'email' => $request->email,
-            ]);
-        });
+                $siswa->User->update([
+                    'name'  => $request->nama_lengkap,
+                    'email' => $request->email,
+                ]);
+            });
 
-        return redirect()->route('siswa.index')
-            ->with('success', 'Data siswa berhasil diperbarui.');
+            return redirect()->route('siswa.index')
+                ->with('success', 'Data siswa berhasil diperbarui.');
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.index')
+                ->with('error', 'Gagal memperbarui data siswa. Silakan coba lagi.');
+        }
     }
 
     // ── DESTROY ──────────────────────────────────────────────
     public function destroy(Siswa $siswa)
     {
-        DB::transaction(function () use ($siswa) {
-            if ($siswa->user) {
-                $siswa->user->delete();
-            }
-            $siswa->delete();
-        });
+        $errors = [];
 
-        return redirect()->route('siswa.index')
-            ->with('success', 'Data siswa berhasil dihapus.');
+        if ($siswa->Absensi()->exists()) {
+            $absensiCount = $siswa->Absensi()->count();
+            $errors[] = "Siswa ini masih memiliki {$absensiCount} absensi.";
+        }
+
+        if ($siswa->PengumpulanTugas()->exists()) {
+            $pengumpulanTugasCount = $siswa->PengumpulanTugas()->count();
+            $errors[] = "Siswa ini masih memiliki {$pengumpulanTugasCount} pengumpulan tugas.";
+        }
+
+        if ($siswa->HasilKuis()->exists()) {
+            $hasilKuisCount = $siswa->HasilKuis()->count();
+            $errors[] = "Siswa ini masih memiliki {$hasilKuisCount} hasil kuis.";
+        }
+
+        if (!empty($errors)) {
+            return redirect()->route('siswa.index')
+                ->with('error', implode(' | ', $errors));
+        }
+
+        try {
+            DB::transaction(function () use ($siswa) {
+                if ($siswa->user) {
+                    $siswa->user->delete();
+                }
+                $siswa->delete();
+            });
+
+            return redirect()->route('siswa.index')
+                ->with('success', 'Data siswa berhasil dihapus.');
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.index')
+                ->with('error', 'Gagal menghapus data siswa. Silakan coba lagi.');
+        }
     }
 
     // ── SEND EMAIL satu siswa ─────────────────────────────────
@@ -124,21 +162,21 @@ class SiswaController extends Controller
         try {
             $plainPassword = $this->generatePasswordFromBirthDate($siswa->tanggal_lahir);
             $siswa->User->update(['password' => Hash::make($plainPassword)]);
-            
+
             Log::info("Attempting to send email to: {$siswa->email}");
             Log::info("MAIL_MAILER: " . config('mail.default'));
             Log::info("MAIL_HOST: " . config('mail.mailers.smtp.host'));
-            
+
             Mail::to($siswa->email)->send(new KirimAkunSiswa($siswa, $plainPassword));
-            
+
             Log::info("Email successfully sent to: {$siswa->email}");
 
-            return back()->with('success', "✅ Email akun berhasil dikirim ke {$siswa->email}.");
-        } catch (\Exception $e) {
+            return back()->with('success', "Email akun berhasil dikirim ke {$siswa->email}.");
+        } catch (Throwable $e) {
             Log::error("Failed to send email to {$siswa->email}: " . $e->getMessage());
             Log::error("Error details: " . $e->getTraceAsString());
-            
-            return back()->with('error', "❌ Gagal mengirim email ke {$siswa->email}. Error: " . substr($e->getMessage(), 0, 100));
+
+            return back()->with('error', "Gagal mengirim email ke {$siswa->email}. Error: " . substr($e->getMessage(), 0, 100));
         }
     }
 
@@ -157,7 +195,7 @@ class SiswaController extends Controller
 
             return redirect()->route('siswa.index')
                 ->with('success', "Email akun berhasil dikirim ke seluruh siswa.");
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Error sending emails: ' . $e->getMessage());
             return redirect()->route('siswa.index')
                 ->with('error', "Gagal mengirim email: " . $e->getMessage());
@@ -167,7 +205,13 @@ class SiswaController extends Controller
     // ── EXPORT ───────────────────────────────────────────────
     public function export()
     {
-        return Excel::download(new SiswaExport, 'data-siswa-' . now()->format('dmY') . '.xlsx');
+        try {
+            return Excel::download(new SiswaExport, 'data-siswa-' . now()->format('dmY') . '.xlsx');
+        } catch (Throwable $e) {
+            Log::error('Error exporting siswa: ' . $e->getMessage());
+            return redirect()->route('siswa.index')
+                ->with('error', "Gagal mengekspor data siswa: " . $e->getMessage());
+        }
     }
 
     // ── IMPORT ───────────────────────────────────────────────
@@ -230,7 +274,7 @@ class SiswaController extends Controller
                 ->with($status, $mainMessage)
                 ->with('skipped_details', $skippedDetails)
                 ->with('skipped_truncated', $summary['skipped'] > 100);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Import Siswa Error', [
                 'message' => $e->getMessage(),
                 'trace'   => $e->getTraceAsString(),
@@ -243,72 +287,115 @@ class SiswaController extends Controller
     }
 
     // ── TRASH ────────────────────────────────────────────────
-    public function trash()
+    public function trash(Request $request)
     {
-        $siswas = Siswa::onlyTrashed()->with('Kelas')->latest('deleted_at')->paginate(15);
-        return view('siswa.trash', compact('siswas'));
+        $query = Siswa::onlyTrashed()->with('Kelas');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('id_kelas')) {
+            $query->where('id_kelas', $request->id_kelas);
+        }
+
+        if ($request->filled('agama')) {
+            $query->where('agama', $request->agama);
+        }
+
+        $siswas    = $query->latest('deleted_at')->paginate(15)->withQueryString();
+        $kelasList = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
+            ->get()
+            ->sortBy('nama_kelas')
+            ->values();
+
+        return view('siswa.trash', compact('siswas', 'kelasList'));
     }
 
     // ── RESTORE satu ─────────────────────────────────────────
     public function restore(int $id)
     {
-        $siswa = Siswa::onlyTrashed()->findOrFail($id);
+        try {
+            $siswa = Siswa::onlyTrashed()->findOrFail($id);
 
-        DB::transaction(function () use ($siswa) {
-            $siswa->restore();
-            $siswa->User()->withTrashed()->restore();
-        });
+            DB::transaction(function () use ($siswa) {
+                $siswa->restore();
+                $siswa->User()->withTrashed()->restore();
+            });
 
-        return redirect()->route('siswa.trash')
-            ->with('success', "Data siswa {$siswa->nama_lengkap} berhasil dikembalikan.");
+            return redirect()->route('siswa.trash')
+                ->with('success', "Data siswa {$siswa->nama_lengkap} berhasil dikembalikan.");
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.trash')
+                ->with('error', "Gagal mengembalikan data siswa. Silakan coba lagi.");
+        }
     }
 
     // ── RESTORE SEMUA ────────────────────────────────────────
     public function restoreAll()
     {
-        DB::transaction(function () {
-            $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
-                $q->withTrashed();
-            }])->get();
+        try {
+            DB::transaction(function () {
+                $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
+                    $q->withTrashed();
+                }])->get();
 
-            foreach ($siswas as $siswa) {
-                $siswa->restore();
-                $siswa->User()->withTrashed()->restore();
-            }
-        });
+                foreach ($siswas as $siswa) {
+                    $siswa->restore();
+                    $siswa->User()->withTrashed()->restore();
+                }
+            });
 
-        return redirect()->route('siswa.trash')
-            ->with('success', 'Semua data siswa berhasil dikembalikan.');
+            return redirect()->route('siswa.trash')
+                ->with('success', 'Semua data siswa berhasil dikembalikan.');
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.trash')
+                ->with('error', "Gagal mengembalikan data semua siswa. Silakan coba lagi.");
+        }
     }
 
     // ── FORCE DELETE satu ────────────────────────────────────
     public function forceDelete(int $id)
     {
-        $siswa = Siswa::onlyTrashed()->findOrFail($id);
+        try {
+            $siswa = Siswa::onlyTrashed()->findOrFail($id);
 
-        DB::transaction(function () use ($siswa) {
-            $siswa->User()->withTrashed()->forceDelete();
-            $siswa->forceDelete();
-        });
+            DB::transaction(function () use ($siswa) {
+                $siswa->User()->withTrashed()->forceDelete();
+                $siswa->forceDelete();
+            });
 
-        return redirect()->route('siswa.trash')
-            ->with('success', "Data siswa {$siswa->nama_lengkap} berhasil dihapus permanen.");
+            return redirect()->route('siswa.trash')
+                ->with('success', "Data siswa {$siswa->nama_lengkap} berhasil dihapus permanen.");
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.trash')
+                ->with('error', "Gagal menghapus data siswa. Silakan coba lagi.");
+        }
     }
 
     // ── FORCE DELETE SEMUA ───────────────────────────────────
     public function forceDeleteAll()
     {
-        DB::transaction(function () {
-            $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
-                $q->withTrashed();
-            }])->get();
-            foreach ($siswas as $siswa) {
-                $siswa->User()->withTrashed()->forceDelete();
-                $siswa->forceDelete();
-            }
-        });
+        try {
+            DB::transaction(function () {
+                $siswas = Siswa::onlyTrashed()->with(['User' => function ($q) {
+                    $q->withTrashed();
+                }])->get();
+                foreach ($siswas as $siswa) {
+                    $siswa->User()->withTrashed()->forceDelete();
+                    $siswa->forceDelete();
+                }
+            });
 
-        return redirect()->route('siswa.trash')
-            ->with('success', 'Semua data siswa berhasil dihapus permanen.');
+            return redirect()->route('siswa.trash')
+                ->with('success', 'Semua data siswa berhasil dihapus permanen.');
+        } catch (Throwable $e) {
+            return redirect()->route('siswa.trash')
+                ->with('error', "Gagal menghapus semua data siswa. Silakan coba lagi.");
+        }
     }
 }

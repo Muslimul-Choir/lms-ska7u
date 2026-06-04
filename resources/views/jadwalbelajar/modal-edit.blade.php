@@ -1,235 +1,181 @@
-<div id="modalEdit" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
+<div id="modalEdit" class="hidden fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-5">
 
     {{-- Overlay --}}
-    <div id="overlayEdit"
-         style="position:absolute; inset:0; background:rgba(45,8,16,0.55); backdrop-filter:blur(4px);"
-         onclick="closeEditModal()">
+    <div onclick="closeEditModal()"
+        class="absolute inset-0 bg-[rgba(45,8,16,0.55)] backdrop-blur-[4px]">
     </div>
 
     {{-- Dialog --}}
-    <div style="position:relative; z-index:10; width:100%; max-width:480px; margin:1rem;">
-        <div style="background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(107,26,43,0.22), 0 4px 16px rgba(0,0,0,0.08); overflow:hidden; border:1px solid rgba(107,26,43,0.1);">
+    <div class="relative z-10 w-full max-w-lg">
+        <div class="bg-white rounded-[18px] shadow-[0_24px_60px_rgba(107,26,43,0.22),0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden border border-[rgba(107,26,43,0.1)]">
 
-            {{-- ── Header ── --}}
-            <div style="padding:18px 24px; background:linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%); display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden;">
-                <div style="position:absolute; width:120px; height:120px; border-radius:50%; top:-40px; right:10px; border:1.5px solid rgba(232,147,10,0.2); pointer-events:none;"></div>
-                <div style="position:absolute; width:70px; height:70px; border-radius:50%; top:10px; right:70px; border:1.5px solid rgba(232,147,10,0.12); pointer-events:none;"></div>
-                <div style="display:flex; align-items:center; gap:12px; position:relative;">
-                    <div style="width:38px; height:38px; border-radius:10px; background:rgba(232,147,10,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            {{-- Header --}}
+            <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden"
+                style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
+                <div class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none"></div>
+                <div class="absolute w-[70px] h-[70px] rounded-full top-[10px] right-[70px] border border-[rgba(232,147,10,0.12)] pointer-events-none"></div>
+
+                <div class="flex items-center gap-3 relative">
+                    <div class="w-[38px] h-[38px] rounded-[10px] bg-[rgba(232,147,10,0.2)] flex items-center justify-center flex-shrink-0">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 style="color:#fff; font-weight:700; font-size:15px; margin:0 0 2px;">Edit Jadwal Belajar</h3>
-                        <p style="color:rgba(255,255,255,0.5); font-size:11px; margin:0;">Perbarui data jadwal belajar</p>
+                        <h3 class="text-white font-bold text-[15px] m-0 mb-[2px]">Edit Jadwal Belajar</h3>
+                        <p class="text-[rgba(255,255,255,0.5)] text-[11px] m-0">Perbarui data jadwal belajar</p>
                     </div>
                 </div>
+
                 <button type="button" onclick="closeEditModal()"
-                        style="width:30px; height:30px; border-radius:8px; background:rgba(255,255,255,0.12); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;"
-                        onmouseover="this.style.background='rgba(255,255,255,0.22)'"
-                        onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+                    class="w-[30px] h-[30px] rounded-lg bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.22)] border-none cursor-pointer flex items-center justify-center relative transition-all duration-200">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            {{-- ── Gold accent bar ── --}}
-            <div style="height:3px; background:linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
+            {{-- Gold accent bar --}}
+            <div class="h-[3px]" style="background: linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
 
-            {{-- ── Notice bar ── --}}
-            <div style="display:flex; align-items:center; gap:8px; padding:9px 24px; background:#FFFBEB; border-bottom:1px solid #FDE68A;">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="#D97706" style="flex-shrink:0;">
+            {{-- Notice bar --}}
+            <div class="flex items-center gap-2 px-6 py-[9px] bg-amber-50 border-b border-amber-200">
+                <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                 </svg>
-                <p style="font-size:11.5px; color:#92400E; font-weight:500; margin:0;">Perubahan akan langsung disimpan ke database.</p>
+                <p class="text-amber-800 text-[11.5px] font-medium m-0">Perubahan akan langsung disimpan ke database.</p>
             </div>
 
-            {{-- ── Body ── --}}
-            <form id="formEdit" action="" method="POST" style="padding:24px; display:flex; flex-direction:column; gap:18px;">
+            {{-- Body --}}
+            <form id="formEdit" action="" method="POST"
+                  class="p-6 flex flex-col gap-[18px] max-h-[70vh] overflow-y-auto">
                 @csrf
                 @method('PUT')
 
                 {{-- Hari --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Hari <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Hari <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                        </span>
-                        <select id="editHari" name="hari"
-                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">-- Pilih Hari --</option>
-                            @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h)
-                                <option value="{{ $h }}">{{ $h }}</option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></span>
-                    </div>
+                    <select id="editHari" name="hari"
+                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                        <option value="">-- Pilih Hari --</option>
+                        @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h)
+                            <option value="{{ $h }}">{{ $h }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 {{-- Jam Belajar --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Jam Belajar <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Jam Belajar <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                        </span>
-                        <select id="editIdJam" name="id_jam"
-                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">-- Pilih Jam --</option>
-                            @foreach($jamList as $jam)
-                                <option value="{{ $jam->id }}">{{ $jam->jam_mulai }} – {{ $jam->jam_selesai }}</option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></span>
-                    </div>
+                    <select id="editIdJam" name="id_jam"
+                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                        <option value="">-- Pilih Jam --</option>
+                        @foreach($jamList as $jam)
+                            <option value="{{ $jam->id }}">{{ $jam->jam_mulai }} – {{ $jam->jam_selesai }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 {{-- Kelas --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Kelas <span style="color:#EF4444;">*</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Kelas <span class="text-red-500">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
-                            </svg>
-                        </span>
-                        <select id="editIdKelas" name="id_kelas"
-                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelasList as $k)
-                                <option value="{{ $k->id }}">
-                                    {{ trim(($k->Tingkatan->nama_tingkatan ?? '') . ' ' . ($k->Jurusan->nama_jurusan ?? '') . ' ' . ($k->Bagian->nama_bagian ?? '')) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></span>
-                    </div>
+                    <select id="editIdKelas" name="id_kelas"
+                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                        <option value="">-- Pilih Kelas --</option>
+                        @foreach($kelasList as $k)
+                            <option value="{{ $k->id }}">
+                                {{ trim(($k->Tingkatan->nama_tingkatan ?? '') . ' ' . ($k->Jurusan->nama_jurusan ?? '') . ' ' . ($k->Bagian->nama_bagian ?? '')) }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 {{-- Guru Mata Pelajaran --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">Guru Mata Pelajaran</label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </span>
-                        <select id="editIdGuruMapel" name="id_guru_mapel"
-                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <option value="">-- Pilih Guru (opsional) --</option>
-                            @foreach($guruMapelList as $guru)
-                                <option value="{{ $guru->id }}"
-                                        data-mapel-id="{{ $guru->Mapel->id ?? '' }}"
-                                        data-mapel-nama="{{ $guru->Mapel->nama_mapel ?? '' }}">
-                                    {{ ($guru->Guru->nama_lengkap ?? '') . ' — ' . ($guru->Mapel->nama_mapel ?? '') }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></span>
-                    </div>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">Guru Mata Pelajaran</label>
+                    <select id="editIdGuruMapel" name="id_guru_mapel"
+                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                        <option value="">-- Pilih Guru (opsional) --</option>
+                        @foreach($guruMapelList as $guru)
+                            <option value="{{ $guru->id }}"
+                                    data-mapel-id="{{ $guru->Mapel->id ?? '' }}"
+                                    data-mapel-nama="{{ $guru->Mapel->nama_mapel ?? '' }}">
+                                {{ ($guru->Guru->nama_lengkap ?? '') . ' — ' . ($guru->Mapel->nama_mapel ?? '') }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 {{-- Mata Pelajaran --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Mata Pelajaran
-                        <span style="font-weight:400; color:#9CA3AF; text-transform:none; letter-spacing:0;">(jika tanpa guru)</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Mata Pelajaran <span class="text-gray-400 font-normal normal-case tracking-normal">(jika tanpa guru)</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                            </svg>
-                        </span>
+                    <div class="relative">
                         <select id="editIdMapel" name="id_mapel"
-                                style="width:100%; padding:10px 36px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s; appearance:none; cursor:pointer;"
-                                onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                             <option value="">-- Pilih Mapel (opsional) --</option>
                             @foreach($mapelList as $mapel)
                                 <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
                             @endforeach
                         </select>
                         <span id="editMapelBadge"
-                              style="display:none; position:absolute; right:13px; top:50%; transform:translateY(-50%); font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; background:#EFF6FF; color:#1D4ED8; pointer-events:none;">
+                              class="hidden absolute right-[13px] top-1/2 -translate-y-1/2 text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 pointer-events-none">
                             Otomatis
                         </span>
                     </div>
-                    <p id="editMapelHint" style="display:none; margin-top:5px; font-size:11px; color:#3B82F6; display:flex; align-items:center; gap:4px;">
-                        <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                    <p id="editMapelHint" class="hidden items-center gap-1 text-[11px] text-blue-500">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
                         Terisi otomatis dari mapel guru yang dipilih.
                     </p>
                 </div>
 
                 {{-- Nama Kegiatan --}}
-                <div>
-                    <label style="display:block; font-size:11.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:.55px; margin-bottom:7px;">
-                        Nama Kegiatan
-                        <span style="font-weight:400; color:#9CA3AF; text-transform:none; letter-spacing:0;">(jika bukan mapel)</span>
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Nama Kegiatan <span class="text-gray-400 font-normal normal-case tracking-normal">(jika bukan mapel)</span>
                     </label>
-                    <div style="position:relative;">
-                        <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center;">
+                    <div class="relative">
+                        <span class="absolute left-[13px] top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
                         </span>
                         <input type="text" id="editNamaKegiatan" name="nama_kegiatan"
                                placeholder="cth: Istirahat, Upacara..."
-                               style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid #E5E7EB; border-radius:10px; font-size:14px; color:#111827; background:#F9FAFB; outline:none; box-sizing:border-box; transition:border-color .2s, box-shadow .2s;"
-                               onfocus="this.style.borderColor='#E8930A'; this.style.boxShadow='0 0 0 3px rgba(232,147,10,0.13)'; this.style.background='#fff';"
-                               onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                               class="w-full rounded-[10px] border border-gray-200 py-[10px] pl-[40px] pr-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                     </div>
                 </div>
 
-                {{-- ── Footer Buttons ── --}}
-                <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:6px; border-top:1px solid #F3F4F6;">
+                {{-- Footer --}}
+                <div class="flex items-center justify-end gap-[10px] pt-[6px] border-t border-gray-100">
                     <button type="button" onclick="closeEditModal()"
-                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 20px; font-size:13.5px; font-weight:600; background:#F9FAFB; color:#374151; border:1.5px solid #E5E7EB; border-radius:10px; cursor:pointer; transition:background .2s;"
-                            onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='#F9FAFB'">
+                        class="inline-flex items-center gap-[6px] px-5 py-[9px] text-[13.5px] font-semibold bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-[10px] cursor-pointer transition-all duration-200">
                         Batal
                     </button>
-                    <button type="submit"
-                            style="display:inline-flex; align-items:center; gap:6px; padding:9px 22px; font-size:13.5px; font-weight:700; background:linear-gradient(135deg,#6B1A2B,#9B3045); color:#fff; border:none; border-radius:10px; cursor:pointer; transition:opacity .2s; box-shadow:0 2px 8px rgba(107,26,43,0.25);"
-                            onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                    <button type="submit" id="editSubmitBtn"
+                        class="inline-flex items-center gap-[6px] px-[22px] py-[9px] text-[13.5px] font-bold text-white border-none rounded-[10px] cursor-pointer transition-all duration-200 shadow-[0_2px_8px_rgba(107,26,43,0.25)] disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90"
+                        style="background: linear-gradient(135deg,#6B1A2B,#9B3045);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                         </svg>
                         Update
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
 
+@push('scripts')
 <script>
-function closeEditModal() {
-    document.getElementById('modalEdit').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
 function syncMapelFromGuruEdit() {
     const guruSelect  = document.getElementById('editIdGuruMapel');
     const mapelSelect = document.getElementById('editIdMapel');
@@ -237,36 +183,45 @@ function syncMapelFromGuruEdit() {
     const hint        = document.getElementById('editMapelHint');
     const selectedOpt = guruSelect.options[guruSelect.selectedIndex];
     const mapelId     = selectedOpt?.dataset?.mapelId ?? '';
+
     if (guruSelect.value && mapelId) {
         mapelSelect.value = mapelId;
-        mapelSelect.style.pointerEvents = 'none';
-        mapelSelect.style.background = '#F9FAFB';
-        mapelSelect.style.color = '#9CA3AF';
-        mapelSelect.style.cursor = 'not-allowed';
-        badge.style.display = 'block';
-        hint.style.display = 'flex';
+        mapelSelect.classList.add('pointer-events-none', 'text-gray-400', 'cursor-not-allowed');
+        badge.classList.remove('hidden');
+        hint.classList.remove('hidden');
+        hint.classList.add('flex');
     } else {
-        mapelSelect.style.pointerEvents = 'auto';
-        mapelSelect.style.background = '#F9FAFB';
-        mapelSelect.style.color = '#111827';
-        mapelSelect.style.cursor = 'pointer';
-        badge.style.display = 'none';
-        hint.style.display = 'none';
+        mapelSelect.classList.remove('pointer-events-none', 'text-gray-400', 'cursor-not-allowed');
+        badge.classList.add('hidden');
+        hint.classList.add('hidden');
+        hint.classList.remove('flex');
     }
 }
+
 document.getElementById('editIdGuruMapel')?.addEventListener('change', syncMapelFromGuruEdit);
 
-window.openModalEdit = function(data) {
-    document.getElementById('formEdit').action          = `/jadwalbelajar/${data.id}`;
-    document.getElementById('editHari').value           = data.hari          ?? '';
-    document.getElementById('editIdJam').value          = data.id_jam        ?? '';
-    document.getElementById('editIdKelas').value        = data.id_kelas      ?? '';
-    document.getElementById('editNamaKegiatan').value   = data.nama_kegiatan ?? '';
-    document.getElementById('editIdGuruMapel').value    = data.id_guru_mapel ?? '';
-    syncMapelFromGuruEdit();
-    const mapelSelect = document.getElementById('editIdMapel');
-    if (!mapelSelect.disabled) mapelSelect.value = data.id_mapel ?? '';
-    document.getElementById('modalEdit').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-};
+document.addEventListener('DOMContentLoaded', () => {
+    const editForm = document.getElementById('formEdit');
+    const editBtn  = document.getElementById('editSubmitBtn');
+
+    if (editForm && editBtn) {
+        editForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showConfirmUpdate().then((result) => {
+                if (result.isConfirmed) {
+                    editBtn.disabled = true;
+                    editBtn.innerHTML = `
+                        <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                        Menyimpan...
+                    `;
+                    editForm.submit();
+                }
+            });
+        });
+    }
+});
 </script>
+@endpush

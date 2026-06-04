@@ -114,19 +114,34 @@ class GuruController extends Controller
         // Cek apakah guru masih menjadi wali kelas
         if ($guru->kelas()->exists()) {
             $kelasCount = $guru->kelas()->count();
-            $errors[] = "Guru ini masih menjadi wali kelas untuk {$kelasCount} kelas. Ubah wali kelas terlebih dahulu.";
+            $errors[] = "Guru ini masih menjadi wali kelas untuk {$kelasCount} kelas.";
         }
 
         // Cek apakah guru masih mengajar mapel
         if ($guru->guruMapel()->exists()) {
             $mapelCount = $guru->guruMapel()->count();
-            $errors[] = "Guru ini masih mengajar {$mapelCount} mapel. Hapus relasi guru-mapel terlebih dahulu.";
+            $errors[] = "Guru ini masih mengajar {$mapelCount} mapel.";
+        }
+
+        if ($guru->Pertemuan()->exists()) {
+            $pertemuanCount = $guru->Pertemuan()->count();
+            $errors[] = "Guru ini masih mengajar {$pertemuanCount} pertemuan.";
+        }
+
+        if ($guru->Kuis()->exists()) {
+            $kuisCount = $guru->Kuis()->count();
+            $errors[] = "Guru ini masih memberikan {$kuisCount} kuis.";
+        }
+
+        if ($guru->Penilaian()->exists()) {
+            $penilaianCount = $guru->Penilaian()->count();
+            $errors[] = "Guru ini masih memberikan {$penilaianCount} penilaian.";
         }
 
         // Cek apakah guru masih memiliki tugas
         if ($guru->Tugas()->exists()) {
             $tugasCount = $guru->Tugas()->count();
-            $errors[] = "Guru ini masih memiliki {$tugasCount} tugas. Hapus tugas terlebih dahulu.";
+            $errors[] = "Guru ini masih memiliki {$tugasCount} tugas.";
         }
 
         if (!empty($errors)) {
@@ -134,20 +149,25 @@ class GuruController extends Controller
                 ->with('error', implode(' | ', $errors));
         }
 
-        DB::transaction(function () use ($guru) {
+        try {
+            DB::transaction(function () use ($guru) {
 
-            Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
+                Kelas::where('id_wali_kelas', $guru->id)->update(['id_wali_kelas' => null]);
 
 
-            if ($guru->user) {
-                $guru->user->delete();
-            }
+                if ($guru->user) {
+                    $guru->user->delete();
+                }
 
-            $guru->delete();
-        });
+                $guru->delete();
+            });
 
-        return redirect()->route('guru.index')
-            ->with('success', 'Data guru berhasil dihapus.');
+            return redirect()->route('guru.index')
+                ->with('success', 'Data guru berhasil dihapus.');
+        } catch (Throwable $e) {
+            return redirect()->route('guru.index')
+                ->with('error', 'Gagal menghapus data guru. Silakan coba lagi.');
+        }
     }
 
 
