@@ -94,7 +94,7 @@
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest sr-only">Tingkat</label>
                         <select name="tingkat" id="filterTingkat"
                                 class="rounded-xl border min-w-[130px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
-                            <option value="">Semua Tingkat</option>
+                            <option value="">Pilih Tingkat</option>
                             @foreach ($tingkatanList as $tkt)
                                 <option value="{{ $tkt->id }}" {{ $tingkat == $tkt->id ? 'selected' : '' }}>
                                     {{ $tkt->nama_tingkatan }}
@@ -188,7 +188,7 @@
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkat atau Kelas</p>
+                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkat dan Kelas</p>
                         <p class="text-gray-300 text-xs">Silakan pilih tingkat atau kelas terlebih dahulu untuk
                             menampilkan jadwal belajar.</p>
                         <div
