@@ -8,28 +8,29 @@ use App\Models\JadwalBelajar;
 use App\Models\Pertemuan;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class PertemuanController extends Controller
 {
-    public function index(Request $request): View|\Illuminate\Http\JsonResponse
+    public function index(Request $request): View|JsonResponse
     {
         $user = auth()->user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
-        $search        = $request->get('search');
-        $jadwalFilter  = $request->get('id_jadwal');
-        $statusFilter  = $request->get('status');
+        $search = $request->get('search');
+        $jadwalFilter = $request->get('id_jadwal');
+        $statusFilter = $request->get('status');
 
         $query = Pertemuan::with([
             'jadwalBelajar',
-            'guru'
+            'guru',
         ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_pertemuan', 'like', "%{$search}%")
-                  ->orWhere('tanggal', 'like', "%{$search}%");
+                    ->orWhere('tanggal', 'like', "%{$search}%");
             });
         }
 
@@ -50,19 +51,22 @@ class PertemuanController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $trashCount = Pertemuan::onlyTrashed()
+            ->when(
+                $isGuru,
+                fn($q) => $q->where('id_guru', $user->guru->id)
+            )
+            ->count();
+
         if ($request->ajax()) {
             return response()->json([
                 'pertemuans' => $pertemuans->items(),
                 'pagination' => $pertemuans->links()->toHtml(),
-                'total'      => $pertemuans->total(),
+                'total' => $pertemuans->total(),
             ]);
         }
 
         $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
-
-        $trashCount = Pertemuan::onlyTrashed()
-            ->when($isGuru, fn ($q) => $q->where('id_guru', $user->guru->id))
-            ->count();
 
         return view('pertemuan.index', compact(
             'pertemuans',
@@ -119,7 +123,7 @@ class PertemuanController extends Controller
 
         $pertemuan->load([
             'jadwalBelajar',
-            'guru'
+            'guru',
         ]);
 
         return view('pertemuan.show', compact('pertemuan'));
@@ -183,27 +187,56 @@ class PertemuanController extends Controller
             ->with('success', 'Pertemuan berhasil dipindahkan ke arsip.');
     }
 
-    public function trash(): View
-    {
-        $user = auth()->user();
-        $isGuru = $user->role === 'guru' && $user->guru;
+    public function trash(Request $request): View
+{
+    $user = auth()->user();
+    $isGuru = $user->role === 'guru' && $user->guru;
 
-        $query = Pertemuan::onlyTrashed()
-            ->with([
-                'jadwalBelajar',
-                'guru'
-            ]);
+    $search      = $request->get('search');
+    $jadwalFilter = $request->get('id_jadwal');   // ← tambahkan ini
+    $statusFilter = $request->get('status');       // ← tambahkan ini
 
-        if ($isGuru) {
-            $query->where('id_guru', $user->guru->id);
-        }
+    $query = Pertemuan::onlyTrashed()
+        ->with([
+            'jadwalBelajar',
+            'guru',
+        ]);
 
-        $pertemuans = $query
-            ->latest('deleted_at')
-            ->paginate(10);
-
-        return view('pertemuan.trash', compact('pertemuans'));
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('nomor_pertemuan', 'like', "%{$search}%")
+              ->orWhere('tanggal', 'like', "%{$search}%");
+        });
     }
+
+    if ($jadwalFilter) {                           // ← tambahkan blok ini
+        $query->where('id_jadwal', $jadwalFilter);
+    }
+
+    if ($statusFilter) {                           // ← tambahkan blok ini
+        $query->where('status', $statusFilter);
+    }
+
+    if ($isGuru) {
+        $query->where('id_guru', $user->guru->id);
+    }
+
+    $pertemuans = $query
+        ->latest('deleted_at')
+        ->paginate(10)
+        ->withQueryString();
+
+    $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
+
+    return view('pertemuan.trash', compact(
+        'pertemuans',
+        'search',
+        'jadwalBelajars',
+        'jadwalFilter',   // ← pass ke view agar select tetap terpilih
+        'statusFilter',   // ← pass ke view agar select tetap terpilih
+        'isGuru'
+    ));
+}
 
     public function restore(string $id): RedirectResponse
     {
@@ -217,23 +250,6 @@ class PertemuanController extends Controller
         return redirect()
             ->route('pertemuan.trash')
             ->with('success', 'Pertemuan berhasil dipulihkan.');
-    }
-
-    public function restoreAll(): RedirectResponse
-    {
-        $user = auth()->user();
-
-        $query = Pertemuan::onlyTrashed();
-
-        if ($user->role === 'guru' && $user->guru) {
-            $query->where('id_guru', $user->guru->id);
-        }
-
-        $query->restore();
-
-        return redirect()
-            ->route('pertemuan.trash')
-            ->with('success', 'Semua data berhasil dipulihkan.');
     }
 
     public function forceDelete(string $id): RedirectResponse
@@ -250,6 +266,23 @@ class PertemuanController extends Controller
             ->with('success', 'Pertemuan berhasil dihapus permanen.');
     }
 
+    public function restoreAll(): RedirectResponse
+    {
+        $user = auth()->user();
+
+        $query = Pertemuan::onlyTrashed();
+
+        if ($user->role === 'guru' && $user->guru) {
+            $query->where('id_guru', $user->guru->id);
+        }
+
+        $query->restore();
+
+        return redirect()
+            ->route('pertemuan.trash')
+            ->with('success', 'Semua data pertemuan berhasil dipulihkan.');
+    }
+
     public function forceDeleteAll(): RedirectResponse
     {
         $user = auth()->user();
@@ -264,14 +297,14 @@ class PertemuanController extends Controller
 
         return redirect()
             ->route('pertemuan.trash')
-            ->with('success', 'Semua data berhasil dihapus permanen.');
+            ->with('success', 'Semua data pertemuan berhasil dihapus permanen.');
     }
 
     private function getJadwalBelajarByRole(bool $isGuru)
     {
         $query = JadwalBelajar::with([
             'guruMapel',
-            'kelas'
+            'kelas',
         ]);
 
         if ($isGuru) {
