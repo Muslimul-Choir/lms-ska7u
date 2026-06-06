@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Pertemuan\StorePertemuanRequest;
 use App\Http\Requests\Pertemuan\UpdatePertemuanRequest;
+use App\Models\Guru;
 use App\Models\JadwalBelajar;
 use App\Models\Pertemuan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -15,73 +17,133 @@ class PertemuanController extends Controller
 {
     public function index(Request $request): View|JsonResponse
     {
-        $user = auth()->user();
-        $isGuru = $user->role === 'guru' && $user->guru;
+        $user         = auth()->user();
+        $isGuru       = $user->role === 'guru' && $user->guru;
+        $isAdmin      = $user->role === 'admin';
+        $isSuperAdmin = $user->role === 'super_admin';
 
-        $search = $request->get('search');
-        $jadwalFilter = $request->get('id_jadwal');
+        $search       = $request->get('search');
         $statusFilter = $request->get('status');
 
-        $query = Pertemuan::with([
-            'jadwalBelajar',
-            'guru',
-        ]);
+        // ── GURU: tampilan tabel, hanya data milik sendiri ──────────────
+        if ($isGuru) {
+            $query = Pertemuan::with(['jadwalBelajar', 'guru'])
+                ->where('id_guru', $user->guru->id);
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nomor_pertemuan', 'like', "%{$search}%")
+                      ->orWhere('tanggal', 'like', "%{$search}%");
+                });
+            }
+
+            if ($statusFilter) {
+                $query->where('status', $statusFilter);
+            }
+
+            $pertemuans = $query
+                ->orderBy('id_jadwal')
+                ->orderBy('nomor_pertemuan')
+                ->paginate(5)           // ← 5 per halaman
+                ->withQueryString();
+
+            $trashCount = Pertemuan::onlyTrashed()
+                ->where('id_guru', $user->guru->id)
+                ->count();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'pertemuans' => $pertemuans->items(),
+                    'pagination' => $pertemuans->links()->toHtml(),
+                    'total'      => $pertemuans->total(),
+                ]);
+            }
+
+            $jadwalBelajars = $this->getJadwalBelajarByRole(true);
+
+            return view('pertemuan.index', [
+                'pertemuans'      => $pertemuans,
+                'pertemuanByGuru' => collect(),
+                'gurus'           => collect(),
+                'search'          => $search,
+                'jadwalBelajars'  => $jadwalBelajars,
+                'statusFilter'    => $statusFilter,
+                'isGuru'          => true,
+                'isAdmin'         => false,
+                'isSuperAdmin'    => false,
+                'trashCount'      => $trashCount,
+            ]);
+        }
+
+        // ── ADMIN / SUPER ADMIN: tampilan accordion per guru ─────────────
+        $idGuruFilter = $request->get('id_guru');
+
+        $query = Pertemuan::with(['jadwalBelajar', 'guru', 'creator'])
+            ->orderBy('created_by')
+            ->orderBy('id_jadwal')
+            ->orderBy('nomor_pertemuan');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_pertemuan', 'like', "%{$search}%")
-                    ->orWhere('tanggal', 'like', "%{$search}%");
+                  ->orWhere('tanggal', 'like', "%{$search}%");
             });
         }
 
-        if ($jadwalFilter) {
-            $query->where('id_jadwal', $jadwalFilter);
+        if ($idGuruFilter) {
+            $query->where('id_guru', $idGuruFilter);
         }
 
         if ($statusFilter) {
             $query->where('status', $statusFilter);
         }
 
-        if ($isGuru) {
-            $query->where('id_guru', $user->guru->id);
-        }
+        $allPertemuans = $query->get();
 
-        $pertemuans = $query
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        // Kelompokkan per id_guru
+        $pertemuanByGuru = $allPertemuans
+            ->groupBy('id_guru')
+            ->map(function ($items, $guruId) {
+                $guruModel = $items->first()?->guru;
+                return [
+                    'guru'       => $guruModel,
+                    'guruUser'   => $guruModel?->user,
+                    'pertemuans' => $items,
+                ];
+            });
 
-        $trashCount = Pertemuan::onlyTrashed()
-            ->when(
-                $isGuru,
-                fn($q) => $q->where('id_guru', $user->guru->id)
-            )
-            ->count();
+        // Daftar guru untuk dropdown filter
+        $guruIds = $allPertemuans->pluck('id_guru')->unique()->filter();
+        $gurus   = Guru::with('user')->whereIn('id', $guruIds)->get();
+
+        $trashCount = Pertemuan::onlyTrashed()->count();
 
         if ($request->ajax()) {
             return response()->json([
-                'pertemuans' => $pertemuans->items(),
-                'pagination' => $pertemuans->links()->toHtml(),
-                'total' => $pertemuans->total(),
+                'total' => $allPertemuans->count(),
             ]);
         }
 
-        $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
+        $jadwalBelajars = $this->getJadwalBelajarByRole(false);
 
-        return view('pertemuan.index', compact(
-            'pertemuans',
-            'search',
-            'jadwalBelajars',
-            'jadwalFilter',
-            'statusFilter',
-            'isGuru',
-            'trashCount'
-        ));
+        return view('pertemuan.index', [
+            'pertemuans'      => collect(),
+            'pertemuanByGuru' => $pertemuanByGuru,
+            'gurus'           => $gurus,
+            'search'          => $search,
+            'jadwalBelajars'  => $jadwalBelajars,
+            'idGuruFilter'    => $idGuruFilter,
+            'statusFilter'    => $statusFilter,
+            'isGuru'          => false,
+            'isAdmin'         => $isAdmin,
+            'isSuperAdmin'    => $isSuperAdmin,
+            'trashCount'      => $trashCount,
+        ]);
     }
 
     public function create(): View
     {
-        $user = auth()->user();
+        $user   = auth()->user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
         $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
@@ -107,7 +169,7 @@ class PertemuanController extends Controller
         $jadwal = JadwalBelajar::with('guruMapel')
             ->findOrFail($data['id_jadwal']);
 
-        $data['id_guru'] = $jadwal->guruMapel?->id_guru;
+        $data['id_guru']    = $jadwal->guruMapel?->id_guru;
         $data['created_by'] = auth()->id();
 
         Pertemuan::create($data);
@@ -121,10 +183,7 @@ class PertemuanController extends Controller
     {
         $this->authorizeGuru($pertemuan);
 
-        $pertemuan->load([
-            'jadwalBelajar',
-            'guru',
-        ]);
+        $pertemuan->load(['jadwalBelajar', 'guru']);
 
         return view('pertemuan.show', compact('pertemuan'));
     }
@@ -133,15 +192,12 @@ class PertemuanController extends Controller
     {
         $this->authorizeGuru($pertemuan);
 
-        $user = auth()->user();
+        $user   = auth()->user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
         $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
 
-        return view('pertemuan.edit', compact(
-            'pertemuan',
-            'jadwalBelajars'
-        ));
+        return view('pertemuan.edit', compact('pertemuan', 'jadwalBelajars'));
     }
 
     public function update(
@@ -189,18 +245,55 @@ class PertemuanController extends Controller
 
     public function trash(Request $request): View
 {
-    $user = auth()->user();
-    $isGuru = $user->role === 'guru' && $user->guru;
+    $user         = auth()->user();
+    $isGuru       = $user->role === 'guru' && $user->guru;
+    $isAdmin      = $user->role === 'admin';
+    $isSuperAdmin = $user->role === 'super_admin';
 
-    $search      = $request->get('search');
-    $jadwalFilter = $request->get('id_jadwal');   // ← tambahkan ini
-    $statusFilter = $request->get('status');       // ← tambahkan ini
+    $search       = $request->get('search');
+    $statusFilter = $request->get('status');
+
+    // ── GURU: tabel paginated, hanya milik sendiri ──────────────────
+    if ($isGuru) {
+        $query = Pertemuan::onlyTrashed()
+            ->with(['jadwalBelajar', 'guru'])
+            ->where('id_guru', $user->guru->id);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_pertemuan', 'like', "%{$search}%")
+                  ->orWhere('tanggal', 'like', "%{$search}%");
+            });
+        }
+
+        if ($statusFilter) {
+            $query->where('status', $statusFilter);
+        }
+
+        $pertemuans = $query
+            ->latest('deleted_at')
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('pertemuan.trash', [
+            'pertemuans'   => $pertemuans,
+            'trashByGuru'  => collect(),
+            'gurus'        => collect(),
+            'search'       => $search,
+            'statusFilter' => $statusFilter,
+            'isGuru'       => true,
+            'isAdmin'      => false,
+            'isSuperAdmin' => false,
+        ]);
+    }
+
+    // ── ADMIN / SUPER ADMIN: accordion per guru ─────────────────────
+    $idGuruFilter = $request->get('id_guru');
 
     $query = Pertemuan::onlyTrashed()
-        ->with([
-            'jadwalBelajar',
-            'guru',
-        ]);
+        ->with(['jadwalBelajar', 'guru'])
+        ->orderBy('id_guru')
+        ->latest('deleted_at');
 
     if ($search) {
         $query->where(function ($q) use ($search) {
@@ -209,39 +302,48 @@ class PertemuanController extends Controller
         });
     }
 
-    if ($jadwalFilter) {                           // ← tambahkan blok ini
-        $query->where('id_jadwal', $jadwalFilter);
+    if ($idGuruFilter) {
+        $query->where('id_guru', $idGuruFilter);
     }
 
-    if ($statusFilter) {                           // ← tambahkan blok ini
+    if ($statusFilter) {
         $query->where('status', $statusFilter);
     }
 
-    if ($isGuru) {
-        $query->where('id_guru', $user->guru->id);
-    }
+    $allTrashed = $query->get();
 
-    $pertemuans = $query
-        ->latest('deleted_at')
-        ->paginate(10)
-        ->withQueryString();
+    // Kelompokkan per id_guru — sama persis seperti index
+    $trashByGuru = $allTrashed
+        ->groupBy('id_guru')
+        ->map(function ($items, $guruId) {
+            $guruModel = $items->first()?->guru;
+            return [
+                'guru'       => $guruModel,
+                'guruUser'   => $guruModel?->user,
+                'pertemuans' => $items,
+            ];
+        });
 
-    $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
+    // Daftar guru untuk dropdown filter
+    $guruIds = $allTrashed->pluck('id_guru')->unique()->filter();
+    $gurus   = Guru::with('user')->whereIn('id', $guruIds)->get();
 
-    return view('pertemuan.trash', compact(
-        'pertemuans',
-        'search',
-        'jadwalBelajars',
-        'jadwalFilter',   // ← pass ke view agar select tetap terpilih
-        'statusFilter',   // ← pass ke view agar select tetap terpilih
-        'isGuru'
-    ));
+    return view('pertemuan.trash', [
+        'pertemuans'   => collect(),
+        'trashByGuru'  => $trashByGuru,
+        'gurus'        => $gurus,
+        'search'       => $search,
+        'idGuruFilter' => $idGuruFilter,
+        'statusFilter' => $statusFilter,
+        'isGuru'       => false,
+        'isAdmin'      => $isAdmin,
+        'isSuperAdmin' => $isSuperAdmin,
+    ]);
 }
 
     public function restore(string $id): RedirectResponse
     {
-        $pertemuan = Pertemuan::onlyTrashed()
-            ->findOrFail($id);
+        $pertemuan = Pertemuan::onlyTrashed()->findOrFail($id);
 
         $this->authorizeGuru($pertemuan);
 
@@ -254,8 +356,7 @@ class PertemuanController extends Controller
 
     public function forceDelete(string $id): RedirectResponse
     {
-        $pertemuan = Pertemuan::onlyTrashed()
-            ->findOrFail($id);
+        $pertemuan = Pertemuan::onlyTrashed()->findOrFail($id);
 
         $this->authorizeGuru($pertemuan);
 
@@ -268,8 +369,7 @@ class PertemuanController extends Controller
 
     public function restoreAll(): RedirectResponse
     {
-        $user = auth()->user();
-
+        $user  = auth()->user();
         $query = Pertemuan::onlyTrashed();
 
         if ($user->role === 'guru' && $user->guru) {
@@ -285,8 +385,7 @@ class PertemuanController extends Controller
 
     public function forceDeleteAll(): RedirectResponse
     {
-        $user = auth()->user();
-
+        $user  = auth()->user();
         $query = Pertemuan::onlyTrashed();
 
         if ($user->role === 'guru' && $user->guru) {
@@ -300,16 +399,14 @@ class PertemuanController extends Controller
             ->with('success', 'Semua data pertemuan berhasil dihapus permanen.');
     }
 
+    // ── Private Helpers ──────────────────────────────────────────────────
+
     private function getJadwalBelajarByRole(bool $isGuru)
     {
-        $query = JadwalBelajar::with([
-            'guruMapel',
-            'kelas',
-        ]);
+        $query = JadwalBelajar::with(['guruMapel', 'kelas']);
 
         if ($isGuru) {
             $guru = auth()->user()->guru;
-
             $query->whereHas('guruMapel', function ($q) use ($guru) {
                 $q->where('id_guru', $guru->id);
             });

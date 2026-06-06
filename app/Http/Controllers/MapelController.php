@@ -13,7 +13,7 @@ use Throwable;
 
 class MapelController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = Mapel::query();
 
@@ -36,7 +36,6 @@ class MapelController extends Controller
 
         return view('mapel.index', compact('mapels', 'trashCount'));
     }
-
 
     public function store(StoreMapelRequest $request): RedirectResponse
     {
@@ -65,7 +64,6 @@ class MapelController extends Controller
             $data = $request->validated();
 
             if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
                 if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
                     Storage::disk('public')->delete($mapel->foto);
                 }
@@ -88,18 +86,18 @@ class MapelController extends Controller
     {
         $error = [];
 
-            if ($mapel->GuruMapel()->exists()) {
-                $error[] = 'masih memiliki ' . $mapel->GuruMapel()->count() . ' guru mapel';
-            }
+        if ($mapel->GuruMapel()->exists()) {
+            $error[] = 'masih memiliki ' . $mapel->GuruMapel()->count() . ' guru mapel';
+        }
 
-            if ($mapel->Tugas()->exists()) {
-                $error[] = 'masih memiliki ' . $mapel->Tugas()->count() . ' tugas';
-            }
+        if ($mapel->Tugas()->exists()) {
+            $error[] = 'masih memiliki ' . $mapel->Tugas()->count() . ' tugas';
+        }
 
-            if ($mapel->JadwalBelajar()->exists()) {
-                $error[] = 'masih memiliki ' . $mapel->JadwalBelajar()->count() . ' jadwal belajar';
-            }
-        
+        if ($mapel->JadwalBelajar()->exists()) {
+            $error[] = 'masih memiliki ' . $mapel->JadwalBelajar()->count() . ' jadwal belajar';
+        }
+
         if (!empty($error)) {
             return redirect()
                 ->route('mapel.index')
@@ -113,21 +111,75 @@ class MapelController extends Controller
             ->with('success', 'Mata pelajaran berhasil dihapus.');
     }
 
-    public function trash(): View
+    public function trash(Request $request): View
     {
-        $mapels = Mapel::onlyTrashed()->latest()->paginate(10);
+        $query = Mapel::onlyTrashed();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(
+                fn($q) =>
+                $q->where('nama_mapel', 'like', "%{$search}%")
+                    ->orWhere('kode_mapel', 'like', "%{$search}%")
+            );
+        }
+
+        $mapels = $query
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('mapel.trash', compact('mapels'));
     }
 
+    // ─── Per-record: gunakan model binding (Route::bind sudah pakai withTrashed) ───
+
+    public function restore(Mapel $mapel): RedirectResponse
+    {
+        try {
+            $mapel->restore();
+
+            return redirect()
+                ->route('mapel.trash')
+                ->with('success', 'Mata pelajaran "' . $mapel->nama_mapel . '" berhasil dipulihkan.');
+        } catch (Throwable $e) {
+            return redirect()
+                ->route('mapel.trash')
+                ->with('error', 'Gagal memulihkan mata pelajaran. Silakan coba lagi.');
+        }
+    }
+
+    public function forceDelete(Mapel $mapel): RedirectResponse
+    {
+        try {
+            if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
+                Storage::disk('public')->delete($mapel->foto);
+            }
+
+            $mapel->forceDelete();
+
+            return redirect()
+                ->route('mapel.trash')
+                ->with('success', 'Mata pelajaran "' . $mapel->nama_mapel . '" berhasil dihapus permanen.');
+        } catch (Throwable $e) {
+            return redirect()
+                ->route('mapel.trash')
+                ->with('error', 'Gagal menghapus mata pelajaran. Silakan coba lagi.');
+        }
+    }
+
+    // ─── Bulk actions ────────────────────────────────────────────────────────────
+
     public function restoreAll(): RedirectResponse
     {
         try {
+            $count = Mapel::onlyTrashed()->count();
             Mapel::onlyTrashed()->restore();
 
             return redirect()
                 ->route('mapel.trash')
-                ->with('success', 'Semua mata pelajaran berhasil dipulihkan.');
+                ->with('success', $count . ' mata pelajaran berhasil dipulihkan.');
         } catch (Throwable $e) {
             return redirect()
                 ->route('mapel.trash')
@@ -139,7 +191,8 @@ class MapelController extends Controller
     {
         try {
             $mapels = Mapel::onlyTrashed()->get();
-            
+            $count  = $mapels->count();
+
             foreach ($mapels as $mapel) {
                 if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
                     Storage::disk('public')->delete($mapel->foto);
@@ -149,48 +202,11 @@ class MapelController extends Controller
 
             return redirect()
                 ->route('mapel.trash')
-                ->with('success', 'Semua mata pelajaran berhasil dihapus permanen.');
+                ->with('success', $count . ' mata pelajaran berhasil dihapus permanen.');
         } catch (Throwable $e) {
             return redirect()
                 ->route('mapel.trash')
                 ->with('error', 'Gagal menghapus semua mata pelajaran. Silakan coba lagi.');
         }
     }
-
-    public function restore($id): RedirectResponse
-{
-    try {
-        $mapel = Mapel::onlyTrashed()->findOrFail($id);
-        $mapel->restore();
-
-        return redirect()
-            ->route('mapel.trash')
-            ->with('success', 'Mata pelajaran berhasil dipulihkan.');
-    } catch (Throwable $e) {
-        return redirect()
-            ->route('mapel.trash')
-            ->with('error', 'Gagal memulihkan mata pelajaran. Silakan coba lagi.');
-    }
-}
-
-public function forceDelete($id): RedirectResponse
-{
-    try {
-        $mapel = Mapel::onlyTrashed()->findOrFail($id);
-
-        if ($mapel->foto && Storage::disk('public')->exists($mapel->foto)) {
-            Storage::disk('public')->delete($mapel->foto);
-        }
-
-        $mapel->forceDelete();
-
-        return redirect()
-            ->route('mapel.trash')
-            ->with('success', 'Mata pelajaran berhasil dihapus permanen.');
-    } catch (Throwable $e) {
-        return redirect()
-            ->route('mapel.trash')
-            ->with('error', 'Gagal menghapus mata pelajaran. Silakan coba lagi.');
-    }
-}
 }
