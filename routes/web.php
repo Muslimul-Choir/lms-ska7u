@@ -250,44 +250,33 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
 
     // Jadwal Belajar Routes
     Route::prefix('jadwalbelajar')->name('jadwalbelajar.')->controller(JadwalBelajarController::class)->group(function () {
-        Route::get('/trash',                    'trash')->name('trash');
-        Route::patch('/trash/{id}/restore',     'restore')->name('restore');
-        Route::delete('/trash/{id}/force',      'forceDelete')->name('force-delete');
-
-        Route::get('/',                         'index')->name('index');
-        Route::post('/',                        'store')->name('store');
-        Route::get('/{jadwalbelajar}/edit',    'edit')->name('edit');
-        Route::put('/{jadwalbelajar}',         'update')->name('update');
-        Route::delete('/{jadwalbelajar}',      'destroy')->name('destroy');
-    });
+    Route::get('/trash', 'trash')->name('trash');
+    Route::patch('/trash/{jadwalbelajar}/restore', 'restore')->name('restore');
+    Route::patch('/trash/restore-all', 'restoreAll')->name('restoreAll');
+    Route::delete('/trash/{jadwalbelajar}/force', 'forceDelete')->name('force-delete');
+    Route::delete('/trash/force-delete-all', 'forceDeleteAll')->name('force-delete-all');
+    Route::get('/', 'index')->name('index');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{jadwalbelajar}/edit', 'edit')->name('edit');
+    Route::put('/{jadwalbelajar}', 'update')->name('update');
+    Route::delete('/{jadwalbelajar}', 'destroy')->name('destroy');
+});
 
     // Pertemuan Routes
-    Route::prefix('pertemuan')->name('pertemuan.')->controller(PertemuanController::class)->group(function () {
-        Route::get('/trash', 'trash')->name('trash');
-        Route::patch('/trash/{id}/restore', 'restore')->name('restore');
-        Route::delete('/trash/{id}/force', 'forceDelete')->name('force-delete');
-
-        Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{pertemuan}', 'show')->name('show');
-        Route::get('/{pertemuan}/edit', 'edit')->name('edit');
-        Route::put('/{pertemuan}', 'update')->name('update');
-        Route::delete('/{pertemuan}', 'destroy')->name('destroy');
-    });
+    Route::get('pertemuan/trash', [PertemuanController::class, 'trash'])->name('pertemuan.trash');
+    Route::patch('pertemuan/trash/{id}/restore', [PertemuanController::class, 'restore'])->name('pertemuan.restore');
+    Route::delete('pertemuan/trash/{id}/force-delete', [PertemuanController::class, 'forceDelete'])->name('pertemuan.force-delete');
+    Route::patch('pertemuan/trash/restore-all', [PertemuanController::class, 'restoreAll'])->name('pertemuan.restoreAll');
+    Route::delete('pertemuan/trash/force-delete-all', [PertemuanController::class, 'forceDeleteAll'])->name('pertemuan.forceDeleteAll');
+    Route::resource('pertemuan', PertemuanController::class);
 
     // Absensi Routes
-    Route::prefix('absensi')->name('absensi.')->controller(AbsensiController::class)->group(function () {
-        Route::get('/trash', 'trash')->name('trash');
-        Route::patch('/trash/{id}/restore', 'restore')->name('restore');
-        Route::delete('/trash/{id}/force', 'forceDelete')->name('force-delete');
-
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{absensi}/edit', 'edit')->name('edit');
-        Route::put('/{absensi}', 'update')->name('update');
-        Route::delete('/{absensi}', 'destroy')->name('destroy');
-    });
+    Route::get('absensi/trash', [AbsensiController::class, 'trash'])->name('absensi.trash');
+    Route::patch('absensi/trash/{id}/restore', [AbsensiController::class, 'restore'])->name('absensi.restore');
+    Route::delete('absensi/trash/{id}/force-delete', [AbsensiController::class, 'forceDelete'])->name('absensi.force-delete');
+    Route::patch('absensi/trash/restore-all', [AbsensiController::class, 'restoreAll'])->name('absensi.restoreAll');
+    Route::delete('absensi/trash/force-delete-all', [AbsensiController::class, 'forceDeleteAll'])->name('absensi.forceDeleteAll');
+    Route::resource('absensi', AbsensiController::class);
 
     // Ruang Belajar (Lesson Viewer) Routes
     Route::get('/ruang-belajar/{jadwalbelajar}/{materi?}', [\App\Http\Controllers\RuangBelajarController::class, 'show'])->name('ruang-belajar.show');

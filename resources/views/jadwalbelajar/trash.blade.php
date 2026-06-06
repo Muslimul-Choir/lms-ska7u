@@ -15,6 +15,7 @@
 
             @if ($jadwals->total() > 0)
                 <div class="flex gap-2 flex-shrink-0">
+                    {{-- Restore All --}}
                     <form action="{{ route('jadwalbelajar.restoreAll') }}" method="POST" id="restoreAllForm">
                         @csrf
                         @method('PATCH')
@@ -26,7 +27,9 @@
                             Pulihkan Semua
                         </button>
                     </form>
-                    <form action="{{ route('jadwalbelajar.forceDeleteAll') }}" method="POST" id="forceDeleteAllForm">
+
+                    {{-- Force Delete All --}}
+                    <form action="{{ route('jadwalbelajar.force-delete-all') }}" method="POST" id="forceDeleteAllForm">
                         @csrf
                         @method('DELETE')
                         <button type="button" onclick="confirmForceDeleteAll(event)"
@@ -47,8 +50,7 @@
 
             {{-- Alert Success --}}
             @if (session('success'))
-                <div
-                    class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -57,8 +59,7 @@
                         </svg>
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
-                    <button onclick="this.parentElement.remove()"
-                        class="text-emerald-400 hover:text-emerald-700 transition">
+                    <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700 transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -118,31 +119,27 @@
                         </div>
 
                         {{-- Filter Hari --}}
-                        <div class="flex flex-col gap-1">
-                            <select name="hari"
-                                class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
-                                <option value="">Semua Hari</option>
-                                @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h)
-                                    <option value="{{ $h }}" {{ request('hari') === $h ? 'selected' : '' }}>{{ $h }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <select name="hari"
+                            class="rounded-xl border min-w-[120px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
+                            <option value="">Semua Hari</option>
+                            @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h)
+                                <option value="{{ $h }}" {{ request('hari') === $h ? 'selected' : '' }}>{{ $h }}</option>
+                            @endforeach
+                        </select>
 
                         {{-- Filter Kelas --}}
-                        <div class="flex flex-col gap-1">
-                            <select name="id_kelas"
-                                class="rounded-xl border min-w-[160px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
-                                <option value="">Semua Kelas</option>
-                                @foreach($kelasList as $kls)
-                                    <option value="{{ $kls->id }}" {{ request('id_kelas') == $kls->id ? 'selected' : '' }}>
-                                        {{ trim(($kls->Tingkatan->nama_tingkatan ?? '') . ' ' . ($kls->Jurusan->nama_jurusan ?? '') . ' ' . ($kls->Bagian->nama_bagian ?? '')) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <select name="id_kelas"
+                            class="rounded-xl border min-w-[160px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
+                            <option value="">Semua Kelas</option>
+                            @foreach($kelasList as $kls)
+                                <option value="{{ $kls->id }}" {{ request('id_kelas') == $kls->id ? 'selected' : '' }}>
+                                    {{ trim(($kls->Tingkatan->nama_tingkatan ?? '') . ' ' . ($kls->Jurusan->nama_jurusan ?? '') . ' ' . ($kls->Bagian->nama_bagian ?? '')) }}
+                                </option>
+                            @endforeach
+                        </select>
 
                         <button type="submit"
-                                class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
+                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
                             Cari
                         </button>
 
@@ -171,7 +168,7 @@
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Kegiatan / Mapel</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Guru</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Dihapus Pada</th>
-                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-52">Aksi</th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-40">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -230,30 +227,35 @@
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
+
                                             {{-- Restore --}}
                                             <form action="{{ route('jadwalbelajar.restore', $jadwal->id) }}" method="POST"
                                                 onsubmit="confirmRestore(event)">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
+                                                    title="Pulihkan"
                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-lg transition">
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                                     </svg>
                                                 </button>
                                             </form>
+
                                             {{-- Force Delete --}}
                                             <form action="{{ route('jadwalbelajar.force-delete', $jadwal->id) }}" method="POST"
                                                 onsubmit="confirmForceDelete(event)">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
+                                                    title="Hapus Permanen"
                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                 </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 </tr>

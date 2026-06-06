@@ -94,7 +94,7 @@
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest sr-only">Tingkat</label>
                         <select name="tingkat" id="filterTingkat"
                                 class="rounded-xl border min-w-[130px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
-                            <option value="">Semua Tingkat</option>
+                            <option value="">Pilih Tingkat</option>
                             @foreach ($tingkatanList as $tkt)
                                 <option value="{{ $tkt->id }}" {{ $tingkat == $tkt->id ? 'selected' : '' }}>
                                     {{ $tkt->nama_tingkatan }}
@@ -188,7 +188,7 @@
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkat atau Kelas</p>
+                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkat dan Kelas</p>
                         <p class="text-gray-300 text-xs">Silakan pilih tingkat atau kelas terlebih dahulu untuk
                             menampilkan jadwal belajar.</p>
                         <div
@@ -213,6 +213,28 @@
                                 <p class="text-xs text-gray-400 mt-0.5">Klik <span class="font-semibold text-amber-500">+</span> pada sel kosong untuk menambah jadwal</p>
                             @endif
                         </div>
+
+                        {{-- Info kelas yang sedang difilter --}}
+                        @if($idKelas)
+                            @php
+                                $kelasAktif = $kelasList->firstWhere('id', $idKelas);
+                                $namaKelasAktif = $kelasAktif
+                                    ? trim(
+                                        ($kelasAktif->Tingkatan->nama_tingkatan ?? '') . ' ' .
+                                        ($kelasAktif->Jurusan->nama_jurusan ?? '') . ' ' .
+                                        ($kelasAktif->Bagian->nama_bagian ?? '')
+                                    )
+                                    : '';
+                            @endphp
+                            @if($namaKelasAktif)
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                    <span class="text-amber-700 text-xs font-semibold">{{ $namaKelasAktif }}</span>
+                                </div>
+                            @endif
+                        @endif
                     </div>
 
                     <div class="overflow-x-auto">
@@ -375,7 +397,7 @@
         </div>
     </div>
 
-     @include('components.alerts.confirm-delete')
+    @include('components.alerts.confirm-delete')
     @include('components.alerts.confirm-update')
     @include('components.alerts.success')
     @include('components.alerts.error')
@@ -397,6 +419,26 @@
             }
 
             @if($isAdmin)
+            /* ================================================================
+             *  HELPER: lock / unlock select (visual only, value tetap terkirim)
+             * ================================================================ */
+            function lockSelect(el, lock) {
+                if (lock) {
+                    el.style.pointerEvents = 'none';
+                    el.style.opacity       = '0.6';
+                    el.style.cursor        = 'not-allowed';
+                    el.title               = 'Kelas sudah ditentukan dari filter';
+                } else {
+                    el.style.pointerEvents = '';
+                    el.style.opacity       = '';
+                    el.style.cursor        = '';
+                    el.title               = '';
+                }
+            }
+
+            /* ── ID kelas yang sedang aktif di filter ── */
+            const ACTIVE_KELAS_ID = "{{ $idKelas ?? '' }}";
+
             /* ── Modal Create ── */
             function openModalCreate(hari, idJam) {
                 document.getElementById('createHari').value        = hari;
@@ -410,9 +452,14 @@
                 };
                 document.getElementById('createJamDisplay').value = jamMap[idJam] ?? idJam;
 
-                const idKelasFilter = "{{ $idKelas ?? '' }}";
-                if (idKelasFilter && document.getElementById('createIdKelas')) {
-                    document.getElementById('createIdKelas').value = idKelasFilter;
+                /* Auto-isi kelas dari filter yang sedang aktif */
+                const kelasSelect = document.getElementById('createIdKelas');
+                if (ACTIVE_KELAS_ID && kelasSelect) {
+                    kelasSelect.value = ACTIVE_KELAS_ID;
+                    lockSelect(kelasSelect, true);
+                } else if (kelasSelect) {
+                    kelasSelect.value = '';
+                    lockSelect(kelasSelect, false);
                 }
 
                 document.getElementById('createIdGuruMapel').value = '';
@@ -431,15 +478,27 @@
             function openModalEdit(button) {
                 const d = button.dataset;
 
-                document.getElementById('formEdit').action              = `/jadwalbelajar/${d.id}`;
-                document.getElementById('editHari').value               = d.hari          ?? '';
-                document.getElementById('editIdJam').value              = d.idJam         ?? '';
-                document.getElementById('editIdKelas').value            = d.idKelas       ?? '';
-                document.getElementById('editNamaKegiatan').value       = d.namaKegiatan  ?? '';
-                document.getElementById('editIdGuruMapel').value        = d.idGuruMapel   ?? '';
+                document.getElementById('formEdit').action        = `/jadwalbelajar/${d.id}`;
+                document.getElementById('editHari').value         = d.hari         ?? '';
+                document.getElementById('editIdJam').value        = d.idJam        ?? '';
+                document.getElementById('editNamaKegiatan').value = d.namaKegiatan ?? '';
+                document.getElementById('editIdGuruMapel').value  = d.idGuruMapel  ?? '';
                 syncMapelFromGuruEdit();
+
                 const mapelSelect = document.getElementById('editIdMapel');
                 if (!mapelSelect.disabled) mapelSelect.value = d.idMapel ?? '';
+
+                /* Auto-isi kelas:
+                 *  - Jika filter kelas aktif → pakai filter (dan lock supaya tidak bisa diubah)
+                 *  - Jika tidak ada filter    → pakai kelas dari data jadwal itu sendiri */
+                const editKelasSelect = document.getElementById('editIdKelas');
+                if (ACTIVE_KELAS_ID) {
+                    editKelasSelect.value = ACTIVE_KELAS_ID;
+                    lockSelect(editKelasSelect, true);
+                } else {
+                    editKelasSelect.value = d.idKelas ?? '';
+                    lockSelect(editKelasSelect, false);
+                }
 
                 document.getElementById('modalEdit').classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');
