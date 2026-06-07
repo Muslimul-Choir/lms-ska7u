@@ -162,6 +162,20 @@ class JadwalBelajarController extends Controller
                 ->with('error', 'Jadwal pada hari, jam, dan kelas tersebut sudah ada.');
         }
 
+        // Auto-generate nama_kegiatan if not provided
+        if (empty($validated['nama_kegiatan'])) {
+            $kelas = Kelas::with(['tingkatan', 'jurusan', 'bagian'])->find($validated['id_kelas']);
+            $guruMapel = $validated['id_guru_mapel'] ? GuruMapel::with(['guru', 'mapel'])->find($validated['id_guru_mapel']) : null;
+            
+            if ($guruMapel && $kelas) {
+                $namaGuru = $guruMapel->guru?->nama_lengkap ?? 'Guru';
+                $namaMapel = $guruMapel->mapel?->nama_mapel ?? 'Mapel';
+                $namaKelas = $kelas->tingkatan?->nama_tingkatan . ' ' . $kelas->jurusan?->nama_jurusan . ' ' . $kelas->bagian?->nama_bagian;
+                
+                $validated['nama_kegiatan'] = $namaGuru . ' - ' . $namaMapel . ' - ' . $namaKelas;
+            }
+        }
+
         JadwalBelajar::create($validated);
 
         return back()->with('success', 'Jadwal berhasil ditambahkan.');
@@ -193,6 +207,20 @@ class JadwalBelajarController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Jadwal pada hari, jam, dan kelas tersebut sudah ada.');
+        }
+
+        // Auto-generate nama_kegiatan if not provided
+        if (empty($validated['nama_kegiatan'])) {
+            $kelas = Kelas::with(['tingkatan', 'jurusan', 'bagian'])->find($validated['id_kelas']);
+            $guruMapel = $validated['id_guru_mapel'] ? GuruMapel::with(['guru', 'mapel'])->find($validated['id_guru_mapel']) : null;
+            
+            if ($guruMapel && $kelas) {
+                $namaGuru = $guruMapel->guru?->nama_lengkap ?? 'Guru';
+                $namaMapel = $guruMapel->mapel?->nama_mapel ?? 'Mapel';
+                $namaKelas = $kelas->tingkatan?->nama_tingkatan . ' ' . $kelas->jurusan?->nama_jurusan . ' ' . $kelas->bagian?->nama_bagian;
+                
+                $validated['nama_kegiatan'] = $namaGuru . ' - ' . $namaMapel . ' - ' . $namaKelas;
+            }
         }
 
         $jadwalbelajar->update($validated);

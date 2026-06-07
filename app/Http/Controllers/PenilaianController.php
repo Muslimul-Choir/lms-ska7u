@@ -64,12 +64,22 @@ class PenilaianController extends Controller
 
             DB::beginTransaction();
 
+            // Determine id_guru: only set if user is actually a guru
+            $idGuru = null;
+            if ($user->role === 'guru' && $user->Guru) {
+                $idGuru = $user->Guru->id;
+            }
+
+            // Get nilai_maksimal from tugas for snapshot
+            $nilaiMaksimal = $tugas->nilai_maksimal ?? 100.00;
+
             // Create or update penilaian (Req 3.6, 3.7, 3.8)
             $penilaian = Penilaian::updateOrCreate(
                 ['id_pengumpulan_tugas' => $pengumpulan->id],
                 [
-                    'id_guru' => $user->Guru->id ?? null,
+                    'id_guru' => $idGuru,
                     'nilai' => $request->nilai,
+                    'nilai_maksimal_snapshot' => $nilaiMaksimal,
                     'catatan_guru' => $request->catatan_guru,
                 ]
             );
@@ -87,6 +97,12 @@ class PenilaianController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Penilaian quick-store error: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menyimpan penilaian.',
