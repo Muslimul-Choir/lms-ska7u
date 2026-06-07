@@ -157,13 +157,10 @@
                                     class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                                     Kelas</th>
                                 <th
-                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden md:table-cell">
-                                    Jurusan</th>
-                                <th
-                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden lg:table-cell">
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest ">
                                     Tahun Ajaran</th>
                                 <th
-                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden lg:table-cell">
+                                    class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest ">
                                     Wali Kelas</th>
                                 <th
                                     class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-24">
@@ -177,35 +174,14 @@
                                         {{ str_pad($kelas->firstItem() + $index, 3, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                                <span
-                                                    class="text-[11px] font-extrabold text-white tracking-tight leading-none">
-                                                    {{ $k->Tingkatan?->nama_tingkatan ?? '?' }}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <p class="font-semibold text-gray-800 text-sm leading-tight">
-                                                    {{ $k->Tingkatan?->nama_tingkatan ?? '-' }}
-                                                    {{ $k->Bagian?->nama_bagian ?? '-' }}
-                                                </p>
-                                                <p class="text-xs text-gray-400 mt-0.5 md:hidden">
-                                                    {{ $k->Jurusan?->nama_jurusan ?? '-' }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 hidden md:table-cell">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
-                                            {{ $k->Jurusan?->nama_jurusan ?? '-' }}
+                                        <span class="bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full">
+                                        {{ $k->nama_kelas ?? '-' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-gray-600 text-sm hidden lg:table-cell">
+                                    <td class="px-6 py-4 text-gray-600 text-sm">
                                         {{ $k->TahunAjaran?->nama_tahun ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 hidden lg:table-cell">
+                                    <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
                                             <div
                                                 class="w-7 h-7 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0">

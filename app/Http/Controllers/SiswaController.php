@@ -7,11 +7,13 @@ use App\Http\Requests\Siswa\StoreSiswaRequest;
 use App\Http\Requests\Siswa\UpdateSiswaRequest;
 use App\Imports\Siswa\SiswaImport;
 use App\Mail\Siswa\KirimAkunSiswa;
+use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\User;
 use App\Traits\GeneratesPasswordFromBirthDate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -24,36 +26,59 @@ class SiswaController extends Controller
 {
     use GeneratesPasswordFromBirthDate;
 
+    private function getGuruWaliKelas(): ?Guru
+    {
+        $user = Auth::user();
+        if ($user->role !== 'guru') return null;
+
+        $guru = Guru::where('id_user', $user->id)->first();
+        if (!$guru) return null;
+
+        if (!in_array($guru->status_pengajar, ['walikelas', 'keduanya'])) return null;
+
+        return $guru;
+    }
+
     // ── INDEX ────────────────────────────────────────────────
     public function index(Request $request)
-    {
-        $query = Siswa::with(['Kelas.Tingkatan', 'Kelas.Jurusan', 'Kelas.Bagian']);
+{
+    $guruWali = $this->getGuruWaliKelas();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
+    $query = Siswa::with(['Kelas.Tingkatan', 'Kelas.Jurusan', 'Kelas.Bagian']);
 
-        if ($request->filled('id_kelas')) {
-            $query->where('id_kelas', $request->id_kelas);
-        }
-
-        if ($request->filled('agama')) {
-            $query->where('agama', $request->agama);
-        }
-
-        $siswas     = $query->latest()->paginate(10)->withQueryString();
-        $kelasList  = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
-            ->get()
-            ->sortBy('nama_kelas')
-            ->values();
-        $trashCount = Siswa::onlyTrashed()->count();
-
-        return view('siswa.index', compact('siswas', 'kelasList', 'trashCount'));
+    // Jika walikelas: paksa filter ke kelasnya saja
+    if ($guruWali) {
+        $kelasWali = $guruWali->kelas; // hasOne
+        $query->where('id_kelas', $kelasWali?->id ?? 0);
     }
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('nama_lengkap', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        });
+    }
+
+    if (!$guruWali && $request->filled('id_kelas')) {
+        $query->where('id_kelas', $request->id_kelas);
+    }
+
+    if ($request->filled('agama')) {
+        $query->where('agama', $request->agama);
+    }
+
+    $siswas     = $query->latest()->paginate(10)->withQueryString();
+    $kelasList  = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
+        ->get()
+        ->sortBy('nama_kelas')
+        ->values();
+    $trashCount = $guruWali
+        ? Siswa::onlyTrashed()->where('id_kelas', $guruWali->kelas?->id ?? 0)->count()
+        : Siswa::onlyTrashed()->count();
+
+    return view('siswa.index', compact('siswas', 'kelasList', 'trashCount', 'guruWali'));
+}
 
     // ── STORE ────────────────────────────────────────────────
     public function store(StoreSiswaRequest $request)
@@ -288,33 +313,39 @@ class SiswaController extends Controller
 
     // ── TRASH ────────────────────────────────────────────────
     public function trash(Request $request)
-    {
-        $query = Siswa::onlyTrashed()->with('Kelas');
+{
+    $guruWali = $this->getGuruWaliKelas();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
+    $query = Siswa::onlyTrashed()->with('Kelas');
 
-        if ($request->filled('id_kelas')) {
-            $query->where('id_kelas', $request->id_kelas);
-        }
-
-        if ($request->filled('agama')) {
-            $query->where('agama', $request->agama);
-        }
-
-        $siswas    = $query->latest('deleted_at')->paginate(15)->withQueryString();
-        $kelasList = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
-            ->get()
-            ->sortBy('nama_kelas')
-            ->values();
-
-        return view('siswa.trash', compact('siswas', 'kelasList'));
+    if ($guruWali) {
+        $query->where('id_kelas', $guruWali->kelas?->id ?? 0);
     }
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('nama_lengkap', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        });
+    }
+
+    if (!$guruWali && $request->filled('id_kelas')) {
+        $query->where('id_kelas', $request->id_kelas);
+    }
+
+    if ($request->filled('agama')) {
+        $query->where('agama', $request->agama);
+    }
+
+    $siswas    = $query->latest('deleted_at')->paginate(15)->withQueryString();
+    $kelasList = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])
+        ->get()
+        ->sortBy('nama_kelas')
+        ->values();
+
+    return view('siswa.trash', compact('siswas', 'kelasList', 'guruWali'));
+}
 
     // ── RESTORE satu ─────────────────────────────────────────
     public function restore(int $id)
