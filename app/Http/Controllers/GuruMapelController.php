@@ -7,7 +7,6 @@ use App\Http\Requests\GuruMapel\UpdateGuruMapelRequest;
 use App\Models\GuruMapel;
 use App\Models\Mapel;
 use App\Models\Guru;
-use App\Models\Kelas;
 use App\Models\Semester;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -21,15 +20,11 @@ class GuruMapelController extends Controller
 
         $mapels    = Mapel::all();
         $gurus     = Guru::all();
-        $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
         $semesters = Semester::all();
 
         $guruMapels = GuruMapel::with([
                 'Mapel',
                 'Guru',
-                'Kelas.Tingkatan',
-                'Kelas.Jurusan',
-                'Kelas.Bagian',
                 'Semester',
             ])
             ->when($search, function ($query, $search) {
@@ -52,24 +47,12 @@ class GuruMapelController extends Controller
                         'id'          => $item->id,
                         'id_mapel'    => $item->id_mapel,
                         'id_guru'     => $item->id_guru,
-                        'id_kelas'    => $item->id_kelas,
                         'id_semester' => $item->id_semester,
                         'mapel' => [
                             'nama_mapel' => $item->Mapel->nama_mapel ?? '-',
                         ],
                         'guru' => [
                             'nama_lengkap' => $item->Guru->nama_lengkap ?? '-',
-                        ],
-                        'kelas' => [
-                            'tingkatan' => [
-                                'nama_tingkatan' => $item->Kelas->Tingkatan->nama_tingkatan ?? ''
-                            ],
-                            'jurusan' => [
-                                'nama_jurusan' => $item->Kelas->Jurusan->nama_jurusan ?? ''
-                            ],
-                            'bagian' => [
-                                'nama_bagian' => $item->Kelas->Bagian->nama_bagian ?? ''
-                            ],
                         ],
                         'semester' => [
                             'nama_semester' => $item->Semester->nama_semester ?? '-',
@@ -86,7 +69,6 @@ class GuruMapelController extends Controller
             'search',
             'mapels',
             'gurus',
-            'kelas',
             'semesters',
             'trashCount'
         ));
@@ -96,13 +78,11 @@ class GuruMapelController extends Controller
     {
         $mapels    = Mapel::all();
         $gurus     = Guru::all();
-        $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
         $semesters = Semester::all();
 
         return view('guru_mapel.create', compact(
             'mapels',
             'gurus',
-            'kelas',
             'semesters'
         ));
     }
@@ -121,9 +101,6 @@ class GuruMapelController extends Controller
         $guru_mapel->load([
             'Mapel',
             'Guru',
-            'Kelas.Tingkatan',
-            'Kelas.Jurusan',
-            'Kelas.Bagian',
             'Semester',
         ]);
 
@@ -134,14 +111,12 @@ class GuruMapelController extends Controller
     {
         $mapels    = Mapel::all();
         $gurus     = Guru::all();
-        $kelas     = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->get();
         $semesters = Semester::all();
 
         return view('guru_mapel.edit', compact(
             'guru_mapel',
             'mapels',
             'gurus',
-            'kelas',
             'semesters'
         ));
     }
@@ -167,43 +142,41 @@ class GuruMapelController extends Controller
     }
 
     public function trash(Request $request): View
-{
-    $search = $request->search;
-
-    $guruMapels = GuruMapel::onlyTrashed()
-        ->with([
-            'Mapel',
-            'Guru',
-            'Kelas.Tingkatan',
-            'Kelas.Jurusan',
-            'Kelas.Bagian',
-            'Semester',
-        ])
-        ->when($search, function ($query) use ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('Mapel', function ($sub) use ($search) {
-                    $sub->where('nama_mapel', 'like', "%{$search}%");
-                })
-                ->orWhereHas('Guru', function ($sub) use ($search) {
-                    $sub->where('nama_lengkap', 'like', "%{$search}%");
-                })
-                ->orWhereHas('Semester', function ($sub) use ($search) {
-                    $sub->where('nama_semester', 'like', "%{$search}%");
-                });
-            });
-        })
-        ->latest('deleted_at')
-        ->paginate(10)
-        ->withQueryString();
-
-    return view('guru_mapel.trash', compact('guruMapels'));
-}
-
-    public function restore($id): RedirectResponse
     {
-        GuruMapel::onlyTrashed()
-            ->findOrFail($id)
-            ->restore();
+        $search = $request->search;
+
+        $guruMapels = GuruMapel::onlyTrashed()
+            ->with([
+                'Mapel',
+                'Guru',
+                'Semester',
+            ])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('Mapel', function ($sub) use ($search) {
+                        $sub->where('nama_mapel', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('Guru', function ($sub) use ($search) {
+                        $sub->where('nama_lengkap', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('Semester', function ($sub) use ($search) {
+                        $sub->where('nama_semester', 'like', "%{$search}%");
+                    });
+                });
+            })
+            ->latest('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('guru_mapel.trash', compact('guruMapels', 'search'));
+    }
+
+    /**
+     * Restore single — pakai model injection via Route::bind (withTrashed sudah ditangani).
+     */
+    public function restore(GuruMapel $guru_mapel): RedirectResponse
+    {
+        $guru_mapel->restore();
 
         return redirect()
             ->route('guru_mapel.trash')
@@ -219,11 +192,12 @@ class GuruMapelController extends Controller
             ->with('success', 'Semua Guru Mapel berhasil dipulihkan.');
     }
 
-    public function forceDelete($id): RedirectResponse
+    /**
+     * Force delete single — pakai model injection via Route::bind (withTrashed sudah ditangani).
+     */
+    public function forceDelete(GuruMapel $guru_mapel): RedirectResponse
     {
-        GuruMapel::onlyTrashed()
-            ->findOrFail($id)
-            ->forceDelete();
+        $guru_mapel->forceDelete();
 
         return redirect()
             ->route('guru_mapel.trash')

@@ -7,21 +7,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GuruMapel extends Model
 {
-    use SoftDeletes; // Mengaktifkan deleted_at
+    use SoftDeletes;
 
-    // Nama tabel
     protected $table = 'guru_mapel';
     protected $primaryKey = 'id';
 
-    // Kolom yang bisa diisi massal
     protected $fillable = [
         'id_mapel',
         'id_guru',
-        'id_kelas',
         'id_semester',
     ];
 
-    // Kolom tanggal yang otomatis diubah menjadi Carbon
     protected $dates = [
         'created_at',
         'updated_at',
@@ -36,11 +32,6 @@ class GuruMapel extends Model
     public function Guru()
     {
         return $this->belongsTo(Guru::class, 'id_guru');
-    }
-
-    public function Kelas()
-    {
-        return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 
     public function Semester()
