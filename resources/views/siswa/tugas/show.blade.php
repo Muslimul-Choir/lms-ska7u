@@ -63,19 +63,24 @@
         <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;padding:14px 20px 0;">📄 File Tugas</div>
         <div style="padding:12px 20px 20px;">
             @if($tugas->tipe_file === 'link')
-                <a href="{{ $tugas->file_url }}" target="_blank" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border-radius:12px;text-decoration:none;font-size:14px;font-weight:700;">
+                <a href="{{ $tugas->file_url }}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border-radius:12px;text-decoration:none;font-size:14px;font-weight:700;">
                     <span>🔗 Buka Tautan</span>
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </a>
             @elseif($tugas->tipe_file === 'video')
                 <div style="background:#000;border-radius:10px;overflow:hidden;aspect-ratio:16/9;margin-bottom:12px;">
-                    <video controls style="width:100%;height:100%;display:block;"><source src="{{ asset($tugas->file_url) }}" type="video/mp4"></video>
+                    <video controls style="width:100%;height:100%;display:block;"><source src="{{ \Storage::disk('public')->exists($tugas->file_url) ? asset('storage/'.$tugas->file_url) : asset($tugas->file_url) }}" type="video/mp4">Browser Anda tidak mendukung video.</video>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;background:#f8faff;border:1.5px solid #dbeafe;border-radius:12px;padding:14px 16px;">
+                    <span style="font-size:28px;">🎥</span>
+                    <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#0f172a;word-break:break-all;">{{ basename($tugas->file_url) }}</div><div style="font-size:11px;color:#64748b;margin-top:2px;">File Video</div></div>
+                    <a href="{{ \Storage::disk('public')->exists($tugas->file_url) ? asset('storage/'.$tugas->file_url) : asset($tugas->file_url) }}" download style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1e40af;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">⬇️ Unduh</a>
                 </div>
             @else
                 <div style="display:flex;align-items:center;gap:12px;background:#f8faff;border:1.5px solid #dbeafe;border-radius:12px;padding:14px 16px;">
                     <span style="font-size:30px;">📄</span>
-                    <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#0f172a;word-break:break-all;">{{ basename($tugas->file_url) }}</div></div>
-                    <a href="{{ asset($tugas->file_url) }}" download style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1e40af;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">⬇️ Unduh</a>
+                    <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#0f172a;word-break:break-all;">{{ basename($tugas->file_url) }}</div><div style="font-size:11px;color:#64748b;margin-top:2px;">File Dokumen</div></div>
+                    <a href="{{ \Storage::disk('public')->exists($tugas->file_url) ? asset('storage/'.$tugas->file_url) : asset($tugas->file_url) }}" download style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1e40af;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">⬇️ Unduh</a>
                 </div>
             @endif
         </div>
@@ -128,13 +133,23 @@
                         <div style="color:#854d0e;font-size:13px;"><strong>Menunggu Penilaian</strong><br><span style="font-size:12px;">Tugas Anda sedang diperiksa oleh pengajar.</span></div>
                     </div>
                     @if(!$isPast || $tugas->allow_late)
-                    <form action="{{ route('siswa.tugas.store', $tugas->id) }}" method="POST" enctype="multipart/form-data" style="border-top:1px solid #f1f5f9;padding-top:14px;">
+                    <form action="{{ route('siswa.tugas.store', $tugas->id) }}" method="POST" enctype="multipart/form-data" style="border-top:1px solid #f1f5f9;padding-top:14px;" onsubmit="return confirmSubmit(event, 'edit')">
                         @csrf
                         <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;">📝 Edit Pengumpulan</div>
                         @if($tugas->tipe_file === 'link')
                             <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Tautan Jawaban</label><input type="url" name="file_url" value="{{ old('file_url',$submission->file_url) }}" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;" placeholder="https://..."></div>
                         @elseif($tugas->tipe_file !== 'tanpa')
-                            <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Unggah File Baru</label><input type="file" name="file_url" style="width:100%;font-size:13px;"></div>
+                            <div style="margin-bottom:12px;">
+                                <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Unggah File Baru</label>
+                                @if($submission->file_url && !str_starts_with($submission->file_url, 'http'))
+                                <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;margin-bottom:8px;font-size:12px;color:#166534;">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span>File saat ini: <strong>{{ basename($submission->file_url) }}</strong></span>
+                                </div>
+                                @endif
+                                <input type="file" name="file_upload" id="file-edit-upload" accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png" style="width:100%;font-size:13px;" onchange="showFileName(this, 'file-edit-name')">
+                                <p id="file-edit-name" style="font-size:11px;color:#94a3b8;margin-top:4px;">PDF, Docx, Zip, Gambar (Maks 50MB)</p>
+                            </div>
                         @endif
                         <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Catatan (Opsional)</label><textarea name="catatan" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;resize:vertical;">{{ old('catatan',$submission->catatan) }}</textarea></div>
                         <button type="submit" style="width:100%;padding:12px;background:linear-gradient(135deg,#6B1A2B,#9B3045);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">💾 Simpan Perubahan</button>
@@ -155,13 +170,17 @@
                         <div style="color:#92400e;font-size:13px;"><strong>Pengumpulan Terlambat Diizinkan</strong><br><span style="font-size:12px;">Batas waktu telah berakhir, namun Anda masih dapat mengumpulkan.</span></div>
                     </div>
                     @endif
-                    <form action="{{ route('siswa.tugas.store', $tugas->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('siswa.tugas.store', $tugas->id) }}" method="POST" enctype="multipart/form-data" onsubmit="return confirmSubmit(event, 'new')">
                         @csrf
                         <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;">📝 Form Pengumpulan Tugas</div>
                         @if($tugas->tipe_file === 'link')
                             <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Tautan Jawaban <span style="color:#ef4444;">*</span></label><input type="url" name="file_url" required style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;" placeholder="https://..."></div>
                         @elseif($tugas->tipe_file !== 'tanpa')
-                            <div style="margin-bottom:12px;"><label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Pilih File Jawaban <span style="color:#ef4444;">*</span></label><input type="file" name="file_url" required style="width:100%;font-size:13px;"><p style="font-size:11px;color:#94a3b8;margin-top:4px;">PDF, Docx, Zip, Gambar (Maks 50MB)</p></div>
+                            <div style="margin-bottom:12px;">
+                                <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Pilih File Jawaban <span style="color:#ef4444;">*</span></label>
+                                <input type="file" name="file_upload" id="file-new-upload" required accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png" style="width:100%;font-size:13px;" onchange="showFileName(this, 'file-new-name')">
+                                <p id="file-new-name" style="font-size:11px;color:#94a3b8;margin-top:4px;">PDF, Docx, Zip, Gambar (Maks 50MB)</p>
+                            </div>
                         @endif
                         <div style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Catatan (Opsional)</label><textarea name="catatan" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;resize:vertical;" placeholder="Catatan untuk pengajar..."></textarea></div>
                         <button type="submit" style="width:100%;padding:12px;background:linear-gradient(135deg,#6B1A2B,#9B3045);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">📤 Kirim Tugas</button>
@@ -172,4 +191,49 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+function showFileName(input, targetId) {
+    const target = document.getElementById(targetId);
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const isTooBig = sizeMB > 50;
+        target.innerHTML = isTooBig 
+            ? `<span style="color:#ef4444;">⚠️ File terlalu besar (${sizeMB} MB). Maksimal 50 MB!</span>`
+            : `✓ Dipilih: <strong>${file.name}</strong> (${sizeMB} MB)`;
+        target.style.color = isTooBig ? '#ef4444' : '#166534';
+    }
+}
+
+function confirmSubmit(event, type) {
+    event.preventDefault();
+    const form = event.target;
+    
+    const title = type === 'edit' ? 'Simpan Perubahan?' : 'Kirim Tugas?';
+    const text = type === 'edit' 
+        ? 'Perubahan pengumpulan tugas akan disimpan.' 
+        : 'Pastikan semua data sudah benar. Tugas akan dikirim ke pengajar.';
+    
+    Swal.fire({
+        title: title,
+        text: text,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#6B1A2B',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: type === 'edit' ? '💾 Ya, Simpan' : '📤 Ya, Kirim',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+    
+    return false;
+}
+</script>
+@endpush
 </x-student-layout>

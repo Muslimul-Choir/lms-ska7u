@@ -86,12 +86,14 @@
                     </div>
                 </div>
 
-                <form method="GET" action="{{ route('jadwalbelajar.index') }}"
-                    class="flex flex-wrap items-center gap-2">
+                <form id="formFilterJadwal" method="GET" action="{{ route('jadwalbelajar.index') }}"
+                    class="flex flex-wrap items-end gap-2">
 
                     {{-- Filter Tingkat --}}
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest sr-only">Tingkat</label>
+                        <label for="filterTingkat" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            Tingkat
+                        </label>
                         <select name="tingkat" id="filterTingkat"
                                 class="rounded-xl border min-w-[130px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
                             <option value="">Semua Tingkat</option>
@@ -101,11 +103,21 @@
                                 </option>
                             @endforeach
                         </select>
+                        <div class="h-4 mt-0.5">
+                            <p id="tingkatHintMsg" class="text-[10px] text-amber-500 font-medium flex items-center gap-1 {{ $tingkat && !$idKelas ? '' : 'hidden' }}">
+                                <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                Jangan lupa pilih kelas juga!
+                            </p>
+                        </div>
                     </div>
 
                     {{-- Filter Kelas --}}
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest sr-only">Kelas</label>
+                    <div class="flex flex-col gap-1 justify-end" id="kelasWrapper">
+                        <label for="filterKelas" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            Kelas <span class="text-red-400">*</span>
+                        </label>
                         <select name="id_kelas" id="filterKelas"
                                 class="rounded-xl border min-w-[180px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
                                 @if($isGuru && $kelasList->isEmpty()) disabled @endif>
@@ -126,28 +138,43 @@
                                 </option>
                             @endforeach
                         </select>
+                        {{-- Pesan validasi kelas --}}
+                        <div class="h-4 mt-0.5">
+                            <p id="kelasValidationMsg" class="hidden text-red-500 text-[10px] font-medium flex items-center gap-1">
+                                <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                Pilih kelas terlebih dahulu
+                            </p>
+                        </div>
                     </div>
 
-                    <button type="submit"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        Cari Jadwal
-                    </button>
-
-                    @if ($idKelas || $tingkat)
-                        <a href="{{ route('jadwalbelajar.index') }}"
-                           class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-[10px] invisible select-none">x</div>{{-- label spacer --}}
+                        <div class="flex items-center gap-2">
+                        <button type="submit" id="btnCariJadwal"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            Reset
-                        </a>
-                    @endif
+                            Cari Jadwal
+                        </button>
+
+                        @if ($idKelas || $tingkat)
+                            <a href="{{ route('jadwalbelajar.index') }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                </svg>
+                                Reset
+                            </a>
+                        @endif
+                        </div>{{-- /flex items-center --}}
+                        <div class="h-4 mt-0.5"></div>{{-- bottom spacer --}}
+                    </div>{{-- /flex flex-col --}}
                 </form>
             </div>
 
@@ -178,7 +205,9 @@
                         </div>
                     </div>
                 </div>
-            @elseif (!$idKelas && !$tingkat && !$isGuru)
+
+            @elseif (!$idKelas && !$isGuru)
+                {{-- Tampilkan state kosong jika kelas belum dipilih (baik ada/tidak tingkat) --}}
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-20 text-center">
                     <div class="flex flex-col items-center gap-3">
                         <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
@@ -188,9 +217,14 @@
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkat atau Kelas</p>
-                        <p class="text-gray-300 text-xs">Silakan pilih tingkat atau kelas terlebih dahulu untuk
-                            menampilkan jadwal belajar.</p>
+                        <p class="text-gray-500 text-sm font-semibold">Pilih Kelas Terlebih Dahulu</p>
+                        <p class="text-gray-300 text-xs max-w-xs">
+                            @if($tingkat)
+                                Tingkat sudah dipilih. Silakan pilih kelas dari daftar di atas untuk menampilkan jadwal belajar.
+                            @else
+                                Silakan pilih tingkat dan kelas terlebih dahulu untuk menampilkan jadwal belajar.
+                            @endif
+                        </p>
                         <div
                             class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-left text-xs text-amber-700 max-w-sm">
                             <p class="font-semibold mb-2">📚 Setup Jadwal Belajar untuk Guru Baru:</p>
@@ -201,8 +235,9 @@
                         </div>
                     </div>
                 </div>
+
             @else
-                {{-- Jadwal Grid Card --}}
+                {{-- Jadwal Grid Card — hanya tampil jika $idKelas ada --}}
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
                     {{-- Card Header --}}
@@ -358,7 +393,7 @@
                     </div>
                 </div>
 
-                @if($jadwals->isEmpty() && ($idKelas || $tingkat))
+                @if($jadwals->isEmpty() && $idKelas)
                     <div class="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4">
                         <div class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none"
@@ -367,10 +402,11 @@
                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <div>
-                                <p class="text-blue-900 text-sm font-semibold">Belum ada jadwal belajar di kelas ini
-                                </p>
-                                <p class="text-blue-700 text-xs mt-1">Klik tombol <strong>+</strong> pada sel kosong di
-                                    atas untuk menambah jadwal belajar pertama.</p>
+                                <p class="text-blue-900 text-sm font-semibold">Belum ada jadwal belajar di kelas ini</p>
+                                @if($isAdmin)
+                                    <p class="text-blue-700 text-xs mt-1">Klik tombol <strong>+</strong> pada sel kosong di
+                                        atas untuk menambah jadwal belajar pertama.</p>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -528,10 +564,15 @@
             });
             @endif
 
-            /* ── Filter Kelas by Tingkat ── */
+            /* ================================================================
+             *  FILTER: Sinkronisasi Tingkat → Kelas
+             * ================================================================ */
             const filterTingkat = document.getElementById('filterTingkat');
             const filterKelas   = document.getElementById('filterKelas');
+            const btnCari       = document.getElementById('btnCariJadwal');
+            const validasiMsg   = document.getElementById('kelasValidationMsg');
 
+            /* Tampilkan/sembunyikan opsi kelas sesuai tingkat yang dipilih */
             function filterKelasByTingkat(selectedTingkat) {
                 filterKelas.querySelectorAll('option').forEach(opt => {
                     if (!opt.value) return;
@@ -539,13 +580,69 @@
                     opt.style.display = match ? '' : 'none';
                     if (!match && opt.selected) filterKelas.value = '';
                 });
+                updateSubmitState();
             }
 
+            /* Aktifkan/nonaktifkan tombol submit berdasarkan pilihan kelas */
+            function updateSubmitState() {
+                const hasKelas = !!filterKelas.value;
+                if (btnCari) {
+                    btnCari.disabled      = !hasKelas;
+                    btnCari.style.opacity = hasKelas ? '' : '0.5';
+                    btnCari.style.cursor  = hasKelas ? '' : 'not-allowed';
+                }
+            }
+
+            /* Hint "jangan lupa pilih kelas" di bawah select tingkat */
+            const tingkatHintMsg = document.getElementById('tingkatHintMsg');
+
+            function updateTingkatHint() {
+                const hasTingkat = !!filterTingkat.value;
+                const hasKelas   = !!filterKelas.value;
+                if (tingkatHintMsg) {
+                    tingkatHintMsg.classList.toggle('hidden', !hasTingkat || hasKelas);
+                }
+            }
+
+            /* Jalankan saat halaman load */
             filterKelasByTingkat(filterTingkat.value);
+            updateTingkatHint();
+
+            /* Saat tingkat berubah: reset kelas lalu filter ulang */
             filterTingkat.addEventListener('change', function () {
                 filterKelas.value = '';
+                hideKelasError();
                 filterKelasByTingkat(this.value);
+                updateTingkatHint();
             });
+
+            /* Saat kelas berubah: sembunyikan error, update tombol, dan sembunyikan hint */
+            filterKelas.addEventListener('change', function () {
+                hideKelasError();
+                updateSubmitState();
+                updateTingkatHint();
+            });
+
+            /* Validasi saat form di-submit */
+            document.getElementById('formFilterJadwal').addEventListener('submit', function (e) {
+                if (!filterKelas.value) {
+                    e.preventDefault();
+                    showKelasError();
+                    filterKelas.focus();
+                }
+            });
+
+            function showKelasError() {
+                filterKelas.classList.add('border-red-400', 'ring-2', 'ring-red-100', 'bg-red-50');
+                filterKelas.classList.remove('border-gray-200', 'bg-gray-50');
+                if (validasiMsg) validasiMsg.classList.remove('hidden');
+            }
+
+            function hideKelasError() {
+                filterKelas.classList.remove('border-red-400', 'ring-2', 'ring-red-100', 'bg-red-50');
+                filterKelas.classList.add('border-gray-200', 'bg-gray-50');
+                if (validasiMsg) validasiMsg.classList.add('hidden');
+            }
         </script>
     @endpush
 </x-app-layout>

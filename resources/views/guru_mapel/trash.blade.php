@@ -47,8 +47,7 @@
 
             {{-- Alert Success --}}
             @if (session('success'))
-                <div
-                    class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
+                <div class="flex items-center justify-between px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm shadow-sm">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -57,8 +56,7 @@
                         </svg>
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
-                    <button onclick="this.parentElement.remove()"
-                        class="text-emerald-400 hover:text-emerald-700 transition">
+                    <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-700 transition">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -104,21 +102,31 @@
                 {{-- Search / Filter --}}
                 <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
                     <form method="GET" action="{{ route('guru_mapel.trash') }}" class="flex items-center gap-2 max-w-md">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari guru mapel..."
-                            class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm" />
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input type="text" name="search" value="{{ $search ?? '' }}"
+                                placeholder="Cari mapel, guru, atau semester..."
+                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition">
+                        </div>
                         <button type="submit"
-                            class="px-3 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg">Cari</button>
-                        @if(request('search'))
-    <a href="{{ route('guru_mapel.trash') }}"
-        class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
-        </svg>
-        Reset
-    </a>
-@endif
-</form>
+                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
+                            Cari
+                        </button>
+                        @if($search ?? false)
+                            <a href="{{ route('guru_mapel.trash') }}"
+                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                </svg>
+                                Reset
+                            </a>
+                        @endif
+                    </form>
                 </div>
 
                 {{-- Table --}}
@@ -129,10 +137,9 @@
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest w-12">#</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Mapel</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Guru</th>
-                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Kelas</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Semester</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Dihapus Pada</th>
-                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-52">Aksi</th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-44">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -156,18 +163,14 @@
                                     <td class="px-6 py-4 text-gray-400 text-sm">
                                         {{ $guruMapel->Guru->nama_lengkap ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 text-gray-400 text-sm">
-                                        @php
-                                            $namaKelas = trim(
-                                                ($guruMapel->Kelas->Tingkatan->nama_tingkatan ?? '') . ' ' .
-                                                ($guruMapel->Kelas->Jurusan->nama_jurusan ?? '') . ' ' .
-                                                ($guruMapel->Kelas->Bagian->nama_bagian ?? '')
-                                            );
-                                        @endphp
-                                        {{ $namaKelas ?: '—' }}
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-400 text-sm">
-                                        {{ $guruMapel->Semester->nama_semester ?? '—' }}
+                                    <td class="px-6 py-4">
+                                        @if ($guruMapel->Semester->nama_semester ?? null)
+                                            <span class="inline-flex items-center px-2.5 py-1 bg-gray-50 text-gray-400 border border-gray-200 text-xs font-semibold rounded-lg">
+                                                {{ $guruMapel->Semester->nama_semester }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-300 text-xs">—</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 border border-red-100 rounded-lg">
@@ -181,36 +184,45 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
+
                                             {{-- Restore --}}
-                                            <form action="{{ route('guru_mapel.restore', $guruMapel->id) }}" method="POST"
+                                            <form
+                                                action="{{ route('guru_mapel.restore', ['guru_mapel' => $guruMapel->id]) }}"
+                                                method="POST"
                                                 onsubmit="confirmRestore(event)">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-lg transition">
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-lg transition"
+                                                    title="Pulihkan">
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                                     </svg>
                                                 </button>
                                             </form>
+
                                             {{-- Force Delete --}}
-                                            <form action="{{ route('guru_mapel.force-delete', $guruMapel->id) }}" method="POST"
+                                            <form
+                                                action="{{ route('guru_mapel.force-delete', ['guru_mapel' => $guruMapel->id]) }}"
+                                                method="POST"
                                                 onsubmit="confirmForceDelete(event)">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition">
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition"
+                                                    title="Hapus Permanen">
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                 </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-20 text-center">
+                                    <td colspan="6" class="px-6 py-20 text-center">
                                         <div class="flex flex-col items-center gap-3">
                                             <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
                                                 <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -218,7 +230,19 @@
                                                 </svg>
                                             </div>
                                             <p class="text-gray-400 text-sm font-semibold">Tempat sampah kosong</p>
-                                            <p class="text-gray-300 text-xs">Tidak ada data guru mapel yang dihapus sementara</p>
+                                            @if($search ?? false)
+                                                <p class="text-gray-300 text-xs">Tidak ada hasil untuk pencarian <span class="font-semibold text-gray-400">"{{ $search }}"</span></p>
+                                                <a href="{{ route('guru_mapel.trash') }}"
+                                                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition mt-1">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                                    </svg>
+                                                    Reset Pencarian
+                                                </a>
+                                            @else
+                                                <p class="text-gray-300 text-xs">Tidak ada data guru mapel yang dihapus sementara</p>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
