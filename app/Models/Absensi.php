@@ -18,11 +18,13 @@ class Absensi extends Model
         'id_pertemuan',
         'id_siswa',
         'status',
+        'waktu_absen',
         'keterangan',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
     protected $dates = [
+        'waktu_absen',
         'created_at',
         'updated_at',
         'deleted_at',

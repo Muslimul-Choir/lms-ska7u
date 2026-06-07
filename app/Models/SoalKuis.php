@@ -19,6 +19,7 @@ class SoalKuis extends Model
         'id_kuis',
         'nomor_soal',
         'pertanyaan',
+        'gambar_soal',
         'pilihan_a',
         'pilihan_b',
         'pilihan_c',

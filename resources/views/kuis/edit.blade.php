@@ -86,11 +86,11 @@
                                     @foreach ($pertemuanList as $p)
                                         <option value="{{ $p->id }}"
                                             {{ old('id_pertemuan', $kuis->id_pertemuan) == $p->id ? 'selected' : '' }}>
-                                            Pertemuan {{ $p->nomor_pertemuan }} -
-                                            {{ $p->JadwalBelajar?->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
+                                            Pertemuan {{ $p->nomor_pertemuan }} - 🎓 [{{ $p->JadwalBelajar?->Kelas?->nama_kelas ?? 'Tanpa Kelas' }}] - {{ $p->JadwalBelajar?->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
                                         </option>
                                     @endforeach
                                 </select>
+                                <p class="text-xs text-gray-500 italic mt-1">💡 Kuis hanya untuk siswa di kelas yang dipilih</p>
                             </div>
 
                             <div>
