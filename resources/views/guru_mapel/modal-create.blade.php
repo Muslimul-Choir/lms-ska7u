@@ -89,33 +89,6 @@
                     @endif
                 </div>
 
-                {{-- Kelas --}}
-                <div class="flex flex-col gap-[7px]">
-                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
-                        Kelas <span class="text-red-500">*</span>
-                    </label>
-                    <select name="id_kelas"
-                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
-                        {{ $errors->has('id_kelas') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
-                        <option value="">Pilih Kelas</option>
-                        @forelse($kelas as $kls)
-                            <option value="{{ $kls->id }}" {{ old('id_kelas') == $kls->id ? 'selected' : '' }}>
-                                {{ $kls->Tingkatan->nama_tingkatan ?? '' }} -
-                                {{ $kls->Jurusan->nama_jurusan ?? '' }} -
-                                {{ $kls->Bagian->nama_bagian ?? '' }}
-                            </option>
-                        @empty
-                            <option disabled>Tidak ada data kelas</option>
-                        @endforelse
-                    </select>
-                    @if ($errors->has('id_kelas') && old('_modal') === 'create')
-                        <p class="flex items-center gap-1 text-xs text-red-600">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ $errors->first('id_kelas') }}
-                        </p>
-                    @endif
-                </div>
-
                 {{-- Semester --}}
                 <div class="flex flex-col gap-[7px]">
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
