@@ -16,6 +16,7 @@ class StoreSoalKuisRequest extends FormRequest
         return [
             'nomor_soal'    => 'required|integer|min:1',
             'pertanyaan'    => 'required|string',
+            'gambar_soal'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'pilihan_a'     => 'required|string',
             'pilihan_b'     => 'required|string',
             'pilihan_c'     => 'required|string',
@@ -31,6 +32,9 @@ class StoreSoalKuisRequest extends FormRequest
             'nomor_soal.integer'     => 'Nomor soal harus berupa angka.',
             'nomor_soal.min'         => 'Nomor soal minimal 1.',
             'pertanyaan.required'    => 'Pertanyaan wajib diisi.',
+            'gambar_soal.image'      => 'File harus berupa gambar.',
+            'gambar_soal.mimes'      => 'Gambar harus berformat JPEG, PNG, atau JPG.',
+            'gambar_soal.max'        => 'Ukuran gambar maksimal 2MB.',
             'pilihan_a.required'     => 'Semua pilihan jawaban (A, B, C, D) wajib diisi.',
             'pilihan_b.required'     => 'Semua pilihan jawaban (A, B, C, D) wajib diisi.',
             'pilihan_c.required'     => 'Semua pilihan jawaban (A, B, C, D) wajib diisi.',

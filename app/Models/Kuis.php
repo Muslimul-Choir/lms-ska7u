@@ -21,6 +21,7 @@ class Kuis extends Model
         'id_guru',
         'judul',
         'deskripsi',
+        'cover_image',
         'durasi',
         'nilai_maksimal',
         'batas_mulai',
