@@ -30,7 +30,8 @@ class AuthenticatedSessionController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (! $user->hasVerifiedEmail()) {
+      
+        if ($user->role !== 'siswa' && ! $user->hasVerifiedEmail()) {
             $user->sendEmailVerificationNotification();
 
             return redirect()->route('verification.notice')
