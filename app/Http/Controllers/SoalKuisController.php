@@ -8,6 +8,7 @@ use App\Models\Kuis;
 use App\Models\SoalKuis;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SoalKuisController extends Controller
 {
@@ -54,6 +55,13 @@ class SoalKuisController extends Controller
             $validated = $request->validated();
             $validated['id_kuis'] = $kuis->id;
 
+            // Handle file upload for gambar_soal
+            if ($request->hasFile('gambar_soal')) {
+                $file = $request->file('gambar_soal');
+                $path = $file->store('soal_kuis', 'public');
+                $validated['gambar_soal'] = $path;
+            }
+
             SoalKuis::create($validated);
 
             DB::commit();
@@ -62,6 +70,7 @@ class SoalKuisController extends Controller
                 ->with('success', 'Soal berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error creating soal kuis: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat menambahkan soal.');
         }
     }
@@ -106,7 +115,21 @@ class SoalKuisController extends Controller
         try {
             DB::beginTransaction();
 
-            $soal->update($request->validated());
+            $validated = $request->validated();
+
+            // Handle file upload for gambar_soal
+            if ($request->hasFile('gambar_soal')) {
+                // Delete old image if exists
+                if ($soal->gambar_soal && \Storage::disk('public')->exists($soal->gambar_soal)) {
+                    \Storage::disk('public')->delete($soal->gambar_soal);
+                }
+                
+                $file = $request->file('gambar_soal');
+                $path = $file->store('soal_kuis', 'public');
+                $validated['gambar_soal'] = $path;
+            }
+
+            $soal->update($validated);
 
             DB::commit();
 
@@ -114,6 +137,7 @@ class SoalKuisController extends Controller
                 ->with('success', 'Soal berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error updating soal kuis: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat memperbarui soal.');
         }
     }

@@ -9,41 +9,99 @@ use Illuminate\Support\Facades\Storage;
 
 class TugasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
+        $q = $request->input('q');
+        $filter_status = $request->input('filter_status', 'semua');
+        $id_kelas = $request->input('id_kelas');
+
+        // Query pertemuan yang memiliki tugas
+        $pertemuanQuery = \App\Models\Pertemuan::whereHas('tugas');
+
         if ($isGuru) {
             $guru = $user->guru;
-            $tugas = Tugas::with(['pertemuan', 'guru', 'Mapel', 'GuruMapel'])
-                ->where('id_guru', $guru->id)
-                ->latest()
-                ->paginate(10);
-            
-            $pertemuans = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')
-                ->whereHas('JadwalBelajar.GuruMapel', function($q) use ($guru) {
-                    $q->where('id_guru', $guru->id);
-                })->get();
-                
-            $gurus = Guru::where('id', $guru->id)->get();
-            
-            $mapels = \App\Models\Mapel::whereHas('GuruMapel', function($q) use ($guru) {
-                $q->where('id_guru', $guru->id);
-            })->get();
-            
-            $guruMapels = \App\Models\GuruMapel::with(['Mapel', 'Guru'])
-                ->where('id_guru', $guru->id)
-                ->get();
-        } else {
-            $tugas = Tugas::with(['pertemuan', 'guru', 'Mapel', 'GuruMapel'])->latest()->paginate(10);
-            $pertemuans = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->get();
-            $gurus = Guru::all();
-            $mapels = \App\Models\Mapel::all();
-            $guruMapels = \App\Models\GuruMapel::with(['Mapel', 'Guru'])->get();
+            $pertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($query) use ($guru) {
+                $query->where('id_guru', $guru->id);
+            });
+        }
+
+        // Filter by kelas
+        if ($id_kelas) {
+            $pertemuanQuery->whereHas('jadwalBelajar', function($query) use ($id_kelas) {
+                $query->where('id_kelas', $id_kelas);
+            });
+        }
+
+        // Search in pertemuan or tugas
+        if ($q) {
+            $pertemuanQuery->where(function($query) use ($q) {
+                $query->where('nomor_pertemuan', 'like', "%$q%")
+                      ->orWhereHas('tugas', function($subQuery) use ($q) {
+                          $subQuery->where('judul', 'like', "%$q%")
+                                   ->orWhere('deskripsi', 'like', "%$q%");
+                      });
+            });
+        }
+
+        $pertemuans = $pertemuanQuery
+            ->with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.guruMapel.guru', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas'])
+            ->orderBy('nomor_pertemuan')
+            ->paginate(5)
+            ->withQueryString();
+
+        $pertemuanIds = $pertemuans->pluck('id');
+        
+        // Get tugas for these pertemuans
+        $tugasQuery = Tugas::with(['pertemuan', 'guru', 'mapel', 'guruMapel.guru', 'guruMapel.kelas'])
+            ->whereIn('id_pertemuan', $pertemuanIds);
+
+        if ($isGuru) {
+            $tugasQuery->where('id_guru', $user->guru->id);
+        }
+
+        if ($q) {
+            $tugasQuery->where(function($query) use ($q) {
+                $query->where('judul', 'like', "%$q%")
+                      ->orWhere('deskripsi', 'like', "%$q%");
+            });
         }
         
-        return view('tugas.index', compact('tugas', 'pertemuans', 'gurus', 'mapels', 'guruMapels'));
+        if ($filter_status !== 'semua') {
+            $tugasQuery->where('status', $filter_status);
+        }
+
+        $tugas = $tugasQuery->latest()->get();
+        
+        // Get kelas list for filter dropdown
+        $kelasQuery = \App\Models\Kelas::with(['tingkatan', 'jurusan', 'bagian']);
+        if ($isGuru) {
+            $guru = $user->guru;
+            $kelasQuery->whereHas('jadwalBelajars.guruMapel', function($query) use ($guru) {
+                $query->where('id_guru', $guru->id);
+            });
+        }
+        $kelasList = $kelasQuery->get();
+        
+        // Get all pertemuan for dropdown (filtered by guru)
+        $allPertemuanQuery = \App\Models\Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas']);
+        if ($isGuru) {
+            $guru = $user->guru;
+            $allPertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            });
+        }
+        $allPertemuan = $allPertemuanQuery->orderBy('nomor_pertemuan')->get();
+        
+        $gurusQuery = \App\Models\Guru::with('user');
+        if ($isGuru) {
+            $gurusQuery->where('id', $user->guru->id);
+        }
+        $gurus = $gurusQuery->get();
+        
+        return view('tugas.index', compact('tugas', 'pertemuans', 'allPertemuan', 'gurus', 'q', 'filter_status', 'kelasList', 'id_kelas'));
     }
 
     public function store(Request $request)

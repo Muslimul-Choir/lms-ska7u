@@ -38,15 +38,33 @@
             from { opacity:0; transform:translateY(6px); }
             to   { opacity:1; transform:none; }
         }
-        /* Safe area for bottom nav */
-        .sl-page { padding-bottom: 80px; }
-        @media (min-width: 1024px) { .sl-page { padding-bottom: 0; } }
+        /* Safe area for bottom nav - ensure content is not covered */
+        .sl-page { 
+            padding-bottom: 140px; 
+            min-height: calc(100vh - 56px);
+        }
+        @media (min-width: 640px) {
+            .sl-page { 
+                padding-bottom: 140px; /* Keep same padding for tablet */
+            }
+        }
+        @media (min-width: 1024px) { 
+            .sl-page { 
+                padding-bottom: 140px; /* Keep same padding for desktop */
+                min-height: auto;
+            } 
+        }
+        /* Desktop navbar - not sticky */
+        #student-header { position: sticky; top: 0; z-index: 50; }
+        @media (min-width: 1024px) {
+            #student-header { position: relative; top: auto; }
+        }
     </style>
 </head>
 <body x-data x-cloak>
 
 {{-- ══ TOP HEADER ══ --}}
-<header style="background:linear-gradient(135deg,#6B1A2B 0%,#2D0810 100%);position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.25);">
+<header id="student-header" style="background:linear-gradient(135deg,#6B1A2B 0%,#2D0810 100%);box-shadow:0 2px 12px rgba(0,0,0,.25);">
     <div style="max-width:900px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;gap:12px;">
 
         {{-- Logo / Back button --}}
@@ -125,22 +143,13 @@
     </div>
 </header>
 
-{{-- ══ FLASH MESSAGES ══ --}}
-@if(session('success') || session('error'))
-<div style="max-width:900px;margin:12px auto 0;padding:0 16px;">
-    @if(session('success'))
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;font-size:13px;font-weight:600;color:#15803d;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        {{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;font-size:13px;font-weight:600;color:#be123c;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-        {{ session('error') }}
-    </div>
-    @endif
-</div>
+{{-- ══ FLASH MESSAGES (SweetAlert) ══ --}}
+@if(session('success'))
+<x-alerts.success>{{ session('success') }}</x-alerts.success>
+@endif
+
+@if(session('error'))
+<x-alerts.error>{{ session('error') }}</x-alerts.error>
 @endif
 
 {{-- ══ MAIN CONTENT ══ --}}
@@ -148,9 +157,9 @@
     {{ $slot }}
 </main>
 
-{{-- ══ BOTTOM NAV (mobile only) ══ --}}
+{{-- ══ BOTTOM NAV ══ --}}
 @auth
-<nav style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fff;border-top:1px solid #e2e8f0;box-shadow:0 -4px 16px rgba(0,0,0,.08);display:flex;justify-content:space-around;align-items:center;height:64px;padding:0 4px;" class="lg:hidden">
+<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg flex justify-around items-center h-16 px-1" style="box-shadow:0 -4px 16px rgba(0,0,0,.08);">
     @php
         $pendingTugas = 0;
         $pendingKuis = 0;
@@ -176,50 +185,68 @@
 
     {{-- Home --}}
     <a href="{{ route('siswa.dashboard') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;{{ request()->routeIs('siswa.dashboard') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
-        <svg width="22" height="22" fill="{{ request()->routeIs('siswa.dashboard') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.dashboard') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
-        </svg>
-        <span style="font-size:10px;font-weight:{{ request()->routeIs('siswa.dashboard') ? '700' : '500' }};">Home</span>
+        <div style="position:relative;display:inline-block;">
+            <svg width="20" height="20" fill="{{ request()->routeIs('siswa.dashboard') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.dashboard') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+            </svg>
+        </div>
+        <span style="font-size:9px;font-weight:{{ request()->routeIs('siswa.dashboard') ? '700' : '500' }};">Home</span>
     </a>
 
     {{-- Materi --}}
     <a href="{{ route('siswa.materi.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;{{ request()->routeIs('siswa.materi.*') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
-        <svg width="22" height="22" fill="{{ request()->routeIs('siswa.materi.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.materi.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
-        </svg>
-        <span style="font-size:10px;font-weight:{{ request()->routeIs('siswa.materi.*') ? '700' : '500' }};">Materi</span>
+        <div style="position:relative;display:inline-block;">
+            <svg width="20" height="20" fill="{{ request()->routeIs('siswa.materi.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.materi.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+            </svg>
+        </div>
+        <span style="font-size:9px;font-weight:{{ request()->routeIs('siswa.materi.*') ? '700' : '500' }};">Materi</span>
     </a>
 
-    {{-- Tugas (center, prominent) --}}
-    <a href="{{ route('siswa.tugas.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:4px;">
-        <div style="position:relative;width:48px;height:48px;border-radius:14px;background:{{ request()->routeIs('siswa.tugas.*') ? 'linear-gradient(135deg,#6B1A2B,#9B3045)' : 'linear-gradient(135deg,#2D0810,#6B1A2B)' }};display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(107,26,43,.4);margin-top:-16px;">
-            <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2.5">
+    {{-- Tugas --}}
+    <a href="{{ route('siswa.tugas.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;{{ request()->routeIs('siswa.tugas.*') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
+        <div style="position:relative;display:inline-block;">
+            <svg width="20" height="20" fill="{{ request()->routeIs('siswa.tugas.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.tugas.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
             </svg>
             @if($pendingTugas > 0)
-            <span style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;background:#ef4444;border-radius:99px;font-size:10px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;">{{ $pendingTugas }}</span>
+            <span style="position:absolute;top:-6px;right:-8px;min-width:16px;height:16px;background:#ef4444;border-radius:99px;font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);">{{ $pendingTugas }}</span>
             @endif
         </div>
-        <span style="font-size:10px;font-weight:700;color:{{ request()->routeIs('siswa.tugas.*') ? '#6B1A2B' : '#64748b' }};">Tugas</span>
+        <span style="font-size:9px;font-weight:{{ request()->routeIs('siswa.tugas.*') ? '700' : '500' }};">Tugas</span>
     </a>
 
     {{-- Kuis --}}
-    <a href="{{ route('siswa.kuis.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;position:relative;{{ request()->routeIs('siswa.kuis.*') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
-        <svg width="22" height="22" fill="{{ request()->routeIs('siswa.kuis.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.kuis.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
-        </svg>
-        @if($pendingKuis > 0)
-        <span style="position:absolute;top:4px;right:8px;min-width:16px;height:16px;background:#ef4444;border-radius:99px;font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;">{{ $pendingKuis }}</span>
-        @endif
-        <span style="font-size:10px;font-weight:{{ request()->routeIs('siswa.kuis.*') ? '700' : '500' }};">Kuis</span>
+    <a href="{{ route('siswa.kuis.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;{{ request()->routeIs('siswa.kuis.*') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
+        <div style="position:relative;display:inline-block;">
+            <svg width="20" height="20" fill="{{ request()->routeIs('siswa.kuis.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.kuis.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+            </svg>
+            @if($pendingKuis > 0)
+            <span style="position:absolute;top:-6px;right:-8px;min-width:16px;height:16px;background:#ef4444;border-radius:99px;font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);">{{ $pendingKuis }}</span>
+            @endif
+        </div>
+        <span style="font-size:9px;font-weight:{{ request()->routeIs('siswa.kuis.*') ? '700' : '500' }};">Kuis</span>
+    </a>
+
+    {{-- Absensi --}}
+    <a href="{{ route('siswa.absensi.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;{{ request()->routeIs('siswa.absensi.*') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
+        <div style="position:relative;display:inline-block;">
+            <svg width="20" height="20" fill="{{ request()->routeIs('siswa.absensi.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.absensi.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <span style="font-size:9px;font-weight:{{ request()->routeIs('siswa.absensi.*') ? '700' : '500' }};">Absensi</span>
     </a>
 
     {{-- Jadwal --}}
     <a href="{{ route('siswa.jadwal.index') }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;text-decoration:none;padding:8px 4px;border-radius:10px;transition:background .15s;{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? 'color:#6B1A2B;' : 'color:#94a3b8;' }}">
-        <svg width="22" height="22" fill="{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
-        </svg>
-        <span style="font-size:10px;font-weight:{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? '700' : '500' }};">Jadwal</span>
+        <div style="position:relative;display:inline-block;">
+            <svg width="20" height="20" fill="{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? '#6B1A2B' : 'none' }}" stroke="{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? '#6B1A2B' : '#94a3b8' }}" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+            </svg>
+        </div>
+        <span style="font-size:9px;font-weight:{{ request()->routeIs('siswa.jadwal.*') || request()->routeIs('siswa.pertemuan.*') ? '700' : '500' }};">Jadwal</span>
     </a>
 </nav>
 @endauth

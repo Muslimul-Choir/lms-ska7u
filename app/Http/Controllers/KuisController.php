@@ -57,14 +57,22 @@ class KuisController extends Controller
     {
         $user = Auth::user();
 
-        // Get pertemuan and guru_mapel for dropdowns
-        $pertemuanList = Pertemuan::with('JadwalBelajar')->latest()->get();
-
+        // Get pertemuan filtered by guru's classes
         if ($user->role === 'guru' && $user->Guru) {
+            // Get only pertemuan from guru's guru_mapel (their classes)
+            $pertemuanList = Pertemuan::whereHas('JadwalBelajar.GuruMapel', function($q) use ($user) {
+                $q->where('id_guru', $user->Guru->id);
+            })
+            ->with('JadwalBelajar')
+            ->latest()
+            ->get();
+            
             $guruMapelList = GuruMapel::where('id_guru', $user->Guru->id)
                 ->with('Mapel')
                 ->get();
         } else {
+            // Admin sees all
+            $pertemuanList = Pertemuan::with('JadwalBelajar')->latest()->get();
             $guruMapelList = GuruMapel::with('Mapel')->get();
         }
 
@@ -83,7 +91,18 @@ class KuisController extends Controller
             DB::beginTransaction();
 
             $validated = $request->validated();
-            $validated['id_guru'] = $user->Guru->id ?? null;
+            
+            // Get guru ID - check if user has Guru relationship
+            if ($user->role === 'guru' && $user->Guru) {
+                $validated['id_guru'] = $user->Guru->id;
+            } elseif (in_array($user->role, ['admin', 'super_admin'])) {
+                // For admin, get guru from guru_mapel relationship
+                $guruMapel = GuruMapel::find($validated['id_guru_mapel']);
+                $validated['id_guru'] = $guruMapel ? $guruMapel->id_guru : null;
+            } else {
+                throw new \Exception('User tidak memiliki akses untuk membuat kuis.');
+            }
+            
             $validated['status'] = 'draft'; // Default status (Req 6.3)
 
             $kuis = Kuis::create($validated);
@@ -94,7 +113,9 @@ class KuisController extends Controller
                 ->with('success', 'Kuis berhasil dibuat. Silakan tambahkan soal.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat membuat kuis.');
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat membuat kuis: ' . $e->getMessage());
         }
     }
 
@@ -132,13 +153,22 @@ class KuisController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengedit kuis ini.');
         }
 
-        $pertemuanList = Pertemuan::with('JadwalBelajar')->latest()->get();
-
+        // Get pertemuan filtered by guru's classes
         if ($user->role === 'guru' && $user->Guru) {
+            // Get only pertemuan from guru's guru_mapel (their classes)
+            $pertemuanList = Pertemuan::whereHas('JadwalBelajar.GuruMapel', function($q) use ($user) {
+                $q->where('id_guru', $user->Guru->id);
+            })
+            ->with('JadwalBelajar')
+            ->latest()
+            ->get();
+            
             $guruMapelList = GuruMapel::where('id_guru', $user->Guru->id)
                 ->with('Mapel')
                 ->get();
         } else {
+            // Admin sees all
+            $pertemuanList = Pertemuan::with('JadwalBelajar')->latest()->get();
             $guruMapelList = GuruMapel::with('Mapel')->get();
         }
 

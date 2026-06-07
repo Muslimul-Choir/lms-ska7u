@@ -14,12 +14,11 @@ class MateriController extends Controller
         $isGuru = $user->role === 'guru' && $user->guru;
         
         $q = $request->input('q');
-        $filter_tipe = $request->input('filter_tipe', 'semua');
         $filter_status = $request->input('filter_status', 'semua');
+        $id_kelas = $request->input('id_kelas');
 
-        $pertemuanQuery = Pertemuan::where(function($query) {
-            $query->has('materis')->orHas('tugas');
-        });
+        // Query pertemuan yang memiliki materi
+        $pertemuanQuery = \App\Models\Pertemuan::whereHas('materis');
 
         if ($isGuru) {
             $guru = $user->guru;
@@ -28,59 +27,61 @@ class MateriController extends Controller
             });
         }
 
-        if ($q || $filter_tipe !== 'semua' || $filter_status !== 'semua') {
-            $pertemuanQuery->where(function ($qBuilder) use ($q, $filter_tipe, $filter_status) {
-                if ($q) {
-                    $qBuilder->where('nomor_pertemuan', 'like', "%$q%");
-                }
+        // Filter by kelas
+        if ($id_kelas) {
+            $pertemuanQuery->whereHas('jadwalBelajar', function($query) use ($id_kelas) {
+                $query->where('id_kelas', $id_kelas);
+            });
+        }
 
-                if ($filter_tipe === 'semua' || $filter_tipe === 'materi') {
-                    $qBuilder->orWhereHas('materis', function($query) use ($q) {
-                        if ($q) $query->where('judul', 'like', "%$q%");
-                    });
-                }
-                
-                if ($filter_tipe === 'semua' || $filter_tipe === 'tugas') {
-                    $qBuilder->orWhereHas('tugas', function($query) use ($q, $filter_status) {
-                        if ($q) $query->where('judul', 'like', "%$q%");
-                        if ($filter_status !== 'semua') $query->where('status', $filter_status);
-                    });
-                }
+        // Search in pertemuan or materi
+        if ($q) {
+            $pertemuanQuery->where(function($query) use ($q) {
+                $query->where('nomor_pertemuan', 'like', "%$q%")
+                      ->orWhereHas('materis', function($subQuery) use ($q) {
+                          $subQuery->where('judul', 'like', "%$q%")
+                                   ->orWhere('deskripsi', 'like', "%$q%");
+                      });
             });
         }
 
         $pertemuans = $pertemuanQuery
-            ->with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.guruMapel.guru', 'jadwalBelajar.mapel'])
-            ->orderBy('nomor_pertemuan')->paginate(5)->withQueryString();
+            ->with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.guruMapel.guru', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas'])
+            ->orderBy('nomor_pertemuan')
+            ->paginate(5)
+            ->withQueryString();
+
         $pertemuanIds = $pertemuans->pluck('id');
         
-        $materiQuery = Materi::with(['pertemuan', 'mapel', 'guruMapel.guru'])->whereIn('id_pertemuan', $pertemuanIds);
-        $tugasQuery = \App\Models\Tugas::with(['pertemuan', 'guru', 'mapel', 'guruMapel.guru'])->whereIn('id_pertemuan', $pertemuanIds);
+        // Get materis for these pertemuans
+        $materiQuery = Materi::with(['pertemuan', 'mapel', 'guruMapel.guru'])
+            ->whereIn('id_pertemuan', $pertemuanIds);
 
-        // Filter the children items as well
         if ($q) {
             $materiQuery->where(function($query) use ($q) {
                 $query->where('judul', 'like', "%$q%")
-                      ->orWhereHas('pertemuan', function($pQuery) use ($q) {
-                          $pQuery->where('nomor_pertemuan', 'like', "%$q%");
-                      });
-            });
-            $tugasQuery->where(function($query) use ($q) {
-                $query->where('judul', 'like', "%$q%")
-                      ->orWhereHas('pertemuan', function($pQuery) use ($q) {
-                          $pQuery->where('nomor_pertemuan', 'like', "%$q%");
-                      });
+                      ->orWhere('deskripsi', 'like', "%$q%");
             });
         }
         
         if ($filter_status !== 'semua') {
-            $tugasQuery->where('status', $filter_status);
+            $materiQuery->where('status', $filter_status);
         }
 
-        $materis = $filter_tipe === 'tugas' ? collect() : $materiQuery->latest()->get();
-        $tugas = $filter_tipe === 'materi' ? collect() : $tugasQuery->latest()->get();
+        $materis = $materiQuery->latest()->get();
         
-        $allPertemuanQuery = Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel']);
+        // Get kelas list for filter dropdown
+        $kelasQuery = \App\Models\Kelas::with(['tingkatan', 'jurusan', 'bagian']);
+        if ($isGuru) {
+            $guru = $user->guru;
+            $kelasQuery->whereHas('jadwalBelajars.guruMapel', function($query) use ($guru) {
+                $query->where('id_guru', $guru->id);
+            });
+        }
+        $kelasList = $kelasQuery->get();
+        
+        // Get all pertemuan for dropdown (filtered by guru)
+        $allPertemuanQuery = \App\Models\Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas']);
         if ($isGuru) {
             $guru = $user->guru;
             $allPertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
@@ -89,19 +90,7 @@ class MateriController extends Controller
         }
         $allPertemuan = $allPertemuanQuery->orderBy('nomor_pertemuan')->get();
         
-        $gurusQuery = \App\Models\Guru::with('user');
-        if ($isGuru) {
-            $gurusQuery->where('id', $user->guru->id);
-        }
-        $gurus = $gurusQuery->get();
-        
-        $allGuruMapelQuery = \App\Models\GuruMapel::with(['guru', 'mapel', 'kelas']);
-        if ($isGuru) {
-            $allGuruMapelQuery->where('id_guru', $user->guru->id);
-        }
-        $allGuruMapel = $allGuruMapelQuery->get();
-        
-        return view('materi.index', compact('materis', 'tugas', 'pertemuans', 'allPertemuan', 'gurus', 'allGuruMapel', 'q', 'filter_tipe', 'filter_status'));
+        return view('materi.index', compact('materis', 'pertemuans', 'allPertemuan', 'q', 'filter_status', 'kelasList', 'id_kelas'));
     }
 
     public function store(Request $request)

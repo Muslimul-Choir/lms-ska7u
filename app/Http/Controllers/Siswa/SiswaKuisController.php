@@ -171,6 +171,8 @@ class SiswaKuisController extends Controller
     /**
      * Display all questions and calculate remaining time.
      * Redirect to hasil if time is up.
+     * 
+     * FIXED: Proper timezone-aware time calculation
      */
     public function kerjakan(Kuis $kuis)
     {
@@ -201,10 +203,36 @@ class SiswaKuisController extends Controller
             return redirect()->route('siswa.kuis.hasil', $kuis);
         }
 
-        // Calculate remaining time in seconds
+        // 🔧 FIX: Calculate remaining time properly
+        // Convert waktu_mulai to Carbon if it's not already (ensure timezone awareness)
+        $waktuMulai = \Carbon\Carbon::parse($hasilKuis->waktu_mulai);
+        $waktuSekarang = now();
+        
+        // Total duration in seconds
         $durasiDetik = $kuis->durasi * 60;
-        $elapsedDetik = now()->diffInSeconds($hasilKuis->waktu_mulai);
-        $sisaDetik = max(0, $durasiDetik - $elapsedDetik);
+        
+        // Elapsed time: how much time has passed since quiz started
+        $elapsedDetik = $waktuSekarang->diffInSeconds($waktuMulai, false);
+        
+        // If negative (shouldn't happen), make it 0
+        if ($elapsedDetik < 0) {
+            \Log::warning("Quiz #{$kuis->id} has negative elapsed time for student #{$siswa->id}. waktu_mulai: {$waktuMulai}, now: {$waktuSekarang}");
+            $elapsedDetik = 0;
+        }
+        
+        // Remaining time
+        $sisaDetik = (int) max(0, $durasiDetik - $elapsedDetik);
+        
+        // Debug logging to trace timer issues
+        \Log::info("Quiz Timer Debug - Quiz #{$kuis->id}, Student #{$siswa->id}:", [
+            'waktu_mulai' => $waktuMulai->toDateTimeString(),
+            'waktu_sekarang' => $waktuSekarang->toDateTimeString(),
+            'durasi_menit' => $kuis->durasi,
+            'durasi_detik' => $durasiDetik,
+            'elapsed_detik' => $elapsedDetik,
+            'sisa_detik' => $sisaDetik,
+            'timezone' => config('app.timezone'),
+        ]);
 
         // If time is up, redirect to hasil
         if ($sisaDetik <= 0) {
@@ -221,6 +249,8 @@ class SiswaKuisController extends Controller
     /**
      * Submit quiz answers, calculate score, save in DB::transaction()
      * Redirect to hasil page (Req 8.7)
+     * 
+     * FIXED: Race condition + Time validation
      */
     public function submit(SubmitKuisRequest $request, Kuis $kuis)
     {
@@ -236,26 +266,38 @@ class SiswaKuisController extends Controller
             abort(403, 'Anda tidak memiliki akses ke kuis ini.');
         }
 
-        // Get HasilKuis
-        $hasilKuis = HasilKuis::where('id_kuis', $kuis->id)
-            ->where('id_siswa', $siswa->id)
-            ->first();
-
-        if (!$hasilKuis) {
-            return redirect()->route('siswa.kuis.show', $kuis)
-                ->with('error', 'Anda belum memulai kuis ini.');
-        }
-
-        // If already submitted, redirect to hasil
-        if ($hasilKuis->waktu_selesai) {
-            return redirect()->route('siswa.kuis.hasil', $kuis)
-                ->with('info', 'Anda sudah mengumpulkan kuis ini.');
-        }
-
         try {
             DB::beginTransaction();
 
-            // Get all questions with answer keys
+            // 🔒 FIX: Lock row to prevent race condition
+            $hasilKuis = HasilKuis::where('id_kuis', $kuis->id)
+                ->where('id_siswa', $siswa->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$hasilKuis) {
+                DB::rollBack();
+                return redirect()->route('siswa.kuis.show', $kuis)
+                    ->with('error', 'Anda belum memulai kuis ini.');
+            }
+
+            // Check if already submitted (inside transaction now)
+            if ($hasilKuis->waktu_selesai) {
+                DB::rollBack();
+                return redirect()->route('siswa.kuis.hasil', $kuis)
+                    ->with('info', 'Anda sudah mengumpulkan kuis ini.');
+            }
+
+            // ⏰ FIX: Server-side time validation
+            $durasiDetik = $kuis->durasi * 60;
+            $elapsedDetik = now()->diffInSeconds($hasilKuis->waktu_mulai);
+            $timeExpired = $elapsedDetik > $durasiDetik;
+
+            if ($timeExpired) {
+                \Log::info("Quiz #{$kuis->id} time expired for student #{$siswa->id}. Elapsed: {$elapsedDetik}s, Limit: {$durasiDetik}s");
+            }
+
+            // Calculate score
             $soalList = $kuis->SoalKuis()->get()->keyBy('nomor_soal');
             $jawaban = $request->input('jawaban', []); // ['1' => 'A', '2' => 'C', ...]
             $benar = 0;
@@ -280,16 +322,23 @@ class SiswaKuisController extends Controller
 
             DB::commit();
 
+            $message = $timeExpired 
+                ? '⏰ Waktu habis! Kuis telah dikumpulkan otomatis dengan jawaban yang tersedia.' 
+                : '✅ Kuis berhasil dikumpulkan!';
+
             return redirect()->route('siswa.kuis.hasil', $kuis)
-                ->with('success', 'Kuis berhasil dikumpulkan.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Quiz submission error for student #'.$siswa->id.' quiz #'.$kuis->id.': ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat menyimpan hasil kuis. Silakan coba lagi.');
         }
     }
 
     /**
      * Display quiz result: score, correct/wrong count, answer key per question (Req 8.8)
+     * 
+     * FIXED: Verify waktu_selesai is set
      */
     public function hasil(Kuis $kuis)
     {
@@ -313,6 +362,12 @@ class SiswaKuisController extends Controller
         if (!$hasilKuis) {
             return redirect()->route('siswa.kuis.show', $kuis)
                 ->with('error', 'Anda belum mengerjakan kuis ini.');
+        }
+
+        // 🔒 FIX: Verify quiz is completed
+        if (!$hasilKuis->waktu_selesai) {
+            return redirect()->route('siswa.kuis.kerjakan', $kuis)
+                ->with('info', 'Kuis belum selesai. Silakan selesaikan terlebih dahulu.');
         }
 
         // Load all questions with answer keys

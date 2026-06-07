@@ -351,6 +351,7 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
 
     // Absensi
     Route::get('/siswa/absensi', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'index'])->name('siswa.absensi.index');
+    Route::post('/siswa/absensi/clock-in', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'clockIn'])->name('siswa.absensi.clockIn');
 
     // Jadwal Belajar
     Route::get('/siswa/jadwal', [\App\Http\Controllers\Siswa\SiswaJadwalController::class, 'index'])->name('siswa.jadwal.index');
