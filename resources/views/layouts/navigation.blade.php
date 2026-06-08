@@ -231,6 +231,7 @@
             @endif
         </a>
 
+        @endif
         {{-- Siswa --}}
         <a href="{{ route('siswa.index') }}"
             class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.*') }}">
@@ -244,7 +245,6 @@
                 <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
             @endif
         </a>
-        @endif
 
         {{-- ─────────────────────────────
              PEMBELAJARAN
