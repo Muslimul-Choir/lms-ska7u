@@ -7,25 +7,28 @@ use App\Http\Requests\Pertemuan\UpdatePertemuanRequest;
 use App\Models\Guru;
 use App\Models\JadwalBelajar;
 use App\Models\Pertemuan;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PertemuanController extends Controller
 {
+    // ── Public Methods ───────────────────────────────────────────────────
+
     public function index(Request $request): View|JsonResponse
     {
-        $user         = auth()->user();
+        /** @var \App\Models\User $user */
+        $user         = Auth::user();
         $isGuru       = $user->role === 'guru' && $user->guru;
         $isAdmin      = $user->role === 'admin';
         $isSuperAdmin = $user->role === 'super_admin';
 
-        $search       = $request->get('search');
-        $statusFilter = $request->get('status');
+        $search       = $request->input('search');
+        $statusFilter = $request->input('status');
 
-        // ── GURU: tampilan tabel, hanya data milik sendiri ──────────────
+        // ── GURU: tampilan tabel, hanya data milik sendiri ───────────────
         if ($isGuru) {
             $query = Pertemuan::with(['jadwalBelajar', 'guru'])
                 ->where('id_guru', $user->guru->id);
@@ -44,7 +47,7 @@ class PertemuanController extends Controller
             $pertemuans = $query
                 ->orderBy('id_jadwal')
                 ->orderBy('nomor_pertemuan')
-                ->paginate(5)           // ← 5 per halaman
+                ->paginate(5)
                 ->withQueryString();
 
             $trashCount = Pertemuan::onlyTrashed()
@@ -76,7 +79,7 @@ class PertemuanController extends Controller
         }
 
         // ── ADMIN / SUPER ADMIN: tampilan accordion per guru ─────────────
-        $idGuruFilter = $request->get('id_guru');
+        $idGuruFilter = $request->input('id_guru');
 
         $query = Pertemuan::with(['jadwalBelajar', 'guru', 'creator'])
             ->orderBy('created_by')
@@ -103,7 +106,7 @@ class PertemuanController extends Controller
         // Kelompokkan per id_guru
         $pertemuanByGuru = $allPertemuans
             ->groupBy('id_guru')
-            ->map(function ($items, $guruId) {
+            ->map(function ($items) {
                 $guruModel = $items->first()?->guru;
                 return [
                     'guru'       => $guruModel,
@@ -143,7 +146,8 @@ class PertemuanController extends Controller
 
     public function create(): View
     {
-        $user   = auth()->user();
+        /** @var \App\Models\User $user */
+        $user   = Auth::user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
         $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
@@ -170,7 +174,7 @@ class PertemuanController extends Controller
             ->findOrFail($data['id_jadwal']);
 
         $data['id_guru']    = $jadwal->guruMapel?->id_guru;
-        $data['created_by'] = auth()->id();
+        $data['created_by'] = Auth::id();
 
         Pertemuan::create($data);
 
@@ -192,7 +196,8 @@ class PertemuanController extends Controller
     {
         $this->authorizeGuru($pertemuan);
 
-        $user   = auth()->user();
+        /** @var \App\Models\User $user */
+        $user   = Auth::user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
         $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
@@ -244,20 +249,57 @@ class PertemuanController extends Controller
     }
 
     public function trash(Request $request): View
-{
-    $user         = auth()->user();
-    $isGuru       = $user->role === 'guru' && $user->guru;
-    $isAdmin      = $user->role === 'admin';
-    $isSuperAdmin = $user->role === 'super_admin';
+    {
+        /** @var \App\Models\User $user */
+        $user         = Auth::user();
+        $isGuru       = $user->role === 'guru' && $user->guru;
+        $isAdmin      = $user->role === 'admin';
+        $isSuperAdmin = $user->role === 'super_admin';
 
-    $search       = $request->get('search');
-    $statusFilter = $request->get('status');
+        $search       = $request->input('search');
+        $statusFilter = $request->input('status');
 
-    // ── GURU: tabel paginated, hanya milik sendiri ──────────────────
-    if ($isGuru) {
+        // ── GURU: tabel paginated, hanya milik sendiri ──────────────────
+        if ($isGuru) {
+            $query = Pertemuan::onlyTrashed()
+                ->with(['jadwalBelajar', 'guru'])
+                ->where('id_guru', $user->guru->id);
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nomor_pertemuan', 'like', "%{$search}%")
+                      ->orWhere('tanggal', 'like', "%{$search}%");
+                });
+            }
+
+            if ($statusFilter) {
+                $query->where('status', $statusFilter);
+            }
+
+            $pertemuans = $query
+                ->latest('deleted_at')
+                ->paginate(5)
+                ->withQueryString();
+
+            return view('pertemuan.trash', [
+                'pertemuans'   => $pertemuans,
+                'trashByGuru'  => collect(),
+                'gurus'        => collect(),
+                'search'       => $search,
+                'statusFilter' => $statusFilter,
+                'isGuru'       => true,
+                'isAdmin'      => false,
+                'isSuperAdmin' => false,
+            ]);
+        }
+
+        // ── ADMIN / SUPER ADMIN: accordion per guru ─────────────────────
+        $idGuruFilter = $request->input('id_guru');
+
         $query = Pertemuan::onlyTrashed()
             ->with(['jadwalBelajar', 'guru'])
-            ->where('id_guru', $user->guru->id);
+            ->orderBy('id_guru')
+            ->latest('deleted_at');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -266,80 +308,44 @@ class PertemuanController extends Controller
             });
         }
 
+        if ($idGuruFilter) {
+            $query->where('id_guru', $idGuruFilter);
+        }
+
         if ($statusFilter) {
             $query->where('status', $statusFilter);
         }
 
-        $pertemuans = $query
-            ->latest('deleted_at')
-            ->paginate(5)
-            ->withQueryString();
+        $allTrashed = $query->get();
+
+        // Kelompokkan per id_guru
+        $trashByGuru = $allTrashed
+            ->groupBy('id_guru')
+            ->map(function ($items) {
+                $guruModel = $items->first()?->guru;
+                return [
+                    'guru'       => $guruModel,
+                    'guruUser'   => $guruModel?->user,
+                    'pertemuans' => $items,
+                ];
+            });
+
+        // Daftar guru untuk dropdown filter
+        $guruIds = $allTrashed->pluck('id_guru')->unique()->filter();
+        $gurus   = Guru::with('user')->whereIn('id', $guruIds)->get();
 
         return view('pertemuan.trash', [
-            'pertemuans'   => $pertemuans,
-            'trashByGuru'  => collect(),
-            'gurus'        => collect(),
+            'pertemuans'   => collect(),
+            'trashByGuru'  => $trashByGuru,
+            'gurus'        => $gurus,
             'search'       => $search,
+            'idGuruFilter' => $idGuruFilter,
             'statusFilter' => $statusFilter,
-            'isGuru'       => true,
-            'isAdmin'      => false,
-            'isSuperAdmin' => false,
+            'isGuru'       => false,
+            'isAdmin'      => $isAdmin,
+            'isSuperAdmin' => $isSuperAdmin,
         ]);
     }
-
-    // ── ADMIN / SUPER ADMIN: accordion per guru ─────────────────────
-    $idGuruFilter = $request->get('id_guru');
-
-    $query = Pertemuan::onlyTrashed()
-        ->with(['jadwalBelajar', 'guru'])
-        ->orderBy('id_guru')
-        ->latest('deleted_at');
-
-    if ($search) {
-        $query->where(function ($q) use ($search) {
-            $q->where('nomor_pertemuan', 'like', "%{$search}%")
-              ->orWhere('tanggal', 'like', "%{$search}%");
-        });
-    }
-
-    if ($idGuruFilter) {
-        $query->where('id_guru', $idGuruFilter);
-    }
-
-    if ($statusFilter) {
-        $query->where('status', $statusFilter);
-    }
-
-    $allTrashed = $query->get();
-
-    // Kelompokkan per id_guru — sama persis seperti index
-    $trashByGuru = $allTrashed
-        ->groupBy('id_guru')
-        ->map(function ($items, $guruId) {
-            $guruModel = $items->first()?->guru;
-            return [
-                'guru'       => $guruModel,
-                'guruUser'   => $guruModel?->user,
-                'pertemuans' => $items,
-            ];
-        });
-
-    // Daftar guru untuk dropdown filter
-    $guruIds = $allTrashed->pluck('id_guru')->unique()->filter();
-    $gurus   = Guru::with('user')->whereIn('id', $guruIds)->get();
-
-    return view('pertemuan.trash', [
-        'pertemuans'   => collect(),
-        'trashByGuru'  => $trashByGuru,
-        'gurus'        => $gurus,
-        'search'       => $search,
-        'idGuruFilter' => $idGuruFilter,
-        'statusFilter' => $statusFilter,
-        'isGuru'       => false,
-        'isAdmin'      => $isAdmin,
-        'isSuperAdmin' => $isSuperAdmin,
-    ]);
-}
 
     public function restore(string $id): RedirectResponse
     {
@@ -369,7 +375,8 @@ class PertemuanController extends Controller
 
     public function restoreAll(): RedirectResponse
     {
-        $user  = auth()->user();
+        /** @var \App\Models\User $user */
+        $user  = Auth::user();
         $query = Pertemuan::onlyTrashed();
 
         if ($user->role === 'guru' && $user->guru) {
@@ -385,7 +392,8 @@ class PertemuanController extends Controller
 
     public function forceDeleteAll(): RedirectResponse
     {
-        $user  = auth()->user();
+        /** @var \App\Models\User $user */
+        $user  = Auth::user();
         $query = Pertemuan::onlyTrashed();
 
         if ($user->role === 'guru' && $user->guru) {
@@ -406,7 +414,10 @@ class PertemuanController extends Controller
         $query = JadwalBelajar::with(['guruMapel', 'kelas']);
 
         if ($isGuru) {
-            $guru = auth()->user()->guru;
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $guru = $user->guru;
+
             $query->whereHas('guruMapel', function ($q) use ($guru) {
                 $q->where('id_guru', $guru->id);
             });
@@ -417,7 +428,8 @@ class PertemuanController extends Controller
 
     private function authorizeGuru(Pertemuan $pertemuan): void
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         if (
             $user->role === 'guru' &&
