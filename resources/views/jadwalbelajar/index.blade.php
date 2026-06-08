@@ -71,13 +71,6 @@
                                 @endif
                             </a>
                         @endif
-                        <button onclick="window.print()"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                            </svg>
-                            Print
-                        </button>
                         @if(!$isAdmin)
                             <span class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-200">
                                 👁️ Mode Lihat Saja
@@ -96,7 +89,7 @@
                         </label>
                         <select name="tingkat" id="filterTingkat"
                                 class="rounded-xl border min-w-[130px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
-                            <option value="">Semua Tingkat</option>
+                            <option value="">Pilih Tingkat</option>
                             @foreach ($tingkatanList as $tkt)
                                 <option value="{{ $tkt->id }}" {{ $tingkat == $tkt->id ? 'selected' : '' }}>
                                     {{ $tkt->nama_tingkatan }}
@@ -144,7 +137,7 @@
                                 <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                 </svg>
-                                Pilih kelas terlebih dahulu
+                                Pilih Tingkatan dan kelas terlebih dahulu
                             </p>
                         </div>
                     </div>
@@ -217,7 +210,7 @@
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <p class="text-gray-500 text-sm font-semibold">Pilih Kelas Terlebih Dahulu</p>
+                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkatan dan Kelas Terlebih Dahulu</p>
                         <p class="text-gray-300 text-xs max-w-xs">
                             @if($tingkat)
                                 Tingkat sudah dipilih. Silakan pilih kelas dari daftar di atas untuk menampilkan jadwal belajar.
@@ -412,22 +405,6 @@
                     </div>
                 @endif
 
-                <style>
-                    @media print {
-                        .bg-amber-50 {
-                            background-color: #fffbeb !important;
-                        }
-
-                        table {
-                            border: 1px solid #d1d5db;
-                        }
-
-                        th,
-                        td {
-                            border: 1px solid #d1d5db;
-                        }
-                    }
-                </style>
             @endif
 
         </div>
