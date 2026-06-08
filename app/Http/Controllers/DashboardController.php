@@ -184,7 +184,7 @@ class DashboardController extends Controller
         $tugasDeadline = Tugas::whereIn('id', $myTugasIds)
             ->where('status', 'published')
             ->whereBetween('batas_waktu', [$now, $in7days])
-            ->with(['Mapel', 'GuruMapel.Kelas'])
+            ->with(['Mapel', 'Pertemuan.JadwalBelajar.Kelas'])
             ->orderBy('batas_waktu')
             ->get()
             ->map(function ($tugas) use ($now) {
@@ -197,7 +197,7 @@ class DashboardController extends Controller
         $kuisDeadline = Kuis::whereIn('id', $myKuisIds)
             ->where('status', 'published')
             ->whereBetween('batas_selesai', [$now, $in7days])
-            ->with(['GuruMapel.Kelas', 'GuruMapel.Mapel'])
+            ->with(['GuruMapel.Mapel', 'Pertemuan.JadwalBelajar.Kelas'])
             ->orderBy('batas_selesai')
             ->get()
             ->map(function ($kuis) use ($now) {
