@@ -47,7 +47,7 @@ class TugasController extends Controller
         }
 
         $pertemuans = $pertemuanQuery
-            ->with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.guruMapel.guru', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas'])
+            ->with(['jadwalBelajar.GuruMapel.Mapel', 'jadwalBelajar.GuruMapel.Guru', 'jadwalBelajar.Mapel', 'jadwalBelajar.Kelas'])
             ->orderBy('nomor_pertemuan')
             ->paginate(5)
             ->withQueryString();
@@ -55,7 +55,7 @@ class TugasController extends Controller
         $pertemuanIds = $pertemuans->pluck('id');
         
         // Get tugas for these pertemuans
-        $tugasQuery = Tugas::with(['pertemuan', 'guru', 'mapel', 'guruMapel.guru', 'guruMapel.kelas'])
+        $tugasQuery = Tugas::with(['Pertemuan', 'Guru', 'Mapel', 'GuruMapel.Guru', 'GuruMapel.Mapel'])
             ->whereIn('id_pertemuan', $pertemuanIds);
 
         if ($isGuru) {
@@ -86,7 +86,7 @@ class TugasController extends Controller
         $kelasList = $kelasQuery->get();
         
         // Get all pertemuan for dropdown (filtered by guru)
-        $allPertemuanQuery = \App\Models\Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas']);
+        $allPertemuanQuery = \App\Models\Pertemuan::with(['JadwalBelajar.GuruMapel.Mapel', 'JadwalBelajar.Mapel', 'JadwalBelajar.Kelas']);
         if ($isGuru) {
             $guru = $user->guru;
             $allPertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {

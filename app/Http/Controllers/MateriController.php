@@ -46,7 +46,7 @@ class MateriController extends Controller
         }
 
         $pertemuans = $pertemuanQuery
-            ->with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.guruMapel.guru', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas'])
+            ->with(['JadwalBelajar.GuruMapel.Mapel', 'JadwalBelajar.GuruMapel.Guru', 'JadwalBelajar.Mapel', 'JadwalBelajar.Kelas'])
             ->orderBy('nomor_pertemuan')
             ->paginate(5)
             ->withQueryString();
@@ -54,7 +54,7 @@ class MateriController extends Controller
         $pertemuanIds = $pertemuans->pluck('id');
         
         // Get materis for these pertemuans
-        $materiQuery = Materi::with(['pertemuan', 'mapel', 'guruMapel.guru'])
+        $materiQuery = Materi::with(['Pertemuan', 'Mapel', 'GuruMapel.Guru'])
             ->whereIn('id_pertemuan', $pertemuanIds);
 
         if ($q) {
@@ -81,7 +81,7 @@ class MateriController extends Controller
         $kelasList = $kelasQuery->get();
         
         // Get all pertemuan for dropdown (filtered by guru)
-        $allPertemuanQuery = \App\Models\Pertemuan::with(['jadwalBelajar.guruMapel.mapel', 'jadwalBelajar.mapel', 'jadwalBelajar.kelas']);
+        $allPertemuanQuery = \App\Models\Pertemuan::with(['JadwalBelajar.GuruMapel.Mapel', 'JadwalBelajar.Mapel', 'JadwalBelajar.Kelas']);
         if ($isGuru) {
             $guru = $user->guru;
             $allPertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
@@ -110,13 +110,13 @@ class MateriController extends Controller
         }
 
         // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar
-        $pertemuan = \App\Models\Pertemuan::with('jadwalBelajar.guruMapel.mapel')->find($validated['id_pertemuan']);
-        $jadwal = $pertemuan?->jadwalBelajar;
+        $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
+        $jadwal = $pertemuan?->JadwalBelajar;
         if ($jadwal) {
             $guruMapelId = $jadwal->id_guru_mapel;
             if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
                 $validated['id_guru_mapel'] = $guruMapelId;
-                $mapelId = $jadwal->guruMapel?->id_mapel ?? $jadwal->id_mapel;
+                $mapelId = $jadwal->GuruMapel?->id_mapel ?? $jadwal->id_mapel;
                 if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
                     $validated['id_mapel'] = $mapelId;
                 } else {
@@ -152,8 +152,8 @@ class MateriController extends Controller
         }
 
         // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar
-        $pertemuan = \App\Models\Pertemuan::with('jadwalBelajar.guruMapel.mapel')->find($validated['id_pertemuan']);
-        $jadwal = $pertemuan?->jadwalBelajar;
+        $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
+        $jadwal = $pertemuan?->JadwalBelajar;
         if ($jadwal) {
             $guruMapelId = $jadwal->id_guru_mapel;
             if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
