@@ -14,7 +14,6 @@
                 style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
                 <div class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none"></div>
                 <div class="absolute w-[70px] h-[70px] rounded-full top-[10px] right-[70px] border border-[rgba(232,147,10,0.12)] pointer-events-none"></div>
-
                 <div class="flex items-center gap-3 relative">
                     <div class="w-[38px] h-[38px] rounded-[10px] bg-[rgba(232,147,10,0.2)] flex items-center justify-center flex-shrink-0">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5">
@@ -26,7 +25,6 @@
                         <p class="text-[rgba(255,255,255,0.5)] text-[11px] m-0">Isi data penugasan guru ke mapel</p>
                     </div>
                 </div>
-
                 <button type="button" onclick="closeCreateModal()"
                     class="w-[30px] h-[30px] rounded-lg bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.22)] border-none cursor-pointer flex items-center justify-center relative transition-all duration-200">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
@@ -39,7 +37,8 @@
             <div class="h-[3px]" style="background: linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
 
             {{-- Body --}}
-            <form action="{{ route('guru_mapel.store') }}" id="createFormAction" method="POST" class="p-6 flex flex-col gap-[16px]">
+            <form action="{{ route('guru_mapel.store') }}" id="createFormAction" method="POST"
+                class="p-6 flex flex-col gap-[16px]">
                 @csrf
                 <input type="hidden" name="_modal" value="create">
 
@@ -49,18 +48,22 @@
                         Mata Pelajaran <span class="text-red-500">*</span>
                     </label>
                     <select name="id_mapel"
-                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
-                        {{ $errors->has('id_mapel') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200
+                               focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                               {{ $errors->has('id_mapel') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
                         <option value="">Pilih Mata Pelajaran</option>
                         @foreach($mapels as $mapel)
-                            <option value="{{ $mapel->id }}" {{ old('id_mapel') == $mapel->id ? 'selected' : '' }}>
+                            <option value="{{ $mapel->id }}"
+                                {{ old('id_mapel') == $mapel->id ? 'selected' : '' }}>
                                 {{ $mapel->nama_mapel }}
                             </option>
                         @endforeach
                     </select>
                     @if ($errors->has('id_mapel') && old('_modal') === 'create')
                         <p class="flex items-center gap-1 text-xs text-red-600">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
                             {{ $errors->first('id_mapel') }}
                         </p>
                     @endif
@@ -71,21 +74,39 @@
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
                         Guru <span class="text-red-500">*</span>
                     </label>
-                    <select name="id_guru"
-                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
-                        {{ $errors->has('id_guru') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
-                        <option value="">Pilih Guru</option>
-                        @foreach($gurus as $guru)
-                            <option value="{{ $guru->id }}" {{ old('id_guru') == $guru->id ? 'selected' : '' }}>
-                                {{ $guru->nama_lengkap }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @if ($errors->has('id_guru') && old('_modal') === 'create')
-                        <p class="flex items-center gap-1 text-xs text-red-600">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            {{ $errors->first('id_guru') }}
-                        </p>
+
+                    @if($availableGurus->isEmpty())
+                        {{-- Semua guru sudah dipakai --}}
+                        <div class="flex items-center gap-2 rounded-[10px] border border-amber-200 bg-amber-50 py-[10px] px-[14px]">
+                            <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            <p class="text-amber-800 text-[13px] font-medium m-0">
+                                Semua guru sudah ditugaskan ke mapel.
+                            </p>
+                        </div>
+                        <input type="hidden" name="id_guru" value="">
+                    @else
+                        <select name="id_guru"
+                            class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200
+                                   focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                                   {{ $errors->has('id_guru') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                            <option value="">Pilih Guru</option>
+                            @foreach($availableGurus as $guru)
+                                <option value="{{ $guru->id }}"
+                                    {{ old('id_guru') == $guru->id ? 'selected' : '' }}>
+                                    {{ $guru->nama_lengkap }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($errors->has('id_guru') && old('_modal') === 'create')
+                            <p class="flex items-center gap-1 text-xs text-red-600">
+                                <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ $errors->first('id_guru') }}
+                            </p>
+                        @endif
                     @endif
                 </div>
 
@@ -95,18 +116,22 @@
                         Semester <span class="text-red-500">*</span>
                     </label>
                     <select name="id_semester"
-                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
-                        {{ $errors->has('id_semester') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                        class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200
+                               focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                               {{ $errors->has('id_semester') && old('_modal') === 'create' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
                         <option value="">Pilih Semester</option>
                         @foreach($semesters as $semester)
-                            <option value="{{ $semester->id }}" {{ old('id_semester') == $semester->id ? 'selected' : '' }}>
+                            <option value="{{ $semester->id }}"
+                                {{ old('id_semester') == $semester->id ? 'selected' : '' }}>
                                 {{ $semester->nama_semester }}
                             </option>
                         @endforeach
                     </select>
                     @if ($errors->has('id_semester') && old('_modal') === 'create')
                         <p class="flex items-center gap-1 text-xs text-red-600">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
                             {{ $errors->first('id_semester') }}
                         </p>
                     @endif
@@ -119,6 +144,7 @@
                         Batal
                     </button>
                     <button type="submit" id="createSubmitBtn"
+                        {{ $availableGurus->isEmpty() ? 'disabled' : '' }}
                         class="inline-flex items-center gap-[6px] px-[22px] py-[9px] text-[13.5px] font-bold text-white border-none rounded-[10px] cursor-pointer transition-all duration-200 shadow-[0_2px_8px_rgba(107,26,43,0.25)] disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90"
                         style="background: linear-gradient(135deg,#6B1A2B,#9B3045);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

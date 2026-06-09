@@ -56,7 +56,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                         <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Filter Jadwal</h3>
-                        <p class="text-xs text-gray-400 mt-0.5">Pilih tingkat dan kelas untuk menampilkan jadwal</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Pilih tingkat, jurusan, dan kelas untuk menampilkan jadwal</p>
                     </div>
                     <div class="flex items-center gap-2">
                         @if($isAdmin)
@@ -71,13 +71,6 @@
                                 @endif
                             </a>
                         @endif
-                        <button onclick="window.print()"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                            </svg>
-                            Print
-                        </button>
                         @if(!$isAdmin)
                             <span class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-200">
                                 👁️ Mode Lihat Saja
@@ -89,22 +82,41 @@
                 <form id="formFilterJadwal" method="GET" action="{{ route('jadwalbelajar.index') }}"
                     class="flex flex-wrap items-end gap-2">
 
-                    {{-- Filter Tingkat --}}
+                    {{-- ── Filter Tingkat ── --}}
                     <div class="flex flex-col gap-1">
                         <label for="filterTingkat" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                             Tingkat
                         </label>
                         <select name="tingkat" id="filterTingkat"
                                 class="rounded-xl border min-w-[130px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
-                            <option value="">Semua Tingkat</option>
+                            <option value="">Pilih Tingkat</option>
                             @foreach ($tingkatanList as $tkt)
                                 <option value="{{ $tkt->id }}" {{ $tingkat == $tkt->id ? 'selected' : '' }}>
                                     {{ $tkt->nama_tingkatan }}
                                 </option>
                             @endforeach
                         </select>
+                        {{-- Spacer agar sejajar dengan select lain yang punya hint --}}
+                        <div class="h-4 mt-0.5"></div>
+                    </div>
+
+                    {{-- ── Filter Jurusan ── --}}
+                    <div class="flex flex-col gap-1">
+                        <label for="filterJurusan" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            Jurusan
+                        </label>
+                        <select name="jurusan" id="filterJurusan"
+                                class="rounded-xl border min-w-[160px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                            <option value="">Pilih Jurusan</option>
+                            @foreach ($jurusanList as $jrs)
+                                <option value="{{ $jrs->id }}" {{ $jurusan == $jrs->id ? 'selected' : '' }}>
+                                    {{ $jrs->nama_jurusan }}
+                                </option>
+                            @endforeach
+                        </select>
                         <div class="h-4 mt-0.5">
-                            <p id="tingkatHintMsg" class="text-[10px] text-amber-500 font-medium flex items-center gap-1 {{ $tingkat && !$idKelas ? '' : 'hidden' }}">
+                            <p id="jurusanHintMsg" class="hidden text-[10px] text-amber-500 font-medium flex items-center gap-1">
                                 <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                 </svg>
@@ -113,27 +125,29 @@
                         </div>
                     </div>
 
-                    {{-- Filter Kelas --}}
+                    {{-- ── Filter Kelas ── --}}
                     <div class="flex flex-col gap-1 justify-end" id="kelasWrapper">
                         <label for="filterKelas" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                             Kelas <span class="text-red-400">*</span>
                         </label>
                         <select name="id_kelas" id="filterKelas"
-                                class="rounded-xl border min-w-[180px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition"
+                                class="rounded-xl border min-w-[200px] border-gray-200 bg-gray-50 py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 @if($isGuru && $kelasList->isEmpty()) disabled @endif>
-                            <option value="">Pilih Kelas</option>
+                            <option value="">— Pilih tingkat dulu —</option>
                             @foreach ($kelasList as $kls)
                                 @php
                                     $namaKls = trim(
                                         ($kls->Tingkatan->nama_tingkatan ?? '') .
-                                            ' ' .
-                                            ($kls->Jurusan->nama_jurusan ?? '') .
-                                            ' ' .
-                                            ($kls->Bagian->nama_bagian ?? ''),
+                                        ' ' .
+                                        ($kls->Jurusan->nama_jurusan ?? '') .
+                                        ' ' .
+                                        ($kls->Bagian->nama_bagian ?? ''),
                                     );
                                 @endphp
-                                <option value="{{ $kls->id }}" data-tingkat="{{ $kls->Tingkatan->id ?? '' }}"
-                                    {{ $idKelas == $kls->id ? 'selected' : '' }}>
+                                <option value="{{ $kls->id }}"
+                                        data-tingkat="{{ $kls->Tingkatan->id ?? '' }}"
+                                        data-jurusan="{{ $kls->Jurusan->id ?? '' }}"
+                                        {{ $idKelas == $kls->id ? 'selected' : '' }}>
                                     {{ $namaKls }}
                                 </option>
                             @endforeach
@@ -144,41 +158,45 @@
                                 <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                 </svg>
-                                Pilih kelas terlebih dahulu
+                                Pilih tingkat dan kelas terlebih dahulu
                             </p>
                         </div>
                     </div>
 
+                    {{-- ── Tombol Aksi ── --}}
                     <div class="flex flex-col gap-1">
                         <div class="text-[10px] invisible select-none">x</div>{{-- label spacer --}}
                         <div class="flex items-center gap-2">
-                        <button type="submit" id="btnCariJadwal"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Cari Jadwal
-                        </button>
-
-                        @if ($idKelas || $tingkat)
-                            <a href="{{ route('jadwalbelajar.index') }}"
-                               class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                            <button type="submit" id="btnCariJadwal"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                Reset
-                            </a>
-                        @endif
-                        </div>{{-- /flex items-center --}}
+                                Cari Jadwal
+                            </button>
+
+                            @if ($idKelas || $tingkat || $jurusan)
+                                <a href="{{ route('jadwalbelajar.index') }}"
+                                   class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                    </svg>
+                                    Reset
+                                </a>
+                            @endif
+                        </div>
                         <div class="h-4 mt-0.5"></div>{{-- bottom spacer --}}
-                    </div>{{-- /flex flex-col --}}
+                    </div>
+
                 </form>
             </div>
 
-            {{-- GRID JADWAL --}}
+            {{-- ════════════════════════════════
+                 GRID JADWAL
+            ════════════════════════════════ --}}
             @if ($isGuru && $kelasList->isEmpty())
                 <div class="bg-white rounded-2xl border border-blue-200 shadow-sm px-6 py-20 text-center">
                     <div class="flex flex-col items-center gap-3">
@@ -207,7 +225,7 @@
                 </div>
 
             @elseif (!$idKelas && !$isGuru)
-                {{-- Tampilkan state kosong jika kelas belum dipilih (baik ada/tidak tingkat) --}}
+                {{-- State kosong: kelas belum dipilih --}}
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-20 text-center">
                     <div class="flex flex-col items-center gap-3">
                         <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
@@ -217,12 +235,14 @@
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <p class="text-gray-500 text-sm font-semibold">Pilih Kelas Terlebih Dahulu</p>
+                        <p class="text-gray-500 text-sm font-semibold">Pilih Tingkatan, Jurusan, dan Kelas Terlebih Dahulu</p>
                         <p class="text-gray-300 text-xs max-w-xs">
-                            @if($tingkat)
-                                Tingkat sudah dipilih. Silakan pilih kelas dari daftar di atas untuk menampilkan jadwal belajar.
+                            @if($tingkat && $jurusan)
+                                Tingkat dan jurusan sudah dipilih. Silakan pilih kelas dari daftar di atas.
+                            @elseif($tingkat)
+                                Tingkat sudah dipilih. Silakan pilih jurusan lalu kelas.
                             @else
-                                Silakan pilih tingkat dan kelas terlebih dahulu untuk menampilkan jadwal belajar.
+                                Silakan pilih tingkat, jurusan, dan kelas untuk menampilkan jadwal belajar.
                             @endif
                         </p>
                         <div
@@ -237,7 +257,7 @@
                 </div>
 
             @else
-                {{-- Jadwal Grid Card — hanya tampil jika $idKelas ada --}}
+                {{-- Jadwal Grid Card --}}
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
                     {{-- Card Header --}}
@@ -249,7 +269,6 @@
                             @endif
                         </div>
 
-                        {{-- Info kelas yang sedang difilter --}}
                         @if($idKelas)
                             @php
                                 $kelasAktif = $kelasList->firstWhere('id', $idKelas);
@@ -412,22 +431,6 @@
                     </div>
                 @endif
 
-                <style>
-                    @media print {
-                        .bg-amber-50 {
-                            background-color: #fffbeb !important;
-                        }
-
-                        table {
-                            border: 1px solid #d1d5db;
-                        }
-
-                        th,
-                        td {
-                            border: 1px solid #d1d5db;
-                        }
-                    }
-                </style>
             @endif
 
         </div>
@@ -524,9 +527,6 @@
                 const mapelSelect = document.getElementById('editIdMapel');
                 if (!mapelSelect.disabled) mapelSelect.value = d.idMapel ?? '';
 
-                /* Auto-isi kelas:
-                 *  - Jika filter kelas aktif → pakai filter (dan lock supaya tidak bisa diubah)
-                 *  - Jika tidak ada filter    → pakai kelas dari data jadwal itu sendiri */
                 const editKelasSelect = document.getElementById('editIdKelas');
                 if (ACTIVE_KELAS_ID) {
                     editKelasSelect.value = ACTIVE_KELAS_ID;
@@ -565,25 +565,85 @@
             @endif
 
             /* ================================================================
-             *  FILTER: Sinkronisasi Tingkat → Kelas
+             *  FILTER: Sinkronisasi 3-level → Tingkat → Jurusan → Kelas
+             * ================================================================
+             *
+             *  Setiap <option> kelas membawa:
+             *    data-tingkat="id_tingkatan"
+             *    data-jurusan="id_jurusan"
+             *
+             *  Alur:
+             *  1. Pilih Tingkat  → Jurusan di-enable & di-filter sesuai jurusan
+             *                       yang DIMILIKI kelas di tingkat tersebut
+             *                       Kelas dikosongkan & dinonaktifkan
+             *  2. Pilih Jurusan  → Kelas di-enable & di-filter sesuai
+             *                       tingkat + jurusan yang dipilih
+             *  3. Pilih Kelas    → tombol submit bisa diklik
              * ================================================================ */
+
             const filterTingkat = document.getElementById('filterTingkat');
+            const filterJurusan = document.getElementById('filterJurusan');
             const filterKelas   = document.getElementById('filterKelas');
             const btnCari       = document.getElementById('btnCariJadwal');
             const validasiMsg   = document.getElementById('kelasValidationMsg');
+            const jurusanHint   = document.getElementById('jurusanHintMsg');
 
-            /* Tampilkan/sembunyikan opsi kelas sesuai tingkat yang dipilih */
-            function filterKelasByTingkat(selectedTingkat) {
-                filterKelas.querySelectorAll('option').forEach(opt => {
-                    if (!opt.value) return;
-                    const match = !selectedTingkat || opt.dataset.tingkat == selectedTingkat;
-                    opt.style.display = match ? '' : 'none';
-                    if (!match && opt.selected) filterKelas.value = '';
+            /* Kumpulkan semua opsi kelas (kecuali placeholder) sekali saja */
+            const allKelasOptions = Array.from(filterKelas.options).filter(o => o.value !== '');
+
+            /* ── 1. Fungsi filter jurusan berdasarkan tingkat yang dipilih ── */
+            function filterJurusanByTingkat(selectedTingkat) {
+                /* Kumpulkan id jurusan yang relevan untuk tingkat ini */
+                const relevantJurusanIds = new Set(
+                    allKelasOptions
+                        .filter(o => !selectedTingkat || o.dataset.tingkat == selectedTingkat)
+                        .map(o => o.dataset.jurusan)
+                );
+
+                Array.from(filterJurusan.options).forEach(opt => {
+                    if (!opt.value) return; /* skip placeholder */
+                    const visible = !selectedTingkat || relevantJurusanIds.has(opt.value);
+                    opt.style.display = visible ? '' : 'none';
+                    if (!visible && opt.selected) filterJurusan.value = '';
                 });
+
+                /* Enable/disable jurusan select */
+                filterJurusan.disabled = !selectedTingkat;
+            }
+
+            /* ── 2. Fungsi filter kelas berdasarkan tingkat + jurusan ── */
+            function filterKelasByTingkatAndJurusan(selectedTingkat, selectedJurusan) {
+                let anyVisible = false;
+
+                allKelasOptions.forEach(opt => {
+                    const matchTingkat  = !selectedTingkat || opt.dataset.tingkat == selectedTingkat;
+                    const matchJurusan  = !selectedJurusan || opt.dataset.jurusan == selectedJurusan;
+                    const visible       = matchTingkat && matchJurusan;
+
+                    opt.style.display = visible ? '' : 'none';
+                    if (!visible && opt.selected) filterKelas.value = '';
+                    if (visible) anyVisible = true;
+                });
+
+                /* Enable kelas hanya jika tingkat sudah dipilih */
+                filterKelas.disabled = !selectedTingkat;
+
+                /* Ganti teks placeholder sesuai kondisi */
+                const placeholder = filterKelas.options[0];
+                if (!selectedTingkat) {
+                    placeholder.text = '— Pilih tingkat dulu —';
+                } else if (!selectedJurusan) {
+                    placeholder.text = '— Pilih jurusan dulu —';
+                } else if (!anyVisible) {
+                    placeholder.text = '— Tidak ada kelas —';
+                } else {
+                    placeholder.text = 'Pilih Kelas';
+                }
+
                 updateSubmitState();
             }
 
-            /* Aktifkan/nonaktifkan tombol submit berdasarkan pilihan kelas */
+            /* ── 3. Aktifkan/nonaktifkan tombol submit ── */
             function updateSubmitState() {
                 const hasKelas = !!filterKelas.value;
                 if (btnCari) {
@@ -593,37 +653,53 @@
                 }
             }
 
-            /* Hint "jangan lupa pilih kelas" di bawah select tingkat */
-            const tingkatHintMsg = document.getElementById('tingkatHintMsg');
-
-            function updateTingkatHint() {
-                const hasTingkat = !!filterTingkat.value;
-                const hasKelas   = !!filterKelas.value;
-                if (tingkatHintMsg) {
-                    tingkatHintMsg.classList.toggle('hidden', !hasTingkat || hasKelas);
+            /* ── 4. Hint "jangan lupa pilih kelas" di bawah select jurusan ── */
+            function updateJurusanHint() {
+                const hasTingkat  = !!filterTingkat.value;
+                const hasJurusan  = !!filterJurusan.value;
+                const hasKelas    = !!filterKelas.value;
+                if (jurusanHint) {
+                    jurusanHint.classList.toggle('hidden', !hasTingkat || !hasJurusan || hasKelas);
                 }
             }
 
-            /* Jalankan saat halaman load */
-            filterKelasByTingkat(filterTingkat.value);
-            updateTingkatHint();
+            /* ── Inisialisasi saat halaman load ── */
+            (function init() {
+                const initTingkat  = filterTingkat.value;
+                const initJurusan  = filterJurusan.value;
 
-            /* Saat tingkat berubah: reset kelas lalu filter ulang */
+                /* Terapkan state awal */
+                filterJurusanByTingkat(initTingkat);
+                filterKelasByTingkatAndJurusan(initTingkat, initJurusan);
+                updateJurusanHint();
+            })();
+
+            /* ── Event: Tingkat berubah ── */
             filterTingkat.addEventListener('change', function () {
-                filterKelas.value = '';
+                filterJurusan.value = '';
+                filterKelas.value   = '';
                 hideKelasError();
-                filterKelasByTingkat(this.value);
-                updateTingkatHint();
+                filterJurusanByTingkat(this.value);
+                filterKelasByTingkatAndJurusan(this.value, '');
+                updateJurusanHint();
             });
 
-            /* Saat kelas berubah: sembunyikan error, update tombol, dan sembunyikan hint */
+            /* ── Event: Jurusan berubah ── */
+            filterJurusan.addEventListener('change', function () {
+                filterKelas.value = '';
+                hideKelasError();
+                filterKelasByTingkatAndJurusan(filterTingkat.value, this.value);
+                updateJurusanHint();
+            });
+
+            /* ── Event: Kelas berubah ── */
             filterKelas.addEventListener('change', function () {
                 hideKelasError();
                 updateSubmitState();
-                updateTingkatHint();
+                updateJurusanHint();
             });
 
-            /* Validasi saat form di-submit */
+            /* ── Validasi saat form di-submit ── */
             document.getElementById('formFilterJadwal').addEventListener('submit', function (e) {
                 if (!filterKelas.value) {
                     e.preventDefault();
