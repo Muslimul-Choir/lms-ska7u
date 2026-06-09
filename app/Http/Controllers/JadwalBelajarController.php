@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JadwalBelajar;
 use App\Models\JamBelajar;
+use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\GuruMapel;
 use App\Models\Mapel;
@@ -32,12 +33,14 @@ class JadwalBelajarController extends Controller
             'Minggu'
         ];
 
-        $idKelas = $request->get('id_kelas');
-        $tingkat = $request->get('tingkat');
+        $idKelas  = $request->get('id_kelas');
+        $tingkat  = $request->get('tingkat');
+        $jurusan  = $request->get('jurusan');
 
         $jamList = JamBelajar::orderBy('jam_mulai')->get();
 
         $tingkatanList = Tingkatan::orderBy('nama_tingkatan')->get();
+        $jurusanList   = Jurusan::orderBy('nama_jurusan')->get();
 
         if ($isGuru) {
             $guru = $user->guru;
@@ -122,12 +125,14 @@ class JadwalBelajarController extends Controller
             'hariList',
             'jamList',
             'tingkatanList',
+            'jurusanList',
             'kelasList',
             'guruMapelList',
             'mapelList',
             'grid',
             'idKelas',
             'tingkat',
+            'jurusan',
             'isAdmin',
             'isGuru',
             'jadwals',
@@ -166,12 +171,12 @@ class JadwalBelajarController extends Controller
         if (empty($validated['nama_kegiatan'])) {
             $kelas = Kelas::with(['tingkatan', 'jurusan', 'bagian'])->find($validated['id_kelas']);
             $guruMapel = $validated['id_guru_mapel'] ? GuruMapel::with(['guru', 'mapel'])->find($validated['id_guru_mapel']) : null;
-            
+
             if ($guruMapel && $kelas) {
-                $namaGuru = $guruMapel->guru?->nama_lengkap ?? 'Guru';
+                $namaGuru  = $guruMapel->guru?->nama_lengkap ?? 'Guru';
                 $namaMapel = $guruMapel->mapel?->nama_mapel ?? 'Mapel';
                 $namaKelas = $kelas->tingkatan?->nama_tingkatan . ' ' . $kelas->jurusan?->nama_jurusan . ' ' . $kelas->bagian?->nama_bagian;
-                
+
                 $validated['nama_kegiatan'] = $namaGuru . ' - ' . $namaMapel . ' - ' . $namaKelas;
             }
         }
@@ -213,12 +218,12 @@ class JadwalBelajarController extends Controller
         if (empty($validated['nama_kegiatan'])) {
             $kelas = Kelas::with(['tingkatan', 'jurusan', 'bagian'])->find($validated['id_kelas']);
             $guruMapel = $validated['id_guru_mapel'] ? GuruMapel::with(['guru', 'mapel'])->find($validated['id_guru_mapel']) : null;
-            
+
             if ($guruMapel && $kelas) {
-                $namaGuru = $guruMapel->guru?->nama_lengkap ?? 'Guru';
+                $namaGuru  = $guruMapel->guru?->nama_lengkap ?? 'Guru';
                 $namaMapel = $guruMapel->mapel?->nama_mapel ?? 'Mapel';
                 $namaKelas = $kelas->tingkatan?->nama_tingkatan . ' ' . $kelas->jurusan?->nama_jurusan . ' ' . $kelas->bagian?->nama_bagian;
-                
+
                 $validated['nama_kegiatan'] = $namaGuru . ' - ' . $namaMapel . ' - ' . $namaKelas;
             }
         }
@@ -241,49 +246,49 @@ class JadwalBelajarController extends Controller
     }
 
     public function trash(Request $request): View
-{
-    $kelasList = Kelas::with([
-        'Tingkatan',
-        'Jurusan',
-        'Bagian'
-    ])->get();
+    {
+        $kelasList = Kelas::with([
+            'Tingkatan',
+            'Jurusan',
+            'Bagian'
+        ])->get();
 
-    $query = JadwalBelajar::onlyTrashed()
-        ->with([
-            'JamBelajar',
-            'Kelas.Tingkatan',
-            'Kelas.Jurusan',
-            'Kelas.Bagian',
-            'GuruMapel.Guru',
-            'GuruMapel.Mapel',
-            'Mapel'
-        ]);
+        $query = JadwalBelajar::onlyTrashed()
+            ->with([
+                'JamBelajar',
+                'Kelas.Tingkatan',
+                'Kelas.Jurusan',
+                'Kelas.Bagian',
+                'GuruMapel.Guru',
+                'GuruMapel.Mapel',
+                'Mapel'
+            ]);
 
-    if ($request->filled('search')) {
-        $query->where(function ($q) use ($request) {
-            $q->where('hari', 'like', '%' . $request->search . '%')
-              ->orWhere('nama_kegiatan', 'like', '%' . $request->search . '%');
-        });
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('hari', 'like', '%' . $request->search . '%')
+                  ->orWhere('nama_kegiatan', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('hari')) {
+            $query->where('hari', $request->hari);
+        }
+
+        if ($request->filled('id_kelas')) {
+            $query->where('id_kelas', $request->id_kelas);
+        }
+
+        $jadwals = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('jadwalbelajar.trash', compact(
+            'jadwals',
+            'kelasList'
+        ));
     }
-
-    if ($request->filled('hari')) {
-        $query->where('hari', $request->hari);
-    }
-
-    if ($request->filled('id_kelas')) {
-        $query->where('id_kelas', $request->id_kelas);
-    }
-
-    $jadwals = $query
-        ->latest()
-        ->paginate(10)
-        ->withQueryString();
-
-    return view('jadwalbelajar.trash', compact(
-        'jadwals',
-        'kelasList'
-    ));
-}
 
     public function restore(JadwalBelajar $jadwalbelajar): RedirectResponse
     {
