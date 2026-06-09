@@ -203,20 +203,6 @@
         ───────────────────────────── --}}
         <p class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#c9982a]">Manajemen Pengguna</p>
 
-        {{-- Admin Management --}}
-        <a href="{{ route('users.index') }}"
-            class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('users.*') }}">
-            <svg class="{{ iconActive('users.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span class="flex-1 truncate tracking-wide {{ textActive('users.*') }}">Admin Management</span>
-            @if (navIndicator('users.*'))
-                <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
-            @endif
-        </a>
-
         {{-- Guru --}}
         <a href="{{ route('guru.index') }}"
             class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('guru.*') }}">
@@ -232,6 +218,23 @@
         </a>
 
         @endif
+
+        @if(in_array(Auth::user()->role, ['super_admin']))
+            {{-- Admin Management --}}
+            <a href="{{ route('users.index') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('users.*') }}">
+                <svg class="{{ iconActive('users.*') }} w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="flex-1 truncate tracking-wide {{ textActive('users.*') }}">Admin Management</span>
+                @if (navIndicator('users.*'))
+                    <span class="flex-shrink-0 w-1 h-4 rounded-full bg-yellow-400"></span>
+                @endif
+            </a>
+        @endif
+        
         {{-- Siswa --}}
         <a href="{{ route('siswa.index') }}"
             class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 {{ navActive('siswa.*') }}">
