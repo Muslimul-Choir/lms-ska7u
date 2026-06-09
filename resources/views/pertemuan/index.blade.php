@@ -14,17 +14,8 @@
         </div>
     </x-slot>
 
-    <div class="py-7 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
-
-            {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                <a href="{{ route('dashboard') }}" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
-                <span class="text-gray-300">/</span>
-                <span>Master Data</span>
-                <span class="text-gray-300">/</span>
-                <span class="text-gray-600 font-semibold">Pertemuan</span>
-            </nav>
+    <div class="bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto space-y-5">
 
             {{-- Main Card --}}
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">

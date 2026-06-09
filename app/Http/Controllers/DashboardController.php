@@ -35,7 +35,7 @@ class DashboardController extends Controller
         // ── ADMIN / SUPER ADMIN ──────────────────────────────────────────
         if (in_array($user->role, ['admin', 'super_admin'])) {
             $counts  = $this->buildAdminCounts();
-            $metrics = $this->buildMetrics($counts);
+            $metrics = $this->buildAdminMetrics($counts);
             return view('dashboard', compact('counts', 'metrics'));
         }
 
@@ -60,8 +60,8 @@ class DashboardController extends Controller
                 'tahun_ajaran'      => TahunAjaran::count(),
                 'tingkatan'         => Tingkatan::count(),
                 'mapel'             => $myGuruMapelIds->isNotEmpty()
-                                        ? GuruMapel::whereIn('id', $myGuruMapelIds)->pluck('id_mapel')->unique()->count()
-                                        : 0,
+                    ? GuruMapel::whereIn('id', $myGuruMapelIds)->pluck('id_mapel')->unique()->count()
+                    : 0,
                 'jam_belajar'       => JamBelajar::count(),
                 'guru'              => 1,
                 'kelas'             => $myClassIds->count(),
@@ -101,9 +101,13 @@ class DashboardController extends Controller
             $isKeduanya  = $status === 'keduanya';
 
             return view('dashboard', compact(
-                'counts', 'metrics',
-                'pengajarData', 'waliKelasData',
-                'isWaliKelas', 'isPengajar', 'isKeduanya'
+                'counts',
+                'metrics',
+                'pengajarData',
+                'waliKelasData',
+                'isWaliKelas',
+                'isPengajar',
+                'isKeduanya'
             ));
         }
 
@@ -116,25 +120,30 @@ class DashboardController extends Controller
     private function buildAdminCounts(): array
     {
         return [
-            'users'             => User::count(),
-            'bagian'            => Bagian::count(),
-            'jurusan'           => Jurusan::count(),
-            'semester'          => Semester::count(),
-            'tahun_ajaran'      => TahunAjaran::count(),
-            'tingkatan'         => Tingkatan::count(),
-            'mapel'             => Mapel::count(),
-            'jam_belajar'       => JamBelajar::count(),
-            'guru'              => Guru::count(),
-            'kelas'             => Kelas::count(),
-            'siswa'             => Siswa::count(),
-            'materi'            => Materi::count(),
-            'pertemuan'         => Pertemuan::count(),
-            'tugas'             => Tugas::count(),
-            'pengumpulan_tugas' => PengumpulanTugas::count(),
-            'penilaian'         => Penilaian::count(),
-            'absensi'           => Absensi::count(),
-            'guru_mapel'        => GuruMapel::count(),
-            'jadwalbelajar'     => JadwalBelajar::count(),
+            'users'        => User::count(),
+            'guru'         => Guru::count(),
+            'siswa'        => Siswa::count(),
+            'kelas'        => Kelas::count(),
+            'mapel'        => Mapel::count(),
+            'guru_mapel'   => GuruMapel::count(),
+            'jadwalbelajar' => JadwalBelajar::count(),
+            'jurusan'      => Jurusan::count(),
+            'tingkatan'    => Tingkatan::count(),
+            'bagian'       => Bagian::count(),
+            'semester'     => Semester::count(),
+            'tahun_ajaran' => TahunAjaran::count(),
+            'jam_belajar'  => JamBelajar::count(),
+        ];
+    }
+
+    private function buildAdminMetrics(array $counts): array
+    {
+        return [
+            'total_civitas' => $counts['guru'] + $counts['siswa'],
+            'rasio_kelas'   => $counts['kelas'] > 0
+                ? round($counts['siswa'] / $counts['kelas']) : 0,
+            'total_data'    => array_sum($counts),
+            'total_kategori' => count($counts),
         ];
     }
 
@@ -148,9 +157,9 @@ class DashboardController extends Controller
             'total_classes_and_subjects' => $counts['kelas'] + $counts['mapel'],
             'learning_activities'        => $counts['materi'] + $counts['tugas'],
             'class_ratio'                => $counts['kelas'] > 0
-                                            ? round($counts['siswa'] / $counts['kelas']) : 0,
+                ? round($counts['siswa'] / $counts['kelas']) : 0,
             'assessment_ratio'           => $counts['pengumpulan_tugas'] > 0
-                                            ? round(($counts['penilaian'] / $counts['pengumpulan_tugas']) * 100) : 0,
+                ? round(($counts['penilaian'] / $counts['pengumpulan_tugas']) * 100) : 0,
             'total_data'                 => array_sum($counts),
             'total_categories'           => count($counts),
         ];
@@ -184,7 +193,7 @@ class DashboardController extends Controller
         $tugasDeadline = Tugas::whereIn('id', $myTugasIds)
             ->where('status', 'published')
             ->whereBetween('batas_waktu', [$now, $in7days])
-            ->with(['Mapel', 'Pertemuan.JadwalBelajar.Kelas'])
+            ->with(['Mapel', 'GuruMapel', 'Pertemuan.JadwalBelajar.Kelas'])
             ->orderBy('batas_waktu')
             ->get()
             ->map(function ($tugas) use ($now) {
@@ -319,6 +328,19 @@ class DashboardController extends Controller
             ->get()
             ->groupBy(fn($h) => $h->id_kuis . '_' . $h->id_siswa);
 
+        // Rekap absensi per siswa per pertemuan
+        $absensiList = Absensi::whereIn('id_pertemuan', $jadwalIds->isEmpty() ? [] :
+            Pertemuan::whereIn('id_jadwal', $jadwalIds)->pluck('id'))
+            ->whereIn('id_siswa', $siswaIds)
+            ->get()
+            ->groupBy(fn($a) => $a->id_pertemuan . '_' . $a->id_siswa);
+
+        // Semua pertemuan kelas ini (untuk tabel absensi), urut tanggal
+        $pertemuanAbsensi = Pertemuan::whereIn('id_jadwal', $jadwalIds)
+            ->orderBy('tanggal')
+            ->orderBy('nomor_pertemuan')
+            ->get();
+
         // Kelompokkan per mapel → per pertemuan
         $mapelData = [];
         foreach ($guruMapelList as $gm) {
@@ -386,6 +408,8 @@ class DashboardController extends Controller
             'mapel_data'     => array_values($mapelData),
             'pengumpulan_by_tugas_siswa' => $pengumpulanMap,
             'hasil_by_kuis_siswa'        => $hasilMap,
+            'absensi_map'       => $absensiList,
+            'pertemuan_absensi' => $pertemuanAbsensi,
             'summary' => [
                 'total_siswa' => $siswaList->count(),
                 'total_mapel' => count($mapelData),
