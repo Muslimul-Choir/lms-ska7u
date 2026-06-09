@@ -34,6 +34,6 @@ class CheckRole
         }
 
         // For other roles (admin, super_admin, guru)
-        return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        abort(403, 'Anda tidak memiliki akses ke halaman ini.');
     }
 }
