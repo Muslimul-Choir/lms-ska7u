@@ -14,24 +14,21 @@ class UpdateGuruMapelRequest extends FormRequest
 
     public function rules(): array
     {
+        // Ambil id record yang sedang di-edit untuk di-ignore
         $guruMapelId = $this->route('guru_mapel')->id;
 
         return [
             'id_mapel' => [
                 'required',
                 'exists:mapel,id',
-                Rule::unique('guru_mapel')
-                    ->ignore($guruMapelId)
-                    ->where(function ($query) {
-                        return $query
-                            ->where('id_guru', $this->id_guru)
-                            ->where('id_semester', $this->id_semester);
-                    }),
             ],
 
             'id_guru' => [
                 'required',
                 'exists:guru,id',
+                // Ignore row ini sendiri agar tidak bentrok dengan data saat ini
+                Rule::unique('guru_mapel', 'id_guru')
+                    ->ignore($guruMapelId),
             ],
 
             'id_semester' => [
@@ -41,20 +38,15 @@ class UpdateGuruMapelRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        //
-    }
-
     public function messages(): array
     {
         return [
             'id_mapel.required' => 'Mapel wajib dipilih.',
             'id_mapel.exists'   => 'Mapel tidak valid.',
-            'id_mapel.unique'   => 'Data guru mapel dengan kombinasi guru, mapel, dan semester tersebut sudah terdaftar.',
 
             'id_guru.required' => 'Guru wajib dipilih.',
             'id_guru.exists'   => 'Guru tidak valid.',
+            'id_guru.unique'   => 'Guru ini sudah ditugaskan ke mata pelajaran lain.',
 
             'id_semester.required' => 'Semester wajib dipilih.',
             'id_semester.exists'   => 'Semester tidak valid.',
