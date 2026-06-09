@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Carbon;
 
 class AppServiceProvider extends ServiceProvider
@@ -111,6 +113,15 @@ class AppServiceProvider extends ServiceProvider
                         "Terlalu banyak permintaan export. Silakan coba lagi dalam {$minutes} menit {$remainingSeconds} detik (sekitar pukul {$retryAt})."
                     );
                 });
+        });
+
+        VerifyEmail::toMailUsing(function ($notifiable, $url) {
+            return (new MailMessage)
+                ->subject('Verifikasi Alamat Email — ' . config('app.name'))
+                ->greeting('Halo!')
+                ->line('Klik tombol di bawah ini untuk memverifikasi alamat email Anda.')
+                ->action('Verifikasi Email', $url)
+                ->line('Jika Anda tidak membuat akun, abaikan email ini.');
         });
     }
 }
