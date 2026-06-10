@@ -181,11 +181,10 @@
                                                 </svg>
                                             </button>
                                             <form action="{{ route('soal_kuis.destroy', [$kuis, $soal]) }}"
-                                                method="POST">
+                                                method="POST" onsubmit="return handleDelete(event)">
                                                 @csrf @method('DELETE')
                                                 <button type="submit"
                                                     class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition"
-                                                    onclick="return confirm('Hapus soal ini? Penomoran akan diperbarui otomatis.')"
                                                     title="Hapus">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24" stroke-width="2.5">
@@ -217,3 +216,20 @@
             @include('soal_kuis.modal-edit')
         </div>
 </x-app-layout>
+
+<x-alerts.success />
+<x-alerts.confirm-delete />
+
+@push('scripts')
+    <script>
+        function handleDelete(event) {
+            event.preventDefault();
+            showConfirmDelete(true).then((result) => {
+                if (result.isConfirmed) {
+                    event.target.submit();
+                }
+            });
+            return false;
+        }
+    </script>
+@endpush

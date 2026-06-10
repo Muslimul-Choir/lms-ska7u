@@ -180,4 +180,10 @@ class MateriController extends Controller
         $materi->delete();
         return back()->with('success', 'Materi berhasil dihapus.');
     }
+
+    public function show(Materi $materi)
+    {
+        $materi->load(['Pertemuan.JadwalBelajar.Kelas', 'Pertemuan.JadwalBelajar.GuruMapel.Mapel', 'GuruMapel.Guru']);
+        return view('materi.show', compact('materi'));
+    }
 }
