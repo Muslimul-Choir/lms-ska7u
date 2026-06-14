@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'not_pengajar' => \App\Http\Middleware\EnsureNotPengajarOnly::class,
+            'not_walikelas_only' => \App\Http\Middleware\EnsureNotWaliKelasOnly::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
