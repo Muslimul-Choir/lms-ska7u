@@ -83,6 +83,18 @@ class GuruController extends Controller
     // ── UPDATE ───────────────────────────────────────────────
     public function update(UpdateGuruRequest $request, Guru $guru)
     {
+        $statusLama = $guru->status_pengajar;
+        $statusBaru = $request->status_pengajar;
+
+        if (in_array($statusLama, ['walikelas', 'keduanya']) && $statusBaru === 'pengajar') {
+            $kelasDiampu = Kelas::where('id_wali_kelas', $guru->id)->first();
+
+            if ($kelasDiampu) {
+                return redirect()->route('guru.index')
+                    ->with('error', 'Guru "' . $guru->nama_lengkap . '" masih menjadi wali kelas ' . $kelasDiampu->nama_kelas . '. Ganti wali kelas tersebut terlebih dahulu sebelum mengubah status menjadi Pengajar.');
+            }
+        }
+
         try {
             DB::transaction(function () use ($request, $guru) {
 

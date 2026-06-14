@@ -9,32 +9,62 @@ use App\Models\GuruMapel;
 use App\Models\JadwalBelajar;
 use App\Models\Pertemuan;
 use App\Models\Siswa;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AbsensiController extends Controller
 {
     public function index(Request $request): View|JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $isGuru = $user->role === 'guru' && $user->guru;
+        $guru   = $isGuru ? $user->guru : null;
+
+        //  Cek status walikelas & kelas yang diampu 
+        $isWaliKelas   = $guru && in_array($guru->status_pengajar, ['walikelas', 'keduanya']);
+        $kelasWali     = $isWaliKelas ? $guru->kelas : null; // hasOne
+        $belumAdaKelas = $isWaliKelas && !$kelasWali;
 
         $search           = $request->get('search');
         $pertemuan_filter = $request->get('id_pertemuan');
         $status_filter    = $request->get('status');
 
+        if ($belumAdaKelas) {
+            $absensis   = Absensi::whereRaw('0 = 1')->paginate(10)->withQueryString();
+            $pertemuans = collect();
+            $siswas     = collect();
+            $trashCount = 0;
+
+            return view('absensi.index', compact(
+                'absensis',
+                'search',
+                'pertemuans',
+                'siswas',
+                'pertemuan_filter',
+                'status_filter',
+                'trashCount',
+                'belumAdaKelas'
+            ));
+        }
+
         $absensis = Absensi::with(['pertemuan', 'siswa'])
             ->when($search, function ($query, $search) {
                 $query->whereHas('siswa', function ($q) use ($search) {
                     $q->where('nama_lengkap', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($pertemuan_filter, fn($q) => $q->where('id_pertemuan', $pertemuan_filter))
             ->when($status_filter,    fn($q) => $q->where('status', $status_filter))
-            ->when($isGuru, function ($query) use ($user) {
+            ->when($isWaliKelas, function ($query) use ($kelasWali) {
+                // Walikelas: scope ke siswa di kelasnya
+                $query->whereHas('siswa', fn($q) => $q->where('id_kelas', $kelasWali->id));
+            })
+            ->when($isGuru && !$isWaliKelas, function ($query) use ($user) {
+                // Guru pengajar biasa: scope ke pertemuan yang dia ajar
                 $query->whereHas(
                     'pertemuan.jadwalBelajar.guruMapel',
                     fn($q) => $q->where('id_guru', $user->guru->id)
@@ -57,12 +87,18 @@ class AbsensiController extends Controller
         $pertemuanQuery = Pertemuan::query();
         $siswaQuery     = Siswa::query();
 
-        if ($isGuru) {
-            $guru    = $user->guru;
-        
-            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
-                $q->where('id_guru', $guru->id);
-            })->pluck('id_kelas')->unique();
+        if ($isWaliKelas) {
+            // Walikelas: pertemuan & siswa di kelasnya
+            $pertemuanQuery->whereHas(
+                'jadwalBelajar',
+                fn($q) => $q->where('id_kelas', $kelasWali->id)
+            );
+            $siswaQuery->where('id_kelas', $kelasWali->id);
+        } elseif ($isGuru) {
+            // Guru pengajar biasa: pertemuan & siswa dari kelas yang dia ajar
+            $myGuruMapelIds = GuruMapel::where('id_guru', $guru->id)->pluck('id');
+            $kelasIds = JadwalBelajar::whereIn('id_guru_mapel', $myGuruMapelIds)
+                ->pluck('id_kelas')->filter()->unique();
 
             $pertemuanQuery->whereHas(
                 'jadwalBelajar.guruMapel',
@@ -75,14 +111,20 @@ class AbsensiController extends Controller
         $siswas     = $siswaQuery->get();
 
         return view('absensi.index', compact(
-            'absensis', 'search', 'pertemuans', 'siswas',
-            'pertemuan_filter', 'status_filter', 'trashCount'
+            'absensis',
+            'search',
+            'pertemuans',
+            'siswas',
+            'pertemuan_filter',
+            'status_filter',
+            'trashCount',
+            'belumAdaKelas'
         ));
     }
 
     public function create(): View
     {
-        $user   = auth()->user();
+        $user   = Auth::user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
         $pertemuanQuery = Pertemuan::query();
@@ -124,7 +166,7 @@ class AbsensiController extends Controller
 
     public function edit(Absensi $absensi): View
     {
-        $user   = auth()->user();
+        $user   = Auth::user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
         $pertemuanQuery = Pertemuan::query();
@@ -178,7 +220,7 @@ class AbsensiController extends Controller
             ->when($search, function ($query, $search) {
                 $query->whereHas('siswa', function ($q) use ($search) {
                     $q->where('nama_lengkap', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($pertemuan_filter, fn($q) => $q->where('id_pertemuan', $pertemuan_filter))
@@ -191,8 +233,11 @@ class AbsensiController extends Controller
         $pertemuans = Pertemuan::orderBy('nomor_pertemuan')->get();
 
         return view('absensi.trash', compact(
-            'absensis', 'search', 'pertemuans',
-            'pertemuan_filter', 'status_filter'
+            'absensis',
+            'search',
+            'pertemuans',
+            'pertemuan_filter',
+            'status_filter'
         ));
     }
 

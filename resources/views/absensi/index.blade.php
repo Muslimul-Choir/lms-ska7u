@@ -13,18 +13,21 @@
         </div>
     </x-slot>
 
-    <div class="py-7 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+    <div class="bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto space-y-5">
 
-            {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                <a href="#" class="text-amber-600 hover:text-amber-700 transition">Dashboard</a>
-                <span class="text-gray-300">/</span>
-                <span>Master Data</span>
-                <span class="text-gray-300">/</span>
-                <span class="text-gray-600 font-semibold">Absensi</span>
-            </nav>
-
+            @if ($belumAdaKelas)
+            {{-- Belum ditugaskan sebagai wali kelas --}}
+            <div class="bg-white rounded-xl border border-dashed border-amber-200 p-10 text-center">
+                <svg class="w-10 h-10 text-amber-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <p class="text-sm font-medium text-slate-500">Anda belum ditugaskan sebagai wali kelas</p>
+                <p class="text-xs text-slate-400 mt-1">Hubungi admin untuk mengatur penugasan kelas</p>
+            </div>
+            @else
             {{-- Main Card --}}
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
@@ -240,6 +243,7 @@
                 @endif
 
             </div>
+            @endif
         </div>
     </div>
 

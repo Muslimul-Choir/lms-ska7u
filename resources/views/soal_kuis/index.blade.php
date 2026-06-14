@@ -117,15 +117,18 @@
                             </svg>
                             Kembali ke Detail Kuis
                         </a>
-                        @if (!$sudahDikerjakan)
-                            <button @click="showCreateModal = true"
-                                class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 px-4 rounded-lg inline-flex items-center gap-2 shadow-sm transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Tambah Soal
-                            </button>
+                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                in_array(Auth::user()->role, ['super_admin', 'admin']))
+                            @if (!$sudahDikerjakan)
+                                <button @click="showCreateModal = true"
+                                    class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 px-4 rounded-lg inline-flex items-center gap-2 shadow-sm transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Tambah Soal
+                                </button>
+                            @endif
                         @endif
                     </div>
 

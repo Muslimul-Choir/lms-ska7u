@@ -75,6 +75,7 @@ class PertemuanController extends Controller
                 'isAdmin'         => false,
                 'isSuperAdmin'    => false,
                 'trashCount'      => $trashCount,
+                'isWaliKelasOnly' => $user->guru->status_pengajar === 'walikelas',
             ]);
         }
 
@@ -141,6 +142,7 @@ class PertemuanController extends Controller
             'isAdmin'         => $isAdmin,
             'isSuperAdmin'    => $isSuperAdmin,
             'trashCount'      => $trashCount,
+            'isWaliKelasOnly' => false,
         ]);
     }
 
