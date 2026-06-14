@@ -33,6 +33,7 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
+                        @unless($isWaliKelasOnly)
                         {{-- Tombol Arsip --}}
                         <a href="{{ route('pertemuan.trash') }}"
                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
@@ -44,9 +45,10 @@
                                 <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">{{ $trashCount }}</span>
                             @endif
                         </a>
+                        @endunless
 
-                        {{-- Tombol Tambah: hanya guru & super_admin --}}
-                        @if($isGuru || $isSuperAdmin)
+                        {{-- Tombol Tambah: hanya guru(pengajar), admin & super_admin --}}
+                        @if(($isGuru && !$isWaliKelasOnly) || $isSuperAdmin)
                             <button type="button" onclick="openCreateModal()"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -204,7 +206,7 @@
                                                     <th class="px-6 py-2.5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">No. Pertemuan</th>
                                                     <th class="px-6 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tanggal</th>
                                                     <th class="px-6 py-2.5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">Status</th>
-                                                    <th class="px-6 py-2.5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">Aksi</th>
+                                                    <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-36">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-100">
@@ -337,7 +339,9 @@
                                     <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-28">No. Pertemuan</th>
                                     <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Tanggal</th>
                                     <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-28">Status</th>
-                                    <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-36">Aksi</th>
+                                    @unless($isWaliKelasOnly)
+                                      <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-36">Aksi</th>
+                                    @endunless
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -400,6 +404,7 @@
                                             <td class="px-6 py-4 text-center">
                                                 @include('pertemuan._status-badge', ['status' => $pertemuan->status])
                                             </td>
+                                            @unless($isWaliKelasOnly)
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center justify-center gap-1.5">
                                                     <button type="button"
@@ -428,10 +433,11 @@
                                                     </form>
                                                 </div>
                                             </td>
+                                            @endunless
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="px-6 py-20 text-center">
+                                            <td colspan="{{ $isWaliKelasOnly ? 5 : 6 }}" class="px-6 py-20 text-center">
                                                 <div class="flex flex-col items-center gap-3">
                                                     <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
                                                         <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -439,6 +445,7 @@
                                                         </svg>
                                                     </div>
                                                     <p class="text-gray-400 text-sm font-semibold">Belum ada data pertemuan</p>
+                                                    @unless($isWaliKelasOnly)
                                                     <p class="text-gray-300 text-xs">Klik <span class="font-semibold text-gray-400">+ Tambah Pertemuan</span> untuk mulai menambahkan</p>
                                                     <button type="button" onclick="openCreateModal()"
                                                         class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm mt-1">
@@ -447,6 +454,7 @@
                                                         </svg>
                                                         Tambah Pertemuan
                                                     </button>
+                                                    @endunless
                                                 </div>
                                             </td>
                                         </tr>
