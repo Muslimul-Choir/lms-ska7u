@@ -1,12 +1,12 @@
 @php
-    $kelas = $waliKelasData['kelas'];
-    $summary = $waliKelasData['summary'];
-    $mapelData = $waliKelasData['mapel_data'];
-    $siswaList = $waliKelasData['siswa_list'];
-    $pengumpulanMap = $waliKelasData['pengumpulan_by_tugas_siswa'];
-    $hasilMap = $waliKelasData['hasil_by_kuis_siswa'];
-    $absensiMap = $waliKelasData['absensi_map'];
-    $pertemuanAbsensi = $waliKelasData['pertemuan_absensi'];
+    $kelas            = $waliKelasData['kelas'] ?? null;
+    $summary          = $waliKelasData['summary'] ?? [];
+    $mapelData        = $waliKelasData['mapel_data'] ?? [];
+    $siswaList        = $waliKelasData['siswa_list'] ?? collect();
+    $pengumpulanMap   = $waliKelasData['pengumpulan_by_tugas_siswa'] ?? collect();
+    $hasilMap         = $waliKelasData['hasil_by_kuis_siswa'] ?? collect();
+    $absensiMap       = $waliKelasData['absensi_map'] ?? collect();
+    $pertemuanAbsensi = $waliKelasData['pertemuan_absensi'] ?? collect();
 @endphp
 
 <div class="space-y-5" x-data="{

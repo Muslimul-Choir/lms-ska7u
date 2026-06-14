@@ -43,6 +43,8 @@ class SiswaController extends Controller
     public function index(Request $request)
 {
     $guruWali = $this->getGuruWaliKelas();
+    // Cek apakah walikelas tapi belum ditugaskan ke kelas 
+    $belumAdaKelas = $guruWali && !$guruWali->kelas;
 
     $query = Siswa::with(['Kelas.Tingkatan', 'Kelas.Jurusan', 'Kelas.Bagian']);
 
@@ -77,7 +79,7 @@ class SiswaController extends Controller
         ? Siswa::onlyTrashed()->where('id_kelas', $guruWali->kelas?->id ?? 0)->count()
         : Siswa::onlyTrashed()->count();
 
-    return view('siswa.index', compact('siswas', 'kelasList', 'trashCount', 'guruWali'));
+    return view('siswa.index', compact('siswas', 'kelasList', 'trashCount', 'guruWali','belumAdaKelas'));
 }
 
     // ── STORE ────────────────────────────────────────────────
