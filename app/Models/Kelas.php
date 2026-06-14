@@ -69,9 +69,21 @@ class Kelas extends Model
     {
         return $this->hasMany(JadwalBelajar::class, 'id_kelas');
     }
+
+    /**
+     * Relasi ke GuruMapel melalui JadwalBelajar
+     * Karena guru_mapel tidak punya id_kelas lagi
+     */
     public function GuruMapel()
     {
-        return $this->hasMany(GuruMapel::class, 'id_kelas');
+        return $this->hasManyThrough(
+            GuruMapel::class,
+            JadwalBelajar::class,
+            'id_kelas',       // Foreign key on jadwal_belajar table
+            'id',             // Foreign key on guru_mapel table
+            'id',             // Local key on kelas table
+            'id_guru_mapel'   // Local key on jadwal_belajar table
+        );
     }
 
     public function jadwalBelajars()

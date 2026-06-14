@@ -32,8 +32,31 @@
     </x-slot>
 
     <div class="bg-gray-50 min-h-screen">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="max-w-4xl mx-auto space-y-5">
+            <div class="bg-white rounded-[18px] shadow-[0_24px_60px_rgba(107,26,43,0.22),0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden border border-[rgba(107,26,43,0.1)]">
+                
+                
+                <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden"
+                    style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
+                    <div class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none"></div>
+                    <div class="absolute w-[70px] h-[70px] rounded-full top-[10px] right-[70px] border border-[rgba(232,147,10,0.12)] pointer-events-none"></div>
+
+                    <div class="flex items-center gap-3 relative">
+                        <div class="w-[38px] h-[38px] rounded-[10px] bg-[rgba(232,147,10,0.2)] flex items-center justify-center flex-shrink-0">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold text-[15px] m-0 mb-[2px]">Edit Kuis</h3>
+                            <p class="text-[rgba(255,255,255,0.5)] text-[11px] m-0">Perbarui informasi kuis</p>
+                        </div>
+                    </div>
+                </div>
+
+               
+                <div class="h-[3px]" style="background: linear-gradient(90deg,#E8930A,#F5A623,#E8930A);"></div>
+
                 <div class="p-6">
 
                     @if ($errors->any())
@@ -58,131 +81,143 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('kuis.update', $kuis) }}" method="POST">
+                    <form action="{{ route('kuis.update', $kuis) }}" method="POST" onsubmit="return handleUpdate(event)">
                         @csrf
                         @method('PUT')
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Judul Kuis <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" name="judul" value="{{ old('judul', $kuis->judul) }}" required
-                                maxlength="200"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        </div>
+                        <div class="flex flex-col gap-[18px]">
+                            <div class="flex flex-col gap-[7px]">
+                                <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                    Judul Kuis <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="judul" value="{{ old('judul', $kuis->judul) }}" required
+                                    maxlength="200"
+                                    class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                            </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi (Opsional)</label>
-                            <textarea name="deskripsi" rows="3"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('deskripsi', $kuis->deskripsi) }}</textarea>
-                        </div>
+                            <div class="flex flex-col gap-[7px]">
+                                <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                    Deskripsi <span class="text-gray-400">(Opsional)</span>
+                                </label>
+                                <textarea name="deskripsi" rows="3"
+                                    class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">{{ old('deskripsi', $kuis->deskripsi) }}</textarea>
+                            </div>
 
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Pertemuan <span
-                                        class="text-red-500">*</span></label>
-                                <select name="id_pertemuan" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">-- Pilih Pertemuan --</option>
-                                    @foreach ($pertemuanList as $p)
-                                        <option value="{{ $p->id }}"
-                                            {{ old('id_pertemuan', $kuis->id_pertemuan) == $p->id ? 'selected' : '' }}>
-                                            Pertemuan {{ $p->nomor_pertemuan }} - 🎓 [{{ $p->JadwalBelajar?->Kelas?->nama_kelas ?? 'Tanpa Kelas' }}] - {{ $p->JadwalBelajar?->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
-                                        </option>
-                                    @endforeach
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-[7px]">
+                                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                        Pertemuan <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="id_pertemuan" required
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <option value="">-- Pilih Pertemuan --</option>
+                                        @foreach ($pertemuanList as $p)
+                                            <option value="{{ $p->id }}"
+                                                {{ old('id_pertemuan', $kuis->id_pertemuan) == $p->id ? 'selected' : '' }}>
+                                                Pertemuan {{ $p->nomor_pertemuan }} - 🎓 [{{ $p->JadwalBelajar?->Kelas?->nama_kelas ?? 'Tanpa Kelas' }}] - {{ $p->JadwalBelajar?->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-xs text-gray-500 italic">💡 Kuis hanya untuk siswa di kelas yang dipilih</p>
+                                </div>
+
+                                <div class="flex flex-col gap-[7px]">
+                                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                        Mata Pelajaran <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="id_guru_mapel" required
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <option value="">-- Pilih Mata Pelajaran --</option>
+                                        @foreach ($guruMapelList as $gm)
+                                            <option value="{{ $gm->id }}"
+                                                {{ old('id_guru_mapel', $kuis->id_guru_mapel) == $gm->id ? 'selected' : '' }}>
+                                                {{ $gm->Mapel?->nama_mapel ?? '-' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-[7px]">
+                                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                        Durasi (Menit) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" name="durasi" value="{{ old('durasi', $kuis->durasi) }}"
+                                        required min="1"
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                </div>
+
+                                <div class="flex flex-col gap-[7px]">
+                                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                        Nilai Maksimal <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" name="nilai_maksimal"
+                                        value="{{ old('nilai_maksimal', $kuis->nilai_maksimal) }}" required min="1"
+                                        max="100" step="0.1"
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-[7px]">
+                                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                        Batas Mulai <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="datetime-local" name="batas_mulai"
+                                        value="{{ old('batas_mulai', \Carbon\Carbon::parse($kuis->batas_mulai)->format('Y-m-d\TH:i')) }}"
+                                        required
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                </div>
+
+                                <div class="flex flex-col gap-[7px]">
+                                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                        Batas Selesai <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="datetime-local" name="batas_selesai"
+                                        value="{{ old('batas_selesai', \Carbon\Carbon::parse($kuis->batas_selesai)->format('Y-m-d\TH:i')) }}"
+                                        required
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-[7px]">
+                                <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                    Status <span class="text-red-500">*</span>
+                                </label>
+                                <select name="status" required
+                                    class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    <option value="draft"
+                                        {{ old('status', $kuis->status) === 'draft' ? 'selected' : '' }}>Draft</option>
+                                    <option value="published"
+                                        {{ old('status', $kuis->status) === 'published' ? 'selected' : '' }}>Published
+                                    </option>
+                                    <option value="closed"
+                                        {{ old('status', $kuis->status) === 'closed' ? 'selected' : '' }}>Closed</option>
                                 </select>
-                                <p class="text-xs text-gray-500 italic mt-1">💡 Kuis hanya untuk siswa di kelas yang dipilih</p>
+                                <p class="text-xs text-gray-500">Kuis harus memiliki minimal 1 soal untuk dapat
+                                    dipublikasikan</p>
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran <span
-                                        class="text-red-500">*</span></label>
-                                <select name="id_guru_mapel" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">-- Pilih Mata Pelajaran --</option>
-                                    @foreach ($guruMapelList as $gm)
-                                        <option value="{{ $gm->id }}"
-                                            {{ old('id_guru_mapel', $kuis->id_guru_mapel) == $gm->id ? 'selected' : '' }}>
-                                            {{ $gm->Mapel?->nama_mapel ?? '-' }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <div class="flex justify-between items-center pt-2">
+                                <a href="{{ route('kuis.show', $kuis) }}"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Batal
+                                </a>
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-sm transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                    </svg>
+                                    Simpan Perubahan
+                                </button>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Durasi (Menit) <span
-                                        class="text-red-500">*</span></label>
-                                <input type="number" name="durasi" value="{{ old('durasi', $kuis->durasi) }}"
-                                    required min="1"
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nilai Maksimal <span
-                                        class="text-red-500">*</span></label>
-                                <input type="number" name="nilai_maksimal"
-                                    value="{{ old('nilai_maksimal', $kuis->nilai_maksimal) }}" required min="1"
-                                    max="100" step="0.1"
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Batas Mulai <span
-                                        class="text-red-500">*</span></label>
-                                <input type="datetime-local" name="batas_mulai"
-                                    value="{{ old('batas_mulai', \Carbon\Carbon::parse($kuis->batas_mulai)->format('Y-m-d\TH:i')) }}"
-                                    required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Batas Selesai <span
-                                        class="text-red-500">*</span></label>
-                                <input type="datetime-local" name="batas_selesai"
-                                    value="{{ old('batas_selesai', \Carbon\Carbon::parse($kuis->batas_selesai)->format('Y-m-d\TH:i')) }}"
-                                    required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status <span
-                                    class="text-red-500">*</span></label>
-                            <select name="status" required
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                <option value="draft"
-                                    {{ old('status', $kuis->status) === 'draft' ? 'selected' : '' }}>Draft</option>
-                                <option value="published"
-                                    {{ old('status', $kuis->status) === 'published' ? 'selected' : '' }}>Published
-                                </option>
-                                <option value="closed"
-                                    {{ old('status', $kuis->status) === 'closed' ? 'selected' : '' }}>Closed</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Kuis harus memiliki minimal 1 soal untuk dapat
-                                dipublikasikan</p>
-                        </div>
-
-                        <div class="flex justify-between items-center">
-                            <a href="{{ route('kuis.show', $kuis) }}"
-                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-lg inline-flex items-center gap-2 transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Batal
-                            </a>
-                            <button type="submit"
-                                class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 px-4 rounded-lg inline-flex items-center gap-2 shadow-sm transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                Simpan Perubahan
-                            </button>
                         </div>
                     </form>
                 </div>
@@ -190,3 +225,20 @@
         </div>
     </div>
 </x-app-layout>
+
+<x-alerts.success />
+<x-alerts.confirm-update />
+
+@push('scripts')
+    <script>
+        function handleUpdate(event) {
+            event.preventDefault();
+            showConfirmUpdate().then((result) => {
+                if (result.isConfirmed) {
+                    event.target.submit();
+                }
+            });
+            return false;
+        }
+    </script>
+@endpush

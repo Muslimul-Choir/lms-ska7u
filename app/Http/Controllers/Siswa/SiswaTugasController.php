@@ -27,9 +27,13 @@ class SiswaTugasController extends Controller
             return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        // Fetch all published tasks for the student's class
-        $tugasList = Tugas::whereHas('guruMapel', function ($query) use ($siswa) {
+        // Fetch all published tasks for the student's class through JadwalBelajar
+        // Filter juga berdasarkan agama siswa untuk mapel agama
+        $tugasList = Tugas::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
+        })
+        ->whereHas('Mapel', function ($query) use ($siswa) {
+            $query->forAgama($siswa->agama);
         })
         ->where('status', 'published')
         ->with(['Mapel', 'Pertemuan'])
@@ -82,9 +86,15 @@ class SiswaTugasController extends Controller
 
         $tugas = Tugas::findOrFail($id);
 
-        // Verify class access
-        if ($tugas->guruMapel && $tugas->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke tugas ini.');
+        // Verify class access through JadwalBelajar
+        if ($tugas->guruMapel) {
+            $hasAccess = $tugas->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke tugas ini.');
+            }
         }
 
         // Get submission and grade
@@ -114,9 +124,15 @@ class SiswaTugasController extends Controller
 
         $tugas = Tugas::findOrFail($id);
 
-        // Verify access
-        if ($tugas->guruMapel && $tugas->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke tugas ini.');
+        // Verify access through JadwalBelajar
+        if ($tugas->guruMapel) {
+            $hasAccess = $tugas->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke tugas ini.');
+            }
         }
 
         // Check if deadline passed and late submissions are NOT allowed

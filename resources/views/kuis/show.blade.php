@@ -272,3 +272,5 @@
             </div>
         </div>
 </x-app-layout>
+
+<x-alerts.success />

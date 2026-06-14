@@ -59,8 +59,11 @@ class PengumpulanTugasController extends Controller
     {
         $user = Auth::user();
 
-        // Get all students in the task's class
-        $siswaList = Siswa::where('id_kelas', $tugas->GuruMapel->id_kelas)
+        // Get all students in the task's class through JadwalBelajar
+        // GuruMapel tidak punya id_kelas lagi, ambil dari JadwalBelajar
+        $kelasIds = $tugas->GuruMapel->JadwalBelajar()->pluck('id_kelas')->unique();
+        
+        $siswaList = Siswa::whereIn('id_kelas', $kelasIds)
             ->with('User')
             ->orderBy('nama_lengkap')
             ->get();
@@ -116,8 +119,11 @@ class PengumpulanTugasController extends Controller
     {
         $user = Auth::user();
 
-        // Get all students in the task's class
-        $siswaList = Siswa::where('id_kelas', $tugas->GuruMapel->id_kelas)
+        // Get all students in the task's class through JadwalBelajar
+        // GuruMapel tidak punya id_kelas lagi, ambil dari JadwalBelajar
+        $kelasIds = $tugas->GuruMapel->JadwalBelajar()->pluck('id_kelas')->unique();
+        
+        $siswaList = Siswa::whereIn('id_kelas', $kelasIds)
             ->with('User')
             ->orderBy('nama_lengkap')
             ->get();

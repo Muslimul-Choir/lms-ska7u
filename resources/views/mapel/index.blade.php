@@ -116,6 +116,7 @@
                                                 '{{ $mapel->id }}',
                                                 '{{ $mapel->kode_mapel }}',
                                                 @js($mapel->nama_mapel),
+                                                @js($mapel->agama ?? ''),
                                                 @js($mapel->deskripsi ?? ''),
                                                 '{{ $mapel->foto ? asset('storage/' . $mapel->foto) : '' }}',
                                                 '{{ route('mapel.update', $mapel->id) }}'
@@ -225,7 +226,7 @@
             }
 
             /* ── Modal Edit ── */
-            function openEditModal(id, kodeMapel, namaMapel, deskripsi, fotoUrl, route) {
+            function openEditModal(id, kodeMapel, namaMapel, agama, deskripsi, fotoUrl, route) {
                 const modal = document.getElementById('modalEdit');
                 const form  = document.getElementById('editFormAction');
                 const btn   = document.getElementById('editSubmitBtn');
@@ -234,6 +235,7 @@
                 document.getElementById('edit_route').value        = route;
                 document.getElementById('editKodeMapel').value     = kodeMapel  || '';
                 document.getElementById('editNamaMapel').value     = namaMapel  || '';
+                document.getElementById('editAgama').value         = agama      || '';
                 document.getElementById('editDeskripsi').value     = deskripsi  || '';
 
                 const previewWrap = document.getElementById('editFotoPreviewWrap');

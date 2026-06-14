@@ -132,7 +132,10 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            $kelasIds = GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            // Ambil id_kelas dari JadwalBelajar yang terkait dengan GuruMapel guru ini
+            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            })->pluck('id_kelas')->unique();
 
             $pertemuanQuery->whereHas(
                 'jadwalBelajar.guruMapel',
@@ -171,7 +174,10 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            $kelasIds = GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            // Ambil id_kelas dari JadwalBelajar yang terkait dengan GuruMapel guru ini
+            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            })->pluck('id_kelas')->unique();
 
             $pertemuanQuery->whereHas(
                 'jadwalBelajar.guruMapel',
