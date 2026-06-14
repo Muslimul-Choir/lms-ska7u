@@ -6,6 +6,7 @@ use App\Http\Requests\Absensi\StoreAbsensiRequest;
 use App\Http\Requests\Absensi\UpdateAbsensiRequest;
 use App\Models\Absensi;
 use App\Models\GuruMapel;
+use App\Models\JadwalBelajar;
 use App\Models\Pertemuan;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
@@ -58,7 +59,10 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            $kelasIds = GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+        
+            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            })->pluck('id_kelas')->unique();
 
             $pertemuanQuery->whereHas(
                 'jadwalBelajar.guruMapel',
@@ -86,7 +90,10 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            $kelasIds = GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            // Ambil id_kelas dari JadwalBelajar yang terkait dengan GuruMapel guru ini
+            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            })->pluck('id_kelas')->unique();
 
             $pertemuanQuery->whereHas(
                 'jadwalBelajar.guruMapel',
@@ -125,7 +132,10 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            $kelasIds = GuruMapel::where('id_guru', $guru->id)->pluck('id_kelas')->unique();
+            // Ambil id_kelas dari JadwalBelajar yang terkait dengan GuruMapel guru ini
+            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
+                $q->where('id_guru', $guru->id);
+            })->pluck('id_kelas')->unique();
 
             $pertemuanQuery->whereHas(
                 'jadwalBelajar.guruMapel',
