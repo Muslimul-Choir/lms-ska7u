@@ -32,14 +32,25 @@ class DashboardController extends Controller
         $kelas = $siswa->Kelas;
 
         // Get materials for the student's class
-        $materi = Materi::whereHas('guruMapel', function ($query) use ($siswa) {
-            $query->where('id_kelas', $siswa->id_kelas);
-        })->latest()->get();
-
-        // Get assignments for the student's class
-        $tugas = Tugas::whereHas('guruMapel', function ($query) use ($siswa) {
+        // Kelas diambil dari JadwalBelajar yang memiliki relasi ke GuruMapel
+        // Filter juga berdasarkan agama siswa untuk mapel agama
+        $materi = Materi::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
         })
+        ->whereHas('Mapel', function ($query) use ($siswa) {
+            $query->forAgama($siswa->agama);
+        })
+        ->latest()->get();
+
+        // Get assignments for the student's class
+        // Kelas diambil dari JadwalBelajar yang memiliki relasi ke GuruMapel
+        // Filter juga berdasarkan agama siswa untuk mapel agama
+        $tugas = Tugas::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
+            $query->where('id_kelas', $siswa->id_kelas);
+        })
+            ->whereHas('Mapel', function ($query) use ($siswa) {
+                $query->forAgama($siswa->agama);
+            })
             ->where('status', 'published')
             ->latest()
             ->get();
@@ -116,8 +127,12 @@ class DashboardController extends Controller
 
         $materi = Materi::findOrFail($id);
 
-        // Check if the material belongs to student's class
-        if ($materi->guruMapel->id_kelas !== $siswa->id_kelas) {
+        // Check if the material belongs to student's class through JadwalBelajar
+        $hasAccess = $materi->guruMapel->JadwalBelajar()
+            ->where('id_kelas', $siswa->id_kelas)
+            ->exists();
+
+        if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke materi ini.');
         }
 
@@ -138,8 +153,12 @@ class DashboardController extends Controller
 
         $tugas = Tugas::findOrFail($id);
 
-        // Check if the assignment belongs to student's class
-        if ($tugas->guruMapel->id_kelas !== $siswa->id_kelas) {
+        // Check if the assignment belongs to student's class through JadwalBelajar
+        $hasAccess = $tugas->guruMapel->JadwalBelajar()
+            ->where('id_kelas', $siswa->id_kelas)
+            ->exists();
+
+        if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini.');
         }
 
