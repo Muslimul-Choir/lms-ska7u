@@ -232,7 +232,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::delete('/profile',    [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Siswa
-    Route::prefix('siswa')->name('siswa.')->controller(SiswaController::class)->group(function () {
+    Route::prefix('siswa')->name('siswa.')->middleware('not_pengajar')->controller(SiswaController::class)->group(function () {
         Route::get('/',                              'index')->name('index');
         Route::post('/',                             'store')->name('store');
         Route::get('/export',                        'export')->name('export');

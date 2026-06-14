@@ -1,16 +1,20 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\GuruMapel;
+use App\Models\Kelas;
+use App\Models\Mapel;
 use App\Models\Materi;
 use App\Models\Pertemuan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class MateriController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $isGuru = $user->role === 'guru' && $user->guru;
         
         $q = $request->input('q');
@@ -18,7 +22,7 @@ class MateriController extends Controller
         $id_kelas = $request->input('id_kelas');
 
         // Query pertemuan yang memiliki materi
-        $pertemuanQuery = \App\Models\Pertemuan::whereHas('materis');
+        $pertemuanQuery = Pertemuan::whereHas('materis');
 
         if ($isGuru) {
             $guru = $user->guru;
@@ -71,7 +75,7 @@ class MateriController extends Controller
         $materis = $materiQuery->latest()->get();
         
         // Get kelas list for filter dropdown
-        $kelasQuery = \App\Models\Kelas::with(['tingkatan', 'jurusan', 'bagian']);
+        $kelasQuery = Kelas::with(['tingkatan', 'jurusan', 'bagian']);
         if ($isGuru) {
             $guru = $user->guru;
             $kelasQuery->whereHas('jadwalBelajars.guruMapel', function($query) use ($guru) {
@@ -81,7 +85,7 @@ class MateriController extends Controller
         $kelasList = $kelasQuery->get();
         
         // Get all pertemuan for dropdown (filtered by guru)
-        $allPertemuanQuery = \App\Models\Pertemuan::with(['JadwalBelajar.GuruMapel.Mapel', 'JadwalBelajar.Mapel', 'JadwalBelajar.Kelas']);
+        $allPertemuanQuery = Pertemuan::with(['JadwalBelajar.GuruMapel.Mapel', 'JadwalBelajar.Mapel', 'JadwalBelajar.Kelas']);
         if ($isGuru) {
             $guru = $user->guru;
             $allPertemuanQuery->whereHas('jadwalBelajar.guruMapel', function($q) use ($guru) {
@@ -110,14 +114,14 @@ class MateriController extends Controller
         }
 
         // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar
-        $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
+        $pertemuan = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
         $jadwal = $pertemuan?->JadwalBelajar;
         if ($jadwal) {
             $guruMapelId = $jadwal->id_guru_mapel;
-            if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
+            if ($guruMapelId && GuruMapel::where('id', $guruMapelId)->exists()) {
                 $validated['id_guru_mapel'] = $guruMapelId;
                 $mapelId = $jadwal->GuruMapel?->id_mapel ?? $jadwal->id_mapel;
-                if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
+                if ($mapelId && Mapel::where('id', $mapelId)->exists()) {
                     $validated['id_mapel'] = $mapelId;
                 } else {
                     $validated['id_mapel'] = null;
@@ -152,14 +156,14 @@ class MateriController extends Controller
         }
 
         // Auto-resolve id_guru_mapel dan id_mapel dari JadwalBelajar
-        $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
+        $pertemuan = Pertemuan::with('JadwalBelajar.GuruMapel.Mapel')->find($validated['id_pertemuan']);
         $jadwal = $pertemuan?->JadwalBelajar;
         if ($jadwal) {
             $guruMapelId = $jadwal->id_guru_mapel;
-            if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
+            if ($guruMapelId && GuruMapel::where('id', $guruMapelId)->exists()) {
                 $validated['id_guru_mapel'] = $guruMapelId;
                 $mapelId = $jadwal->guruMapel?->id_mapel ?? $jadwal->id_mapel;
-                if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
+                if ($mapelId && Mapel::where('id', $mapelId)->exists()) {
                     $validated['id_mapel'] = $mapelId;
                 } else {
                     $validated['id_mapel'] = null;
