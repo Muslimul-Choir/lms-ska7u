@@ -25,9 +25,13 @@ class SiswaKuisController extends Controller
             return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        // Fetch all published quizzes for the student's class
-        $kuisList = Kuis::whereHas('guruMapel', function ($query) use ($siswa) {
+        // Fetch all published quizzes for the student's class through JadwalBelajar
+        // Filter juga berdasarkan agama siswa untuk mapel agama
+        $kuisList = Kuis::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
+        })
+        ->whereHas('GuruMapel.Mapel', function ($query) use ($siswa) {
+            $query->forAgama($siswa->agama);
         })
         ->where('status', 'published')
         ->with(['Pertemuan', 'GuruMapel.Mapel'])
@@ -79,9 +83,15 @@ class SiswaKuisController extends Controller
             return redirect()->route('login');
         }
 
-        // Verify class access
-        if ($kuis->guruMapel && $kuis->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+        // Verify class access through JadwalBelajar
+        if ($kuis->guruMapel) {
+            $hasAccess = $kuis->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+            }
         }
 
         // Guard: Check if draft or closed (Req 8.11)
@@ -131,9 +141,15 @@ class SiswaKuisController extends Controller
             return redirect()->route('login');
         }
 
-        // Verify class access
-        if ($kuis->guruMapel && $kuis->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+        // Verify class access through JadwalBelajar
+        if ($kuis->guruMapel) {
+            $hasAccess = $kuis->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+            }
         }
 
         // Check if already taken
@@ -183,9 +199,15 @@ class SiswaKuisController extends Controller
             return redirect()->route('login');
         }
 
-        // Verify class access
-        if ($kuis->guruMapel && $kuis->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+        // Verify class access through JadwalBelajar
+        if ($kuis->guruMapel) {
+            $hasAccess = $kuis->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+            }
         }
 
         // Get HasilKuis
@@ -261,9 +283,15 @@ class SiswaKuisController extends Controller
             return redirect()->route('login');
         }
 
-        // Verify class access
-        if ($kuis->guruMapel && $kuis->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+        // Verify class access through JadwalBelajar
+        if ($kuis->guruMapel) {
+            $hasAccess = $kuis->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+            }
         }
 
         try {
@@ -349,9 +377,15 @@ class SiswaKuisController extends Controller
             return redirect()->route('login');
         }
 
-        // Verify class access
-        if ($kuis->guruMapel && $kuis->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+        // Verify class access through JadwalBelajar
+        if ($kuis->guruMapel) {
+            $hasAccess = $kuis->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke kuis ini.');
+            }
         }
 
         // Get HasilKuis

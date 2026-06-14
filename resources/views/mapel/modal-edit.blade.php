@@ -102,6 +102,44 @@
                     @endif
                 </div>
 
+                {{-- Agama (untuk mapel agama spesifik) --}}
+                <div class="flex flex-col gap-[7px]">
+                    <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                        Agama Khusus
+                        <span class="font-normal text-gray-400 normal-case tracking-normal">(untuk mapel agama)</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-[13px] top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12a8.959 8.959 0 01.284-2.253"/>
+                            </svg>
+                        </span>
+                        <select id="editAgama" name="agama"
+                            class="w-full rounded-[10px] border py-[10px] pl-[40px] pr-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
+                            {{ $errors->has('agama') && old('_modal') === 'edit' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                            <option value="">-- Semua Agama (Mapel Umum) --</option>
+                            <option value="Islam">Islam</option>
+                            <option value="Kristen">Kristen</option>
+                            <option value="Katolik">Katolik</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Buddha">Buddha</option>
+                            <option value="Konghucu">Konghucu</option>
+                        </select>
+                    </div>
+                    <p class="text-[11px] text-gray-500 flex items-start gap-1">
+                        <svg width="12" height="12" class="mt-[2px] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Kosongkan jika mapel untuk semua siswa. Isi jika mapel khusus agama tertentu (misal: PAI, Pendidikan Agama Kristen, dll)</span>
+                    </p>
+                    @if ($errors->has('agama') && old('_modal') === 'edit')
+                        <p class="flex items-center gap-1 text-xs text-red-600">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            {{ $errors->first('agama') }}
+                        </p>
+                    @endif
+                </div>
+
                 {{-- Deskripsi --}}
                 <div class="flex flex-col gap-[7px]">
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">

@@ -24,10 +24,13 @@ class SiswaMateriController extends Controller
             return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        // Get subjects taught in the student's class
-        $mapels = Mapel::whereHas('GuruMapel', function ($query) use ($siswa) {
+        // Get subjects taught in the student's class through JadwalBelajar
+        // Filter juga berdasarkan agama siswa untuk mapel agama
+        $mapels = Mapel::whereHas('GuruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
-        })->get();
+        })
+        ->forAgama($siswa->agama)
+        ->get();
 
         return view('siswa.materi.index', compact('siswa', 'mapels'));
     }
@@ -79,9 +82,15 @@ class SiswaMateriController extends Controller
 
         $materi = Materi::findOrFail($id);
 
-        // Validate access
-        if ($materi->guruMapel && $materi->guruMapel->id_kelas !== $siswa->id_kelas) {
-            abort(403, 'Anda tidak memiliki akses ke materi ini.');
+        // Validate access through JadwalBelajar
+        if ($materi->guruMapel) {
+            $hasAccess = $materi->guruMapel->JadwalBelajar()
+                ->where('id_kelas', $siswa->id_kelas)
+                ->exists();
+            
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke materi ini.');
+            }
         }
 
         return view('siswa.materi.show', compact('siswa', 'materi'));
