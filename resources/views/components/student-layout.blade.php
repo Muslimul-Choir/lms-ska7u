@@ -166,14 +166,18 @@
         if(Auth::check()) {
             $siswaModel = \App\Models\Siswa::where('id_user', Auth::id())->first();
             if($siswaModel) {
-                $pendingTugas = \App\Models\Tugas::whereHas('GuruMapel', fn($q) => $q->where('id_kelas', $siswaModel->id_kelas))
+                // Ganti query menggunakan JadwalBelajar untuk mendapatkan kelas
+                // Filter juga berdasarkan agama siswa untuk mapel agama
+                $pendingTugas = \App\Models\Tugas::whereHas('GuruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswaModel->id_kelas))
+                    ->whereHas('Mapel', fn($q) => $q->forAgama($siswaModel->agama))
                     ->where('status','published')
                     ->whereDoesntHave('PengumpulanTugas', fn($q) => $q->where('id_siswa', $siswaModel->id))
                     ->count();
                 
-                // Count available kuis
+                // Count available kuis dengan filter agama
                 $now = now();
-                $pendingKuis = \App\Models\Kuis::whereHas('guruMapel', fn($q) => $q->where('id_kelas', $siswaModel->id_kelas))
+                $pendingKuis = \App\Models\Kuis::whereHas('guruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswaModel->id_kelas))
+                    ->whereHas('guruMapel.Mapel', fn($q) => $q->forAgama($siswaModel->agama))
                     ->where('status', 'published')
                     ->where('batas_mulai', '<=', $now)
                     ->where('batas_selesai', '>=', $now)
