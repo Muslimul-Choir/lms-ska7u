@@ -23,8 +23,10 @@ class StoreGuruMapelRequest extends FormRequest
             'id_guru' => [
                 'required',
                 'exists:guru,id',
-                // 1 guru hanya boleh 1 mapel secara global
-                Rule::unique('guru_mapel', 'id_guru'),
+                // Kombinasi guru+mapel harus unik (bukan gurunya saja)
+                Rule::unique('guru_mapel')->where(function ($query) {
+                    return $query->where('id_mapel', $this->input('id_mapel'));
+                })->whereNull('deleted_at'),
             ],
 
             'id_semester' => [
@@ -42,7 +44,7 @@ class StoreGuruMapelRequest extends FormRequest
 
             'id_guru.required' => 'Guru wajib dipilih.',
             'id_guru.exists'   => 'Guru tidak valid.',
-            'id_guru.unique'   => 'Guru ini sudah ditugaskan ke mata pelajaran lain.',
+            'id_guru.unique'   => 'Guru ini sudah ditugaskan ke mapel yang sama.',
 
             'id_semester.required' => 'Semester wajib dipilih.',
             'id_semester.exists'   => 'Semester tidak valid.',
