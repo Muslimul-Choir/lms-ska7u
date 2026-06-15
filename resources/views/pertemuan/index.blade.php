@@ -28,27 +28,47 @@
                             @if($isGuru)
                                 Pertemuan yang Anda buat
                             @else
-                                Kelola data pertemuan semua guru
+                                {{-- Badge read-only untuk admin & super_admin --}}
+                                <span class="inline-flex items-center gap-1 text-gray-500">
+                                    {{-- <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg> --}}
+                                    Mode Lihat Saja — kelola data pertemuan semua guru
+                                </span>
                             @endif
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        @unless($isWaliKelasOnly)
-                        {{-- Tombol Arsip --}}
-                        <a href="{{ route('pertemuan.trash') }}"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
-                            <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            Arsip
-                            @if(isset($trashCount) && $trashCount > 0)
-                                <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">{{ $trashCount }}</span>
-                            @endif
-                        </a>
-                        @endunless
 
-                        {{-- Tombol Tambah: hanya guru(pengajar), admin & super_admin --}}
-                        @if(($isGuru && !$isWaliKelasOnly) || $isSuperAdmin)
+                        {{-- Tombol Arsip — guru: selalu tampil (kecuali walikelas), admin/super_admin: selalu tampil --}}
+                        @if($isGuru && !$isWaliKelasOnly)
+                            <a href="{{ route('pertemuan.trash') }}"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Arsip
+                                @if(isset($trashCount) && $trashCount > 0)
+                                    <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">{{ $trashCount }}</span>
+                                @endif
+                            </a>
+                        @elseif(!$isGuru)
+                            {{-- admin & super_admin: tombol arsip ada tapi read-only (hanya lihat) --}}
+                            {{-- <a href="{{ route('pertemuan.trash') }}"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Arsip
+                                @if(isset($trashCount) && $trashCount > 0)
+                                    <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">{{ $trashCount }}</span>
+                                @endif
+                            </a> --}}
+                        @endif
+
+                        {{-- Tombol Tambah: HANYA guru pengajar (bukan walikelas) --}}
+                        @if($isGuru && !$isWaliKelasOnly)
                             <button type="button" onclick="openCreateModal()"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -56,6 +76,16 @@
                                 </svg>
                                 Tambah Pertemuan
                             </button>
+                        @endif
+
+                        {{-- Badge read-only untuk admin & super_admin --}}
+                        @if(!$isGuru)
+                            <span class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-200">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Read Only
+                            </span>
                         @endif
                     </div>
                 </div>
@@ -119,11 +149,21 @@
                 </div>
 
                 {{-- ============================================================
-                     TAMPILAN ACCORDION — Admin & Super Admin
-                     Dikelompokkan per guru, load-more 5 per batch
+                     TAMPILAN ACCORDION — Admin & Super Admin (READ ONLY)
+                     Tidak ada tombol Edit & Hapus
                 ============================================================ --}}
                 @if(!$isGuru)
                     <div class="divide-y divide-gray-100" x-data>
+
+                        {{-- Banner read-only --}}
+                        <div class="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p class="text-xs text-blue-600">
+                                Anda memiliki akses <strong>lihat saja</strong>. Pengelolaan data pertemuan hanya dapat dilakukan oleh masing-masing guru.
+                            </p>
+                        </div>
 
                         @forelse($pertemuanByGuru as $guruId => $group)
                             @php
@@ -150,7 +190,6 @@
                                 $mapelNama = $guruModel?->guruMapel?->first()?->mapel?->nama_mapel ?? null;
                             @endphp
 
-                            {{-- data-guru-index dipakai JS load-more --}}
                             <div x-data="{ open: false }"
                                 class="accordion-guru-item"
                                 data-guru-index="{{ $loop->index }}">
@@ -194,7 +233,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Accordion Body --}}
+                                {{-- Accordion Body (read-only: kolom Aksi dihilangkan) --}}
                                 <div x-show="open" x-transition.opacity
                                     class="border-t border-gray-100 bg-white">
                                     <div class="overflow-x-auto">
@@ -206,12 +245,12 @@
                                                     <th class="px-6 py-2.5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">No. Pertemuan</th>
                                                     <th class="px-6 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tanggal</th>
                                                     <th class="px-6 py-2.5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">Status</th>
-                                                    <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-36">Aksi</th>
+                                                    {{-- Tidak ada kolom Aksi untuk admin/super_admin --}}
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-100">
                                                 @forelse($items as $i => $pertemuan)
-                                                    <tr class="hover:bg-amber-50/30 transition">
+                                                    <tr class="hover:bg-blue-50/20 transition">
                                                         <td class="px-6 py-3 text-gray-400 text-xs font-mono">
                                                             {{ str_pad($i + 1, 3, '0', STR_PAD_LEFT) }}
                                                         </td>
@@ -253,38 +292,10 @@
                                                         <td class="px-6 py-3 text-center">
                                                             @include('pertemuan._status-badge', ['status' => $pertemuan->status])
                                                         </td>
-                                                        <td class="px-6 py-3">
-                                                            <div class="flex items-center justify-center gap-1.5">
-                                                                <button type="button"
-                                                                    onclick="openEditModal(this)"
-                                                                    data-id="{{ $pertemuan->id }}"
-                                                                    data-route="{{ route('pertemuan.update', $pertemuan->id) }}"
-                                                                    data-id-jadwal="{{ $pertemuan->id_jadwal }}"
-                                                                    data-nomor-pertemuan="{{ $pertemuan->nomor_pertemuan }}"
-                                                                    data-tanggal="{{ $pertemuan->tanggal ?? '' }}"
-                                                                    data-status="{{ $pertemuan->status }}"
-                                                                    title="Edit"
-                                                                    class="w-7 h-7 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition">
-                                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                                    </svg>
-                                                                </button>
-                                                                <form action="{{ route('pertemuan.destroy', $pertemuan->id) }}" method="POST"
-                                                                    onsubmit="return confirmDelete(event)">
-                                                                    @csrf @method('DELETE')
-                                                                    <button type="submit" title="Hapus"
-                                                                        class="w-7 h-7 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition">
-                                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                                        </svg>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="6" class="px-6 py-6 text-center text-xs text-gray-400 italic">
+                                                        <td colspan="5" class="px-6 py-6 text-center text-xs text-gray-400 italic">
                                                             Belum ada pertemuan dari guru ini.
                                                         </td>
                                                     </tr>
@@ -309,7 +320,7 @@
                             </div>
                         @endforelse
 
-                        {{-- Load More Guru — tampil hanya jika total guru > 5 --}}
+                        {{-- Load More Guru --}}
                         @if($pertemuanByGuru->count() > 5)
                             <div id="loadMoreContainer"
                                 class="px-6 py-5 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -327,7 +338,7 @@
                     </div>
 
                 {{-- ============================================================
-                     TAMPILAN TABEL — Guru (hanya data miliknya, 5 per halaman)
+                     TAMPILAN TABEL — Guru (CRUD penuh, 5 per halaman)
                 ============================================================ --}}
                 @else
                     <div class="overflow-x-auto">
@@ -465,7 +476,7 @@
                         </table>
                     </div>
 
-                    {{-- Pagination 5 per halaman untuk tampilan guru --}}
+                    {{-- Pagination untuk guru --}}
                     @if($pertemuans->hasPages())
                         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <p class="text-xs text-gray-500">
@@ -490,8 +501,11 @@
     @include('components.alerts.success')
     @include('components.alerts.error')
 
-    @include('pertemuan.modal-create')
-    @include('pertemuan.modal-edit')
+    {{-- Modal hanya di-include jika user adalah guru (bukan walikelas) --}}
+    @if($isGuru && !$isWaliKelasOnly)
+        @include('pertemuan.modal-create')
+        @include('pertemuan.modal-edit')
+    @endif
 
     @push('scripts')
     <script>
@@ -509,12 +523,13 @@
             return `{{ route('pertemuan.index') }}?${params.toString()}`;
         }
 
-        if (btnSearch)    btnSearch.addEventListener('click',   () => window.location.href = getSearchUrl());
+        if (btnSearch)    btnSearch.addEventListener('click',    () => window.location.href = getSearchUrl());
         if (searchInput)  searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.location.href = getSearchUrl(); });
-        if (guruSelect)   guruSelect.addEventListener('change',  () => window.location.href = getSearchUrl());
-        if (statusSelect) statusSelect.addEventListener('change',() => window.location.href = getSearchUrl());
+        if (guruSelect)   guruSelect.addEventListener('change',   () => window.location.href = getSearchUrl());
+        if (statusSelect) statusSelect.addEventListener('change', () => window.location.href = getSearchUrl());
 
-        // ── Modal Create ─────────────────────────────────────────────────
+        @if($isGuru && !$isWaliKelasOnly)
+        // ── Modal Create (hanya guru pengajar) ───────────────────────────
         function openCreateModal() {
             document.getElementById('modalCreate').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
@@ -524,7 +539,7 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // ── Modal Edit ───────────────────────────────────────────────────
+        // ── Modal Edit (hanya guru pengajar) ─────────────────────────────
         function openEditModal(button) {
             const d    = button.dataset;
             const form = document.getElementById('editFormAction');
@@ -561,6 +576,7 @@
                 if (result.isConfirmed) form.submit();
             });
         }
+        @endif
 
         // ── Accordion Load More (Admin / Super Admin) ────────────────────
         (function () {
@@ -571,7 +587,6 @@
             let shown = BATCH;
 
             function refresh() {
-                // Tampilkan hanya item dengan index < shown
                 items.forEach((el) => {
                     const idx = parseInt(el.getAttribute('data-guru-index'), 10);
                     el.style.display = idx < shown ? '' : 'none';
@@ -584,7 +599,6 @@
                 if (!container) return;
 
                 if (shown >= items.length) {
-                    // Semua sudah tampil, sembunyikan tombol
                     container.style.display = 'none';
                 } else {
                     container.style.display = '';
@@ -604,7 +618,6 @@
                 }
             }
 
-            // Inisialisasi — sembunyikan item di luar 5 pertama
             refresh();
 
             const btn = document.getElementById('btnLoadMore');
@@ -612,7 +625,6 @@
                 btn.addEventListener('click', () => {
                     shown = Math.min(shown + BATCH, items.length);
                     refresh();
-                    // Smooth scroll ke item terakhir yang baru muncul
                     const lastVisible = document.querySelector(`.accordion-guru-item[data-guru-index="${shown - 1}"]`);
                     if (lastVisible) {
                         lastVisible.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -623,6 +635,7 @@
 
         // ── DOMContentLoaded ─────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
+            @if($isGuru && !$isWaliKelasOnly)
             const createForm = document.getElementById('createFormAction');
             const createBtn  = document.getElementById('createSubmitBtn');
             const editForm   = document.getElementById('editFormAction');
@@ -682,6 +695,7 @@
                     });
                 }
             });
+            @endif
         });
     </script>
     @endpush
