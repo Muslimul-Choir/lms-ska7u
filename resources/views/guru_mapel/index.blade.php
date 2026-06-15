@@ -341,7 +341,7 @@
             }
 
             /* ═══════════════════════════════════════
-               Modal Edit  ← FIXED: semua toggle via JS
+               Modal Edit
             ═══════════════════════════════════════ */
             function openEditModal(btn) {
                 const d        = btn.dataset;
@@ -358,8 +358,9 @@
                 document.getElementById('editHeaderIconEdit').classList.toggle('hidden',   isLocked);
 
                 /* ── Judul & subtitle ── */
-                document.getElementById('editModalTitle').textContent =
-                    isLocked ? 'Detail Guru Mapel' : 'Edit Guru Mapel';
+                document.getElementById('editModalTitle').textContent = isLocked
+                    ? 'Detail Guru Mapel'
+                    : 'Edit Guru Mapel';
                 document.getElementById('editModalSubtitle').textContent = isLocked
                     ? 'Data terkunci — sudah digunakan di jadwal/materi/kuis'
                     : 'Perbarui data penugasan guru ke mapel';
@@ -372,9 +373,9 @@
                 const mapelSel = document.getElementById('edit_id_mapel');
                 mapelSel.value    = d.idMapel;
                 mapelSel.disabled = isLocked;
-                mapelSel.classList.toggle('bg-gray-100',       isLocked);
+                mapelSel.classList.toggle('bg-gray-100',        isLocked);
                 mapelSel.classList.toggle('cursor-not-allowed', isLocked);
-                mapelSel.classList.toggle('text-gray-500',     isLocked);
+                mapelSel.classList.toggle('text-gray-500',      isLocked);
                 mapelSel.classList.toggle('bg-gray-50',        !isLocked);
                 document.getElementById('edit_id_mapel_hidden').value = d.idMapel;
 
@@ -385,8 +386,8 @@
                 if (isLocked) {
                     guruSel.classList.add('hidden');
                     guruDisplay.classList.remove('hidden');
-                    document.getElementById('edit_guru_label').textContent    = d.guruLabel || '-';
-                    document.getElementById('edit_id_guru_locked').value       = d.idGuru;
+                    document.getElementById('edit_guru_label').textContent = d.guruLabel || '-';
+                    document.getElementById('edit_id_guru_locked').value   = d.idGuru;
                 } else {
                     guruSel.classList.remove('hidden');
                     guruDisplay.classList.add('hidden');
@@ -397,9 +398,9 @@
                 const semSel = document.getElementById('edit_id_semester');
                 semSel.value    = d.idSemester;
                 semSel.disabled = isLocked;
-                semSel.classList.toggle('bg-gray-100',       isLocked);
+                semSel.classList.toggle('bg-gray-100',        isLocked);
                 semSel.classList.toggle('cursor-not-allowed', isLocked);
-                semSel.classList.toggle('text-gray-500',     isLocked);
+                semSel.classList.toggle('text-gray-500',      isLocked);
                 semSel.classList.toggle('bg-gray-50',        !isLocked);
                 document.getElementById('edit_id_semester_hidden').value = d.idSemester;
 
