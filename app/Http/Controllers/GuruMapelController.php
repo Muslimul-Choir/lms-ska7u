@@ -17,28 +17,12 @@ class GuruMapelController extends Controller
 {
     /**
      * Cek apakah guru_mapel sudah dipakai di tabel lain.
-     * Cukup satu hit dari salah satu tabel → dianggap terkunci.
      */
     private function isGuruMapelUsed(int $id): bool
     {
         return DB::table('jadwal_belajar')->where('id_guru_mapel', $id)->exists()
             || DB::table('materi')->where('id_guru_mapel', $id)->exists()
             || DB::table('kuis')->where('id_guru_mapel', $id)->exists();
-    }
-
-    /**
-     * Ambil id_guru yang sudah terpakai di tabel guru_mapel.
-     */
-    private function usedGuruIds(?int $excludeId = null): array
-    {
-        return GuruMapel::when(
-                $excludeId,
-                fn ($q) => $q->where('id', '!=', $excludeId)
-            )
-            ->pluck('id_guru')
-            ->unique()
-            ->values()
-            ->all();
     }
 
     public function index(Request $request): View|\Illuminate\Http\JsonResponse
@@ -49,14 +33,12 @@ class GuruMapelController extends Controller
         $gurus     = Guru::all();
         $semesters = Semester::all();
 
-        $usedGuruIds    = $this->usedGuruIds();
-        $availableGurus = Guru::whereNotIn('id', $usedGuruIds)->get();
-
         $guruMapels = GuruMapel::with(['Mapel', 'Guru', 'Semester'])
             ->when($search, function ($query, $search) {
-                return $query
-                    ->whereHas('Mapel', fn ($q) => $q->where('nama_mapel', 'like', "%{$search}%"))
-                    ->orWhereHas('Guru', fn ($q) => $q->where('nama_lengkap', 'like', "%{$search}%"));
+                return $query->where(function ($q) use ($search) {
+                    $q->whereHas('Mapel', fn ($sub) => $sub->where('nama_mapel', 'like', "%{$search}%"))
+                      ->orWhereHas('Guru', fn ($sub) => $sub->where('nama_lengkap', 'like', "%{$search}%"));
+                });
             })
             ->latest()
             ->paginate(5)
@@ -64,7 +46,6 @@ class GuruMapelController extends Controller
 
         $trashCount = GuruMapel::onlyTrashed()->count();
 
-        // Tandai masing-masing row apakah sudah dipakai di tabel lain
         $lockedIds = $guruMapels->filter(fn ($item) => $this->isGuruMapelUsed($item->id))
             ->pluck('id')
             ->all();
@@ -77,9 +58,9 @@ class GuruMapelController extends Controller
                     'id_guru'     => $item->id_guru,
                     'id_semester' => $item->id_semester,
                     'is_locked'   => in_array($item->id, $lockedIds),
-                    'mapel'    => ['nama_mapel'     => $item->Mapel?->nama_mapel      ?? '-'],
-                    'guru'     => ['nama_lengkap'   => $item->Guru?->nama_lengkap     ?? '-'],
-                    'semester' => ['nama_semester'  => $item->Semester?->nama_semester ?? '-'],
+                    'mapel'    => ['nama_mapel'    => $item->Mapel?->nama_mapel      ?? '-'],
+                    'guru'     => ['nama_lengkap'  => $item->Guru?->nama_lengkap     ?? '-'],
+                    'semester' => ['nama_semester' => $item->Semester?->nama_semester ?? '-'],
                 ]),
                 'pagination' => $guruMapels->links()->toHtml(),
                 'total'      => $guruMapels->total(),
@@ -93,18 +74,17 @@ class GuruMapelController extends Controller
             'gurus',
             'semesters',
             'trashCount',
-            'availableGurus',
             'lockedIds',
         ));
     }
 
     public function create(): View
     {
-        $mapels         = Mapel::all();
-        $semesters      = Semester::all();
-        $availableGurus = Guru::whereNotIn('id', $this->usedGuruIds())->get();
+        $mapels    = Mapel::all();
+        $semesters = Semester::all();
+        $gurus     = Guru::all();
 
-        return view('guru_mapel.create', compact('mapels', 'availableGurus', 'semesters'));
+        return view('guru_mapel.create', compact('mapels', 'gurus', 'semesters'));
     }
 
     public function store(StoreGuruMapelRequest $request): RedirectResponse
@@ -127,16 +107,14 @@ class GuruMapelController extends Controller
     {
         $mapels    = Mapel::all();
         $semesters = Semester::all();
+        $gurus     = Guru::all();
 
-        $isLocked       = $this->isGuruMapelUsed($guru_mapel->id);
-        $availableGurus = $isLocked
-            ? collect()   // locked → dropdown tidak perlu diisi
-            : Guru::whereNotIn('id', $this->usedGuruIds())->get();
+        $isLocked = $this->isGuruMapelUsed($guru_mapel->id);
 
         return view('guru_mapel.edit', compact(
             'guru_mapel',
             'mapels',
-            'availableGurus',
+            'gurus',
             'semesters',
             'isLocked',
         ));
@@ -146,7 +124,6 @@ class GuruMapelController extends Controller
         UpdateGuruMapelRequest $request,
         GuruMapel $guru_mapel
     ): RedirectResponse {
-        // Guard di sisi server: tolak update jika sudah dipakai
         if ($this->isGuruMapelUsed($guru_mapel->id)) {
             return redirect()
                 ->route('guru_mapel.index')
@@ -162,7 +139,6 @@ class GuruMapelController extends Controller
 
     public function destroy(GuruMapel $guru_mapel): RedirectResponse
     {
-        // Guard: tolak hapus jika sudah dipakai
         if ($this->isGuruMapelUsed($guru_mapel->id)) {
             return redirect()
                 ->route('guru_mapel.index')
@@ -216,7 +192,6 @@ class GuruMapelController extends Controller
 
     public function forceDelete(GuruMapel $guru_mapel): RedirectResponse
     {
-        // Guard: tolak hapus permanen jika masih dipakai
         if ($this->isGuruMapelUsed($guru_mapel->id)) {
             return redirect()
                 ->route('guru_mapel.trash')
