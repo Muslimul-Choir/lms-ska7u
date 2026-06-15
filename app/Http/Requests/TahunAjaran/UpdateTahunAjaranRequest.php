@@ -12,15 +12,14 @@ class UpdateTahunAjaranRequest extends FormRequest
         return true;
     }
 
-    // 🔥 SANITASI INPUT
     protected function prepareForValidation(): void
     {
         $this->merge([
             'nama_tahun' => $this->cleanString($this->nama_tahun),
+            'is_aktif'   => $this->boolean('is_aktif'), // ← tambahan ini saja
         ]);
     }
 
-    // helper sanitasi
     private function cleanString($value): ?string
     {
         if (is_null($value)) {
@@ -56,7 +55,7 @@ class UpdateTahunAjaranRequest extends FormRequest
     {
         return [
             'nama_tahun' => 'Nama Tahun Ajaran',
-            'is_aktif' => 'Status Aktif',
+            'is_aktif'   => 'Status Aktif',
         ];
     }
 

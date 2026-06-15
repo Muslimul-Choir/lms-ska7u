@@ -15,14 +15,12 @@
                 <div class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none"></div>
                 <div class="absolute w-[70px] h-[70px] rounded-full top-[10px] right-[70px] border border-[rgba(232,147,10,0.12)] pointer-events-none"></div>
                 <div class="flex items-center gap-3 relative">
-                    {{-- Icon: locked (hidden by default) --}}
                     <div id="editHeaderIconLocked" class="hidden w-[38px] h-[38px] rounded-[10px] bg-[rgba(156,163,175,0.25)] flex items-center justify-center flex-shrink-0">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
                     </div>
-                    {{-- Icon: edit --}}
                     <div id="editHeaderIconEdit" class="w-[38px] h-[38px] rounded-[10px] bg-[rgba(232,147,10,0.2)] flex items-center justify-center flex-shrink-0">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -64,7 +62,7 @@
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                 </svg>
                 <p class="text-amber-800 text-[11.5px] font-medium m-0">
-                    Hanya guru yang belum ditugaskan ke mapel lain yang ditampilkan.
+                    Satu guru dapat mengajar lebih dari satu mapel, namun kombinasi guru dan mapel harus unik.
                 </p>
             </div>
 
@@ -80,7 +78,6 @@
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
                         Mata Pelajaran <span class="text-red-500">*</span>
                     </label>
-                    {{-- Unlocked: select aktif --}}
                     <select id="edit_id_mapel" name="id_mapel"
                         class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 border-gray-200 outline-none cursor-pointer transition-all duration-200
                                focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
@@ -93,7 +90,6 @@
                             </option>
                         @endforeach
                     </select>
-                    {{-- Locked: select disabled + hidden --}}
                     <input type="hidden" id="edit_id_mapel_hidden" name="id_mapel_locked">
                     @if ($errors->has('id_mapel') && old('_modal') === 'edit')
                         <p class="flex items-center gap-1 text-xs text-red-600">
@@ -111,13 +107,13 @@
                         Guru <span class="text-red-500">*</span>
                     </label>
 
-                    {{-- Unlocked: select guru tersedia --}}
+                    {{-- Unlocked: dropdown semua guru --}}
                     <select id="edit_id_guru" name="id_guru"
                         class="w-full rounded-[10px] border py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200
                                focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
                                {{ $errors->has('id_guru') && old('_modal') === 'edit' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
                         <option value="">Pilih Guru</option>
-                        @foreach($availableGurus as $guru)
+                        @foreach($gurus as $guru)
                             <option value="{{ $guru->id }}"
                                 {{ old('id_guru', '') == $guru->id && old('_modal') === 'edit' ? 'selected' : '' }}>
                                 {{ $guru->nama_lengkap }}
