@@ -328,70 +328,102 @@
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="sl-dropdown" style="position:absolute;top:calc(100% + 8px);right:0;width:300px;z-index:100;max-height:400px;display:flex;flex-direction:column;" x-cloak>
+                 class="sl-dropdown" style="position:absolute;top:calc(100% + 12px);right:0;width:360px;max-width:calc(100vw - 32px);z-index:100;max-height:min(500px,calc(100vh - 100px));display:flex;flex-direction:column;background:rgba(22,28,45,0.98);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.4);" x-cloak>
                  
-                 <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.02);">
-                     <span style="font-size:12px;font-weight:700;color:#f1f5f9;font-family:'Plus Jakarta Sans',sans-serif;">Notifikasi</span>
-                     <button x-show="unreadCount > 0" @click="markAllAsRead()" style="font-size:10px;font-weight:600;color:#c9982a;background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;transition:color 0.15s;" onmouseover="this.style.color='#f0be3d'" onmouseout="this.style.color='#c9982a'">
-                         Tandai dibaca
+                 <div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;">
+                     <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">
+                         <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#c9982a,#f0be3d);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(201,152,42,0.25);flex-shrink:0;">
+                             <svg width="20" height="20" fill="none" stroke="#1a0a00" viewBox="0 0 24 24" stroke-width="2.5">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                             </svg>
+                         </div>
+                         <div style="min-width:0;flex:1;">
+                             <div style="font-size:16px;font-weight:800;color:#f1f5f9;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2;">Notifikasi</div>
+                             <div x-show="unreadCount > 0" style="font-size:11px;font-weight:600;color:#c9982a;margin-top:2px;" x-text="unreadCount + ' belum dibaca'"></div>
+                         </div>
+                     </div>
+                     <button x-show="unreadCount > 0" @click="markAllAsRead()" style="font-size:11px;font-weight:700;color:#1a0a00;background:linear-gradient(135deg,#c9982a,#f0be3d);border:none;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;flex-shrink:0;box-shadow:0 2px 8px rgba(201,152,42,0.3);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(201,152,42,0.4)';" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(201,152,42,0.3)';">
+                         Tandai Semua
                      </button>
                  </div>
 
-                 <div style="flex:1;overflow-y:auto;max-height:300px;">
+                 <div style="flex:1;overflow-y:auto;min-height:0;">
                      <template x-if="loading && notifications.length === 0">
-                         <div style="padding:20px;text-align:center;color:#64748b;font-size:11px;">Memuat...</div>
+                         <div style="padding:48px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
+                             <div style="width:48px;height:48px;border-radius:50%;background:rgba(100,116,139,0.1);display:flex;align-items:center;justify-content:center;">
+                                 <svg width="24" height="24" fill="none" stroke="#94a3b8" viewBox="0 0 24 24" stroke-width="2">
+                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                 </svg>
+                             </div>
+                             <span style="font-size:13px;font-weight:600;color:#94a3b8;">Memuat notifikasi...</span>
+                         </div>
                      </template>
 
                      <template x-if="notifications.length === 0 && !loading">
-                         <div style="padding:30px 20px;text-align:center;color:#64748b;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:8px;">
-                             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="color:#475569;">
-                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                             </svg>
-                             Belum ada notifikasi
+                         <div style="padding:64px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
+                             <div style="width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,rgba(100,116,139,0.08),rgba(100,116,139,0.02));display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.05);">
+                                 <svg width="36" height="36" fill="none" stroke="#475569" viewBox="0 0 24 24" stroke-width="1.5">
+                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                                 </svg>
+                             </div>
+                             <div>
+                                 <div style="font-size:14px;font-weight:700;color:#cbd5e1;margin-bottom:6px;font-family:'Plus Jakarta Sans',sans-serif;">Belum Ada Notifikasi</div>
+                                 <div style="font-size:12px;color:#64748b;line-height:1.5;">Notifikasi terbaru akan muncul di sini</div>
+                             </div>
                          </div>
                      </template>
 
                      <template x-for="item in notifications" :key="item.id">
                          <a :href="'/siswa/notifications/' + item.id + '/read'" 
-                            style="display:flex;gap:10px;padding:12px 14px;text-decoration:none;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.05);"
-                            :style="item.read_at === null ? 'background:rgba(201,152,42,0.04);' : ''"
-                            onmouseover="this.style.background='rgba(255,255,255,0.03)'"
-                            :onmouseout="item.read_at === null ? 'this.style.background=\'rgba(201,152,42,0.04)\'' : 'this.style.background=\'transparent\''">
+                            style="display:block;padding:16px 20px;text-decoration:none;transition:all 0.2s;border-bottom:1px solid rgba(255,255,255,0.04);position:relative;"
+                            :style="item.read_at === null ? 'background:rgba(201,152,42,0.05);border-left:3px solid #c9982a;' : 'border-left:3px solid transparent;'"
+                            onmouseover="this.style.background='rgba(255,255,255,0.06)'"
+                            :onmouseout="item.read_at === null ? 'this.style.background=\'rgba(201,152,42,0.05)\'' : 'this.style.background=\'transparent\''">
                              
-                             <div style="flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;"
-                                  :style="
-                                     item.data.type === 'jadwal' ? 'background:rgba(59,130,246,0.15); color:#60a5fa;' :
-                                     item.data.type === 'mapel'  ? 'background:rgba(245,158,11,0.15); color:#f59e0b;' :
-                                     item.data.type === 'materi' ? 'background:rgba(16,185,129,0.15); color:#34d399;' :
-                                     item.data.type === 'tugas'  ? 'background:rgba(239,68,68,0.15); color:#f87171;' :
-                                     'background:rgba(167,139,250,0.15); color:#c084fc;'
-                                  ">
+                             <div style="display:flex;gap:14px;align-items:flex-start;">
+                                 {{-- Icon --}}
+                                 <div style="flex-shrink:0;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;"
+                                      :style="
+                                         item.data.type === 'jadwal' ? 'background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(59,130,246,0.05)); border:1px solid rgba(59,130,246,0.25); color:#60a5fa;' :
+                                         item.data.type === 'mapel'  ? 'background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05)); border:1px solid rgba(245,158,11,0.25); color:#fbbf24;' :
+                                         item.data.type === 'materi' ? 'background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.25); color:#34d399;' :
+                                         item.data.type === 'tugas'  ? 'background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05)); border:1px solid rgba(239,68,68,0.25); color:#f87171;' :
+                                         'background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(167,139,250,0.05)); border:1px solid rgba(167,139,250,0.25); color:#c084fc;'
+                                      ">
                                  <template x-if="item.data.type === 'jadwal'">
-                                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                  </template>
                                  <template x-if="item.data.type === 'mapel'">
-                                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
                                  </template>
                                  <template x-if="item.data.type === 'materi'">
-                                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
                                  </template>
                                  <template x-if="item.data.type === 'tugas'">
-                                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                                  </template>
                                  <template x-if="item.data.type === 'kuis'">
-                                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
                                  </template>
                              </div>
 
-                             <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
-                                 <div style="font-size:11px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="item.data.title"></div>
-                                 <div style="font-size:10px;color:#94a3b8;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" x-text="item.data.message"></div>
-                                 <div style="font-size:8px;color:#475569;margin-top:2px;" x-text="formatTime(item.created_at)"></div>
-                             </div>
+                                 {{-- Content --}}
+                                 <div style="flex:1;min-width:0;">
+                                     <div style="font-size:13.5px;font-weight:700;color:#f1f5f9;line-height:1.4;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:4px;word-wrap:break-word;" x-text="item.data.title"></div>
+                                     <div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:6px;word-wrap:break-word;" x-text="item.data.message"></div>
+                                     <div style="display:flex;align-items:center;gap:6px;">
+                                         <svg width="12" height="12" fill="none" stroke="#64748b" viewBox="0 0 24 24" stroke-width="2.5">
+                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                         </svg>
+                                         <span style="font-size:11px;color:#64748b;font-weight:600;" x-text="formatTime(item.created_at)"></span>
+                                     </div>
+                                 </div>
 
-                             <template x-if="item.read_at === null">
-                                 <div style="width:6px;height:6px;border-radius:50%;background:#ef4444;align-self:center;flex-shrink:0;"></div>
-                             </template>
+                                 {{-- Unread indicator --}}
+                                 <template x-if="item.read_at === null">
+                                     <div style="flex-shrink:0;width:10px;height:10px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.15);margin-top:4px;"></div>
+                                 </template>
+                             </div>
                          </a>
                      </template>
                  </div>
