@@ -123,5 +123,153 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Verifikasi Email', $url)
                 ->line('Jika Anda tidak membuat akun, abaikan email ini.');
         });
+
+        // ── Model Observers for Notifications ──
+        \App\Models\Mapel::created(function ($mapel) {
+            try {
+                $query = \App\Models\Siswa::with('User');
+                if ($mapel->agama) {
+                    $query->where('agama', $mapel->agama);
+                }
+                $students = $query->get();
+                foreach ($students as $siswa) {
+                    if ($siswa->User) {
+                        $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                            'mapel',
+                            'Mata Pelajaran Baru: ' . $mapel->nama_mapel,
+                            "Mata pelajaran baru '" . $mapel->nama_mapel . "' (" . $mapel->kode_mapel . ") telah ditambahkan ke sistem.",
+                            route('siswa.materi.index'),
+                            false
+                        ));
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Mapel creation: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Mapel Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
+        \App\Models\JadwalBelajar::created(function ($jadwal) {
+            try {
+                if ($jadwal->id_kelas) {
+                    $students = \App\Models\Siswa::where('id_kelas', $jadwal->id_kelas)->with('User')->get();
+                    $mapelName = $jadwal->nama_display;
+                    foreach ($students as $siswa) {
+                        if ($siswa->User) {
+                            $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                'jadwal',
+                                'Jadwal Baru: ' . $mapelName,
+                                "Jadwal belajar baru untuk '" . $mapelName . "' pada hari " . ucfirst($jadwal->hari) . " telah ditambahkan.",
+                                route('siswa.jadwal.index'),
+                                false
+                            ));
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Jadwal creation: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Jadwal Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
+        \App\Models\Materi::created(function ($materi) {
+            try {
+                $kelasIds = [];
+                if ($materi->Pertemuan && $materi->Pertemuan->JadwalBelajar) {
+                    $kelasIds[] = $materi->Pertemuan->JadwalBelajar->id_kelas;
+                } elseif ($materi->id_guru_mapel) {
+                    $kelasIds = \App\Models\JadwalBelajar::where('id_guru_mapel', $materi->id_guru_mapel)->pluck('id_kelas')->toArray();
+                }
+                
+                if (!empty($kelasIds)) {
+                    $students = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->with('User')->get();
+                    foreach ($students as $siswa) {
+                        if ($siswa->User) {
+                            $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                'materi',
+                                'Materi Baru: ' . $materi->judul,
+                                "Materi pembelajaran baru '" . $materi->judul . "' telah diterbitkan untuk mata pelajaran " . ($materi->Mapel?->nama_mapel ?? $materi->GuruMapel?->Mapel?->nama_mapel ?? '') . ".",
+                                route('siswa.materi.show', $materi->id),
+                                true
+                            ));
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Materi creation: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Materi Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
+        \App\Models\Tugas::created(function ($tugas) {
+            try {
+                $kelasIds = [];
+                if ($tugas->Pertemuan && $tugas->Pertemuan->JadwalBelajar) {
+                    $kelasIds[] = $tugas->Pertemuan->JadwalBelajar->id_kelas;
+                } elseif ($tugas->id_guru_mapel) {
+                    $kelasIds = \App\Models\JadwalBelajar::where('id_guru_mapel', $tugas->id_guru_mapel)->pluck('id_kelas')->toArray();
+                }
+
+                if (!empty($kelasIds)) {
+                    $students = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->with('User')->get();
+                    $batasWaktuFormatted = $tugas->batas_waktu ? $tugas->batas_waktu->format('d M Y H:i') : '-';
+                    foreach ($students as $siswa) {
+                        if ($siswa->User) {
+                            $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                'tugas',
+                                'Tugas Baru: ' . $tugas->judul,
+                                "Tugas baru '" . $tugas->judul . "' telah diterbitkan. Batas waktu pengumpulan: " . $batasWaktuFormatted . ".",
+                                route('siswa.tugas.show', $tugas->id),
+                                true
+                            ));
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Tugas creation: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Tugas Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
+        \App\Models\Kuis::created(function ($kuis) {
+            try {
+                $kelasIds = [];
+                if ($kuis->Pertemuan && $kuis->Pertemuan->JadwalBelajar) {
+                    $kelasIds[] = $kuis->Pertemuan->JadwalBelajar->id_kelas;
+                } elseif ($kuis->id_guru_mapel) {
+                    $kelasIds = \App\Models\JadwalBelajar::where('id_guru_mapel', $kuis->id_guru_mapel)->pluck('id_kelas')->toArray();
+                }
+
+                if (!empty($kelasIds)) {
+                    $students = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->with('User')->get();
+                    $batasMulaiFormatted = $kuis->batas_mulai ? $kuis->batas_mulai->format('d M Y H:i') : '-';
+                    $batasSelesaiFormatted = $kuis->batas_selesai ? $kuis->batas_selesai->format('d M Y H:i') : '-';
+                    foreach ($students as $siswa) {
+                        if ($siswa->User) {
+                            $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                'kuis',
+                                'Kuis Baru: ' . $kuis->judul,
+                                "Kuis baru '" . $kuis->judul . "' telah ditambahkan. Batas pengerjaan mulai: " . $batasMulaiFormatted . " sampai " . $batasSelesaiFormatted . ".",
+                                route('siswa.kuis.show', $kuis->id),
+                                true
+                            ));
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Kuis creation: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Kuis Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
     }
 }

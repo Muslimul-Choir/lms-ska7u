@@ -19,14 +19,23 @@ class StorePengumpulanTugasRequest extends FormRequest
 
         $rules = ['catatan' => 'nullable|string|max:1000'];
 
+        // Cek apakah ini update (sudah ada pengumpulan sebelumnya)
+        $isUpdate = \App\Models\PengumpulanTugas::where('id_tugas', $this->route('id'))
+            ->where('id_siswa', auth()->user()->siswa?->id)
+            ->exists();
+
         if ($tipeFile === 'link') {
+            // Link selalu required karena tidak bisa kosong
             $rules['file_url'] = 'required|url|max:2048';
         } elseif ($tipeFile === 'dokumen') {
-            $rules['file_upload'] = 'required|file|mimes:pdf,doc,docx,zip,rar|max:51200';
+            // Untuk update, file tidak wajib (optional)
+            $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:pdf,doc,docx,zip,rar|max:51200';
         } elseif ($tipeFile === 'gambar') {
-            $rules['file_upload'] = 'required|file|mimes:png,jpg,jpeg|max:51200';
+            // Untuk update, file tidak wajib (optional)
+            $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:png,jpg,jpeg,gif,webp|max:51200';
         } elseif ($tipeFile === 'video') {
-            $rules['file_upload'] = 'required|file|mimes:mp4|max:51200';
+            // Untuk update, file tidak wajib (optional)
+            $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:mp4,webm,ogg|max:51200';
         }
         // 'tanpa' → no file rules
 

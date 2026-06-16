@@ -6,11 +6,11 @@
     </div>
 
     {{-- Dialog --}}
-    <div class="relative z-10 w-full max-w-lg">
+    <div class="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div class="bg-white rounded-[18px] shadow-[0_24px_60px_rgba(107,26,43,0.22),0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden border border-[rgba(107,26,43,0.1)]">
 
             {{-- Header --}}
-            <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden"
+            <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden sticky top-0 z-10"
                 style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
                 <div class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none"></div>
                 <div class="absolute w-[70px] h-[70px] rounded-full top-[10px] right-[70px] border border-[rgba(232,147,10,0.12)] pointer-events-none"></div>

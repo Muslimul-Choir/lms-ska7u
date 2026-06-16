@@ -73,7 +73,7 @@
                         @endif
                         @if(!$isAdmin)
                             <span class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-200">
-                                👁️ Mode Lihat Saja
+                                 Mode Lihat Saja
                             </span>
                         @endif
                     </div>

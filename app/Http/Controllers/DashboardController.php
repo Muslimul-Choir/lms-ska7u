@@ -222,6 +222,72 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        // Daftar siswa per kelas dengan statistik
+        $siswaPerKelas = [];
+        foreach ($myClassIds as $kelasId) {
+            $kelas = Kelas::with(['Tingkatan', 'Jurusan', 'Bagian'])->find($kelasId);
+            if (!$kelas) continue;
+
+            $siswaList = Siswa::where('id_kelas', $kelasId)->orderBy('nama_lengkap')->get();
+            
+            // Statistik per siswa
+            $siswaStats = [];
+            foreach ($siswaList as $siswa) {
+                // Tugas untuk kelas ini
+                $tugasKelas = Tugas::whereIn('id_guru_mapel', $myGuruMapelIds)
+                    ->whereHas('Pertemuan.JadwalBelajar', function($q) use ($kelasId) {
+                        $q->where('id_kelas', $kelasId);
+                    })
+                    ->where('status', 'published')
+                    ->pluck('id');
+                
+                $totalTugas = $tugasKelas->count();
+                
+                // Pengumpulan siswa ini
+                $pengumpulan = PengumpulanTugas::whereIn('id_tugas', $tugasKelas)
+                    ->where('id_siswa', $siswa->id)
+                    ->get();
+                
+                $sudahKumpul = $pengumpulan->count();
+                $belumKumpul = $totalTugas - $sudahKumpul;
+                
+                // Terlambat
+                $terlambat = $pengumpulan->filter(function($p) {
+                    return $p->Tugas && $p->Tugas->batas_waktu && 
+                           $p->created_at > $p->Tugas->batas_waktu;
+                })->count();
+                
+                // Sudah dinilai
+                $sudahDinilai = $pengumpulan->filter(function($p) {
+                    return $p->Penilaian()->exists();
+                })->count();
+                
+                // Rata-rata nilai
+                $nilaiList = Penilaian::whereHas('PengumpulanTugas', function($q) use ($siswa, $tugasKelas) {
+                    $q->where('id_siswa', $siswa->id)
+                      ->whereIn('id_tugas', $tugasKelas);
+                })->pluck('nilai');
+                
+                $rataRata = $nilaiList->isNotEmpty() ? round($nilaiList->avg(), 1) : 0;
+                
+                $siswaStats[] = [
+                    'siswa' => $siswa,
+                    'total_tugas' => $totalTugas,
+                    'sudah_kumpul' => $sudahKumpul,
+                    'belum_kumpul' => $belumKumpul,
+                    'terlambat' => $terlambat,
+                    'sudah_dinilai' => $sudahDinilai,
+                    'rata_rata' => $rataRata,
+                ];
+            }
+            
+            $siswaPerKelas[] = [
+                'kelas' => $kelas,
+                'siswa_stats' => $siswaStats,
+                'total_siswa' => $siswaList->count(),
+            ];
+        }
+
         // Jadwal minggu ini
         $hariIni       = $now->locale('id')->dayName; // nama hari dalam bahasa Indonesia
         $hariEnum      = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
@@ -274,6 +340,7 @@ class DashboardController extends Controller
             'pengumpulan_belum_dinilai' => $pengumpulanBelumDinilai,
             'jadwal_per_hari'         => $jadwalPerHari,
             'hari_ini'                => $hariIniId,
+            'siswa_per_kelas'         => $siswaPerKelas,
         ];
     }
 
