@@ -76,10 +76,11 @@ class PertemuanController extends Controller
                 'isSuperAdmin'    => false,
                 'trashCount'      => $trashCount,
                 'isWaliKelasOnly' => $user->guru->status_pengajar === 'walikelas',
+                'canCrud'         => true,   // guru bisa CRUD penuh
             ]);
         }
 
-        // ── ADMIN / SUPER ADMIN: tampilan accordion per guru ─────────────
+        // ── ADMIN / SUPER ADMIN: read-only, accordion per guru ───────────
         $idGuruFilter = $request->input('id_guru');
 
         $query = Pertemuan::with(['jadwalBelajar', 'guru', 'creator'])
@@ -128,14 +129,12 @@ class PertemuanController extends Controller
             ]);
         }
 
-        $jadwalBelajars = $this->getJadwalBelajarByRole(false);
-
         return view('pertemuan.index', [
             'pertemuans'      => collect(),
             'pertemuanByGuru' => $pertemuanByGuru,
             'gurus'           => $gurus,
             'search'          => $search,
-            'jadwalBelajars'  => $jadwalBelajars,
+            'jadwalBelajars'  => collect(),
             'idGuruFilter'    => $idGuruFilter,
             'statusFilter'    => $statusFilter,
             'isGuru'          => false,
@@ -143,22 +142,26 @@ class PertemuanController extends Controller
             'isSuperAdmin'    => $isSuperAdmin,
             'trashCount'      => $trashCount,
             'isWaliKelasOnly' => false,
+            'canCrud'         => false,   // admin & super_admin: read-only
         ]);
     }
 
     public function create(): View
     {
-        /** @var \App\Models\User $user */
-        $user   = Auth::user();
-        $isGuru = $user->role === 'guru' && $user->guru;
+        $this->authorizeOnlyGuru();
 
-        $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $jadwalBelajars = $this->getJadwalBelajarByRole(true);
 
         return view('pertemuan.create', compact('jadwalBelajars'));
     }
 
     public function store(StorePertemuanRequest $request): RedirectResponse
     {
+        $this->authorizeOnlyGuru();
+
         $data = $request->validated();
 
         $exists = Pertemuan::where('id_jadwal', $data['id_jadwal'])
@@ -187,7 +190,7 @@ class PertemuanController extends Controller
 
     public function show(Pertemuan $pertemuan): View
     {
-        $this->authorizeGuru($pertemuan);
+        $this->authorizeViewAccess($pertemuan);
 
         $pertemuan->load(['jadwalBelajar', 'guru']);
 
@@ -196,13 +199,10 @@ class PertemuanController extends Controller
 
     public function edit(Pertemuan $pertemuan): View
     {
+        $this->authorizeOnlyGuru();
         $this->authorizeGuru($pertemuan);
 
-        /** @var \App\Models\User $user */
-        $user   = Auth::user();
-        $isGuru = $user->role === 'guru' && $user->guru;
-
-        $jadwalBelajars = $this->getJadwalBelajarByRole($isGuru);
+        $jadwalBelajars = $this->getJadwalBelajarByRole(true);
 
         return view('pertemuan.edit', compact('pertemuan', 'jadwalBelajars'));
     }
@@ -211,6 +211,7 @@ class PertemuanController extends Controller
         UpdatePertemuanRequest $request,
         Pertemuan $pertemuan
     ): RedirectResponse {
+        $this->authorizeOnlyGuru();
         $this->authorizeGuru($pertemuan);
 
         $data = $request->validated();
@@ -241,6 +242,7 @@ class PertemuanController extends Controller
 
     public function destroy(Pertemuan $pertemuan): RedirectResponse
     {
+        $this->authorizeOnlyGuru();
         $this->authorizeGuru($pertemuan);
 
         $pertemuan->delete();
@@ -292,10 +294,11 @@ class PertemuanController extends Controller
                 'isGuru'       => true,
                 'isAdmin'      => false,
                 'isSuperAdmin' => false,
+                'canCrud'      => true,    // guru bisa restore & force-delete
             ]);
         }
 
-        // ── ADMIN / SUPER ADMIN: accordion per guru ─────────────────────
+        // ── ADMIN / SUPER ADMIN: read-only, accordion per guru ───────────
         $idGuruFilter = $request->input('id_guru');
 
         $query = Pertemuan::onlyTrashed()
@@ -346,13 +349,15 @@ class PertemuanController extends Controller
             'isGuru'       => false,
             'isAdmin'      => $isAdmin,
             'isSuperAdmin' => $isSuperAdmin,
+            'canCrud'      => false,       // admin & super_admin: read-only
         ]);
     }
 
     public function restore(string $id): RedirectResponse
     {
-        $pertemuan = Pertemuan::onlyTrashed()->findOrFail($id);
+        $this->authorizeOnlyGuru();
 
+        $pertemuan = Pertemuan::onlyTrashed()->findOrFail($id);
         $this->authorizeGuru($pertemuan);
 
         $pertemuan->restore();
@@ -364,8 +369,9 @@ class PertemuanController extends Controller
 
     public function forceDelete(string $id): RedirectResponse
     {
-        $pertemuan = Pertemuan::onlyTrashed()->findOrFail($id);
+        $this->authorizeOnlyGuru();
 
+        $pertemuan = Pertemuan::onlyTrashed()->findOrFail($id);
         $this->authorizeGuru($pertemuan);
 
         $pertemuan->forceDelete();
@@ -377,15 +383,14 @@ class PertemuanController extends Controller
 
     public function restoreAll(): RedirectResponse
     {
+        $this->authorizeOnlyGuru();
+
         /** @var \App\Models\User $user */
-        $user  = Auth::user();
-        $query = Pertemuan::onlyTrashed();
+        $user = Auth::user();
 
-        if ($user->role === 'guru' && $user->guru) {
-            $query->where('id_guru', $user->guru->id);
-        }
-
-        $query->restore();
+        Pertemuan::onlyTrashed()
+            ->where('id_guru', $user->guru->id)
+            ->restore();
 
         return redirect()
             ->route('pertemuan.trash')
@@ -394,15 +399,14 @@ class PertemuanController extends Controller
 
     public function forceDeleteAll(): RedirectResponse
     {
+        $this->authorizeOnlyGuru();
+
         /** @var \App\Models\User $user */
-        $user  = Auth::user();
-        $query = Pertemuan::onlyTrashed();
+        $user = Auth::user();
 
-        if ($user->role === 'guru' && $user->guru) {
-            $query->where('id_guru', $user->guru->id);
-        }
-
-        $query->forceDelete();
+        Pertemuan::onlyTrashed()
+            ->where('id_guru', $user->guru->id)
+            ->forceDelete();
 
         return redirect()
             ->route('pertemuan.trash')
@@ -410,6 +414,55 @@ class PertemuanController extends Controller
     }
 
     // ── Private Helpers ──────────────────────────────────────────────────
+
+    /**
+     * Hanya guru (bukan admin/super_admin) yang boleh melakukan aksi CUD.
+     * Admin & super_admin mendapat 403 jika mencoba mengakses route CUD.
+     */
+    private function authorizeOnlyGuru(): void
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->role !== 'guru' || ! $user->guru) {
+            abort(403, 'Akses ditolak. Hanya guru yang dapat melakukan aksi ini.');
+        }
+    }
+
+    /**
+     * Guru hanya boleh mengelola data miliknya sendiri.
+     */
+    private function authorizeGuru(Pertemuan $pertemuan): void
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (
+            $user->role === 'guru' &&
+            $user->guru &&
+            $pertemuan->id_guru != $user->guru->id
+        ) {
+            abort(403, 'Anda tidak memiliki akses ke data ini.');
+        }
+    }
+
+    /**
+     * Akses show (detail) diizinkan untuk semua role.
+     * Guru hanya bisa lihat miliknya, admin & super_admin bisa lihat semua.
+     */
+    private function authorizeViewAccess(Pertemuan $pertemuan): void
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (
+            $user->role === 'guru' &&
+            $user->guru &&
+            $pertemuan->id_guru != $user->guru->id
+        ) {
+            abort(403, 'Anda tidak memiliki akses ke data ini.');
+        }
+    }
 
     private function getJadwalBelajarByRole(bool $isGuru)
     {
@@ -426,19 +479,5 @@ class PertemuanController extends Controller
         }
 
         return $query->get();
-    }
-
-    private function authorizeGuru(Pertemuan $pertemuan): void
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if (
-            $user->role === 'guru' &&
-            $user->guru &&
-            $pertemuan->id_guru != $user->guru->id
-        ) {
-            abort(403, 'Anda tidak memiliki akses ke data ini.');
-        }
     }
 }
