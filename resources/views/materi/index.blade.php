@@ -43,6 +43,8 @@
             editMateriData: {},
             tipeMateri: 'dokumen',
             tipeMateriEdit: 'dokumen',
+            autoRelease: true,
+            autoReleaseEdit: false,
         
             togglePertemuan(id) {
                 this.activePertemuan = this.activePertemuan === id ? null : id;
@@ -51,6 +53,7 @@
             openEditMateri(materi) {
                 this.editMateriData = materi;
                 this.tipeMateriEdit = materi.tipe_materi;
+                this.autoReleaseEdit = materi.auto_release || false;
                 this.modalEditMateri = true;
             }
         }">
@@ -69,70 +72,88 @@
                 </div>
             @endif
 
-            {{-- Action Button --}}
-            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
-                    in_array(Auth::user()->role, ['super_admin', 'admin']))
-                <div class="flex items-center justify-between">
-                    <button @click="modalMateri = true"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition shadow-sm">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Tambah Materi
-                    </button>
-                </div>
-            @endif
-
-            {{-- Search & Filter Bar --}}
-            <form method="GET" action="{{ route('materi.index') }}"
-                class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-4">
-                <div class="flex-1 relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+            {{-- Main Card --}}
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-5">
+                {{-- Card Header --}}
+                <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Daftar Materi</h3>
+                        <p class="text-gray-400 text-xs mt-0.5">Kelola materi pembelajaran untuk setiap pertemuan</p>
                     </div>
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari judul materi..."
-                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-amber-400/30 focus:border-amber-400 transition bg-white">
-                </div>
-
-                <div class="flex flex-wrap sm:flex-nowrap items-center gap-3">
-                    <select name="filter_status"
-                        class="border border-gray-200 rounded-lg text-sm py-2 px-3 focus:ring-amber-400/30 focus:border-amber-400 transition bg-white">
-                        <option value="semua" {{ request('filter_status') == 'semua' ? 'selected' : '' }}>Semua Status
-                        </option>
-                        <option value="published" {{ request('filter_status') == 'published' ? 'selected' : '' }}>
-                            Published</option>
-                        <option value="draft" {{ request('filter_status') == 'draft' ? 'selected' : '' }}>Draft
-                        </option>
-                    </select>
-
-                    <select name="id_kelas"
-                        class="border border-gray-200 rounded-lg text-sm py-2 px-3 focus:ring-amber-400/30 focus:border-amber-400 transition bg-white">
-                        <option value="">Semua Kelas</option>
-                        @foreach ($kelasList as $k)
-                            <option value="{{ $k->id }}" {{ request('id_kelas') == $k->id ? 'selected' : '' }}>
-                                {{ $k->nama_kelas }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <button type="submit"
-                        class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Cari</button>
-                    @if (request('q') || (request('filter_status') && request('filter_status') != 'semua') || request('id_kelas'))
-                        <a href="{{ route('materi.index') }}"
-                            class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center"
-                            title="Reset Filter">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <div class="flex items-center gap-2">
+                        {{-- Tombol Arsip --}}
+                        <a href="{{ route('materi.trash') }}"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                            <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
+                            Arsip
+                            @if(isset($trashCount) && $trashCount > 0)
+                                <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none ml-1">{{ $trashCount }}</span>
+                            @endif
                         </a>
-                    @endif
+
+                        {{-- Tombol Tambah --}}
+                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                in_array(Auth::user()->role, ['super_admin', 'admin']))
+                            <button @click="modalMateri = true"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Tambah Materi
+                            </button>
+                        @endif
+                    </div>
                 </div>
-            </form>
+
+                {{-- Search & Filter Bar --}}
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
+                    <form method="GET" action="{{ route('materi.index') }}" class="flex flex-wrap items-center gap-2">
+                        <div class="relative flex-1 min-w-[180px] max-w-xs">
+                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari judul materi..."
+                                class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition">
+                        </div>
+
+                        <select name="filter_status"
+                            class="rounded-xl border min-w-[130px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
+                            <option value="semua" {{ request('filter_status') == 'semua' ? 'selected' : '' }}>Semua Status</option>
+                            <option value="published" {{ request('filter_status') == 'published' ? 'selected' : '' }}>Published</option>
+                            <option value="draft" {{ request('filter_status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                        </select>
+
+                        <select name="id_kelas"
+                            class="rounded-xl border min-w-[150px] border-gray-200 bg-white py-2 px-3 text-xs text-gray-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none cursor-pointer transition">
+                            <option value="">Semua Kelas</option>
+                            @foreach ($kelasList as $k)
+                                <option value="{{ $k->id }}" {{ request('id_kelas') == $k->id ? 'selected' : '' }}>
+                                    {{ $k->nama_kelas }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <button type="submit"
+                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
+                            Cari
+                        </button>
+                        @if (request('q') || (request('filter_status') && request('filter_status') != 'semua') || request('id_kelas'))
+                            <a href="{{ route('materi.index') }}"
+                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl border border-gray-200 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                                </svg>
+                                Reset
+                            </a>
+                        @endif
+                    </form>
+                </div>
+            </div>
 
             {{-- Accordion List by Pertemuan --}}
             <div class="space-y-4">
@@ -225,6 +246,7 @@
                                                 <th class="px-5 py-3 w-10 text-center">#</th>
                                                 <th class="px-5 py-3">Judul Materi</th>
                                                 <th class="px-5 py-3">Tipe</th>
+                                                <th class="px-5 py-3">Waktu Rilis</th>
                                                 <th class="px-5 py-3">Status</th>
                                                 <th class="px-5 py-3 text-center w-32">Aksi</th>
                                             </tr>
@@ -260,13 +282,31 @@
                                                         </span>
                                                     </td>
                                                     <td class="px-5 py-4 align-top">
-                                                        @if ($m->status === 'published')
-                                                            <span
-                                                                class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border-emerald-200">Published</span>
+                                                        @if($m->waktu_rilis)
+                                                            <div class="text-xs text-gray-600 font-medium">
+                                                                📅 {{ \Carbon\Carbon::parse($m->waktu_rilis)->format('d M Y') }}
+                                                            </div>
+                                                            <div class="text-[10px] text-gray-400 mt-0.5">
+                                                                🕐 {{ \Carbon\Carbon::parse($m->waktu_rilis)->format('H:i') }}
+                                                            </div>
                                                         @else
-                                                            <span
-                                                                class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold bg-gray-100 text-gray-700 border-gray-200">Draft</span>
+                                                            <span class="text-xs text-gray-400 italic">Auto</span>
                                                         @endif
+                                                    </td>
+                                                    <td class="px-5 py-4 align-top">
+                                                        @php
+                                                            $status = $m->status_label;
+                                                            $statusColors = match($status) {
+                                                                'Belum Dirilis' => 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                                                                'Tersedia' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                                                'Berakhir' => 'bg-red-50 text-red-700 border-red-200',
+                                                                default => 'bg-gray-100 text-gray-700 border-gray-200',
+                                                            };
+                                                        @endphp
+                                                        <span
+                                                            class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold {{ $statusColors }}">
+                                                            {{ $status }}
+                                                        </span>
                                                     </td>
                                                     <td class="px-5 py-4 text-center align-top">
                                                         <div class="flex items-center justify-center gap-2">
@@ -295,7 +335,10 @@
                                                                     deskripsi: '{{ addslashes($m->deskripsi ?? '') }}',
                                                                     tipe_materi: '{{ $m->tipe_materi }}',
                                                                     id_pertemuan: {{ $m->id_pertemuan }},
-                                                                    file_url: '{{ $m->file_url ?? '' }}'
+                                                                    file_url: '{{ $m->file_url ?? '' }}',
+                                                                    waktu_rilis: '{{ $m->waktu_rilis ? $m->waktu_rilis->format('Y-m-d\TH:i') : '' }}',
+                                                                    batas_absensi: '{{ $m->batas_absensi ? $m->batas_absensi->format('Y-m-d\TH:i') : '' }}',
+                                                                    auto_release: {{ $m->auto_release ? 'true' : 'false' }}
                                                                 })"
                                                                 class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
                                                                 title="Edit">
@@ -313,22 +356,7 @@
                                                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                                     </svg>
                                                                 </button>
-                                                                <form action="{{ route('materi.destroy', $m->id) }}"
-                                                                    method="POST" class="inline">
-                                                                    @csrf @method('DELETE')
-                                                                    <button type="submit"
-                                                                        class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 rounded-lg transition"
-                                                                        onclick="return confirm('Hapus materi ini?')"
-                                                                        title="Hapus">
-                                                                        <svg class="w-3.5 h-3.5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor"
-                                                                            stroke-width="2.5">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                        </svg>
-                                                                    </button>
-                                                                </form>
+                                                            </form>
                                                             @endif
                                                         </div>
                                                     </td>
@@ -369,12 +397,12 @@
                     class="absolute inset-0 bg-[rgba(45,8,16,0.55)] backdrop-blur-[4px]"></div>
 
                 {{-- Dialog --}}
-                <div class="relative z-10 w-full max-w-lg">
+                <div class="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto">
                     <div
                         class="bg-white rounded-[18px] shadow-[0_24px_60px_rgba(107,26,43,0.22),0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden border border-[rgba(107,26,43,0.1)]">
 
                         {{-- Header --}}
-                        <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden"
+                        <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden sticky top-0 z-10"
                             style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
                             <div
                                 class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none">
@@ -474,7 +502,8 @@
                                 <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
                                     Tautan (URL) <span class="text-red-500">*</span>
                                 </label>
-                                <input type="url" name="file_url_link" :required="tipeMateri === 'link'"
+                                <input type="url" name="file_url_link"
+                                    x-bind:disabled="tipeMateri !== 'link'"
                                     placeholder="https://..."
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                             </div>
@@ -487,6 +516,50 @@
                                 </label>
                                 <textarea name="deskripsi" rows="3"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white"></textarea>
+                            </div>
+
+                            {{-- Scheduled Release Section --}}
+                            <div class="border-t border-gray-200 pt-4 mt-2">
+                                <h4 class="text-[12px] font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Pengaturan Waktu Rilis
+                                </h4>
+
+                                {{-- Auto Release Toggle --}}
+                                <div class="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                    <input type="checkbox" name="auto_release" id="auto_release" x-model="autoRelease" checked
+                                        class="mt-0.5 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                    <div class="flex-1">
+                                        <label for="auto_release" class="text-[13px] font-semibold text-gray-700 cursor-pointer">
+                                            Rilis Otomatis Sesuai Jadwal Pertemuan
+                                        </label>
+                                        <p class="text-[11px] text-gray-600 mt-0.5">
+                                            Materi akan otomatis dirilis sesuai waktu mulai jam belajar pertemuan yang dipilih
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Manual Release Time --}}
+                                <div x-show="!autoRelease" x-cloak class="space-y-3">
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Waktu Rilis Manual
+                                        </label>
+                                        <input type="datetime-local" name="waktu_rilis"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    </div>
+
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Batas Waktu Absensi <span class="text-gray-400 font-normal normal-case tracking-normal">(opsional)</span>
+                                        </label>
+                                        <input type="datetime-local" name="batas_absensi"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <p class="text-xs text-gray-500">Default: 24 jam setelah waktu rilis</p>
+                                    </div>
+                                </div>
                             </div>
 
                             {{-- Footer --}}
@@ -521,11 +594,11 @@
                 <div @click="modalEditMateri = false"
                     class="absolute inset-0 bg-[rgba(45,8,16,0.55)] backdrop-blur-[4px]"></div>
 
-                <div class="relative z-10 w-full max-w-lg">
+                <div class="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto">
                     <div
                         class="bg-white rounded-[18px] shadow-[0_24px_60px_rgba(107,26,43,0.22),0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden border border-[rgba(107,26,43,0.1)]">
 
-                        <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden"
+                        <div class="px-6 py-[18px] flex items-center justify-between relative overflow-hidden sticky top-0 z-10"
                             style="background: linear-gradient(135deg,#6B1A2B 0%,#4A0F1E 55%,#2D0810 100%);">
                             <div
                                 class="absolute w-[120px] h-[120px] rounded-full top-[-40px] right-[10px] border border-[rgba(232,147,10,0.2)] pointer-events-none">
@@ -624,7 +697,7 @@
                                     Tautan (URL) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="url" name="file_url_link" x-model="editMateriData.file_url"
-                                    :required="tipeMateriEdit === 'link'"
+                                    x-bind:disabled="tipeMateriEdit !== 'link'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                             </div>
 
@@ -635,6 +708,52 @@
                                 </label>
                                 <textarea name="deskripsi" x-model="editMateriData.deskripsi" rows="3"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white"></textarea>
+                            </div>
+
+                            {{-- Scheduled Release Section --}}
+                            <div class="border-t border-gray-200 pt-4 mt-2">
+                                <h4 class="text-[12px] font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Pengaturan Waktu Rilis
+                                </h4>
+
+                                {{-- Auto Release Toggle --}}
+                                <div class="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                    <input type="checkbox" name="auto_release" id="auto_release_edit" x-model="autoReleaseEdit" value="1"
+                                        class="mt-0.5 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                    <div class="flex-1">
+                                        <label for="auto_release_edit" class="text-[13px] font-semibold text-gray-700 cursor-pointer">
+                                            Rilis Otomatis Sesuai Jadwal Pertemuan
+                                        </label>
+                                        <p class="text-[11px] text-gray-600 mt-0.5">
+                                            Materi akan otomatis dirilis sesuai waktu mulai jam belajar pertemuan yang dipilih
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Manual Release Time --}}
+                                <div x-show="!autoReleaseEdit" x-cloak class="space-y-3">
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Waktu Rilis Manual
+                                        </label>
+                                        <input type="datetime-local" name="waktu_rilis" 
+                                            :value="editMateriData.waktu_rilis ? new Date(editMateriData.waktu_rilis).toISOString().slice(0,16) : ''"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    </div>
+
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Batas Waktu Absensi <span class="text-gray-400 font-normal normal-case tracking-normal">(opsional)</span>
+                                        </label>
+                                        <input type="datetime-local" name="batas_absensi"
+                                            :value="editMateriData.batas_absensi ? new Date(editMateriData.batas_absensi).toISOString().slice(0,16) : ''"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <p class="text-xs text-gray-500">Default: 24 jam setelah waktu rilis</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex items-center justify-end gap-[10px] pt-[6px] border-t border-gray-100">
@@ -680,6 +799,38 @@
                 });
                 return false;
             }
+
+            // Fix hidden field validation errors
+            document.addEventListener('alpine:init', () => {
+                // When form is about to submit, disable hidden fields
+                document.addEventListener('submit', (e) => {
+                    const form = e.target;
+                    
+                    // Disable file_url_link if not visible (tipe bukan link)
+                    const fileUrlLinkInputs = form.querySelectorAll('input[name="file_url_link"]');
+                    fileUrlLinkInputs.forEach(input => {
+                        if (input.offsetParent === null) { // hidden
+                            input.disabled = true;
+                            input.required = false;
+                        }
+                    });
+                    
+                    // Disable waktu_rilis and batas_absensi if auto_release is checked
+                    const autoReleaseInput = form.querySelector('input[name="auto_release"]');
+                    if (autoReleaseInput && autoReleaseInput.checked) {
+                        const waktuRilisInput = form.querySelector('input[name="waktu_rilis"]');
+                        const batasAbsensiInput = form.querySelector('input[name="batas_absensi"]');
+                        if (waktuRilisInput && waktuRilisInput.offsetParent === null) {
+                            waktuRilisInput.disabled = true;
+                            waktuRilisInput.required = false;
+                        }
+                        if (batasAbsensiInput && batasAbsensiInput.offsetParent === null) {
+                            batasAbsensiInput.disabled = true;
+                            batasAbsensiInput.required = false;
+                        }
+                    }
+                });
+            });
         </script>
     @endpush
 </x-app-layout>

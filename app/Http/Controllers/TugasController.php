@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 use App\Models\Tugas;
 use App\Models\Pertemuan;
 use App\Models\Guru;
+use App\Services\ContentReleaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class TugasController extends Controller
 {
+    protected $contentReleaseService;
+
+    public function __construct(ContentReleaseService $contentReleaseService)
+    {
+        $this->contentReleaseService = $contentReleaseService;
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -101,7 +109,14 @@ class TugasController extends Controller
         }
         $gurus = $gurusQuery->get();
         
-        return view('tugas.index', compact('tugas', 'pertemuans', 'allPertemuan', 'gurus', 'q', 'filter_status', 'kelasList', 'id_kelas'));
+        // Count trashed tugas
+        $trashQuery = Tugas::onlyTrashed();
+        if ($isGuru) {
+            $trashQuery->where('id_guru', $user->guru->id);
+        }
+        $trashCount = $trashQuery->count();
+        
+        return view('tugas.index', compact('tugas', 'pertemuans', 'allPertemuan', 'gurus', 'q', 'filter_status', 'kelasList', 'id_kelas', 'trashCount'));
     }
 
     public function store(Request $request)
@@ -114,22 +129,30 @@ class TugasController extends Controller
             'judul' => 'required|string|max:200',
             'deskripsi' => 'nullable|string',
             'tipe_tugas' => 'required|in:individu,kelompok',
-            'tipe_file' => 'required|in:tanpa,dokumen,video,link',
-            'file_url' => $request->input('tipe_file') === 'link' ? 'required|url' : ($request->input('tipe_file') === 'tanpa' ? 'nullable' : 'required|file|mimes:pdf,doc,docx,mp4|max:102400'),
+            'tipe_file' => 'required|in:tanpa,dokumen,video,link,gambar',
+            'file_url' => $request->input('tipe_file') === 'link'
+                ? 'required|url'
+                : ($request->input('tipe_file') === 'tanpa'
+                    ? 'nullable'
+                    : ($request->input('tipe_file') === 'gambar'
+                        ? 'required|file|mimes:jpg,jpeg,png,gif,webp|max:51200'
+                        : 'required|file|mimes:pdf,doc,docx,mp4|max:102400')),
             'batas_waktu' => 'required|date',
             'nilai_maksimal' => 'required|numeric',
             'status' => 'required|in:draft,published,closed',
             'allow_late' => 'boolean',
+            'auto_release' => 'nullable|boolean',
+            'waktu_rilis' => 'nullable|date',
+            'batas_absensi' => 'nullable|date|after:waktu_rilis',
         ]);
 
         $validated['allow_late'] = $request->has('allow_late');
 
-        if ($request->hasFile('file_url') && in_array($validated['tipe_file'], ['dokumen', 'video'])) {
+        if ($request->hasFile('file_url') && in_array($validated['tipe_file'], ['dokumen', 'video', 'gambar'])) {
             $validated['file_url'] = $request->file('file_url')->store('tugas_files', 'public');
         } elseif ($validated['tipe_file'] === 'link') {
             $validated['file_url'] = $request->input('file_url');
         } else {
-            // For tanpa (no file) or if no file uploaded
             $validated['file_url'] = null;
         }
 
@@ -139,7 +162,6 @@ class TugasController extends Controller
             $jadwal = $pertemuan?->JadwalBelajar;
 
             if ($jadwal) {
-                // Resolve id_guru_mapel — hanya set jika record-nya benar-benar ada
                 if (!($validated['id_guru_mapel'] ?? null)) {
                     $guruMapelId = $jadwal->id_guru_mapel;
                     if ($guruMapelId && \App\Models\GuruMapel::where('id', $guruMapelId)->exists()) {
@@ -149,7 +171,6 @@ class TugasController extends Controller
                     }
                 }
 
-                // Resolve id_mapel — coba dari GuruMapel dulu, fallback ke kolom langsung
                 if (!($validated['id_mapel'] ?? null)) {
                     $mapelId = $jadwal->GuruMapel?->id_mapel ?? $jadwal->id_mapel;
                     if ($mapelId && \App\Models\Mapel::where('id', $mapelId)->exists()) {
@@ -164,7 +185,23 @@ class TugasController extends Controller
             }
         }
 
-        Tugas::create($validated);
+        // Handle auto_release
+        $validated['auto_release'] = $request->has('auto_release') ? (bool) $request->auto_release : true;
+
+        // Create tugas
+        $tugas = Tugas::create($validated);
+
+        // Set release time using service
+        if ($validated['auto_release']) {
+            $this->contentReleaseService->setReleaseTime($tugas);
+        } elseif (isset($validated['waktu_rilis'])) {
+            $this->contentReleaseService->setReleaseTime(
+                $tugas,
+                \Carbon\Carbon::parse($validated['waktu_rilis']),
+                isset($validated['batas_absensi']) ? \Carbon\Carbon::parse($validated['batas_absensi']) : null
+            );
+        }
+
         return back()->with('success', 'Tugas berhasil ditambahkan.');
     }
 
@@ -179,8 +216,14 @@ class TugasController extends Controller
             'judul' => 'required|string|max:200',
             'deskripsi' => 'nullable|string',
             'tipe_tugas' => 'required|in:individu,kelompok',
-            'tipe_file' => 'required|in:tanpa,dokumen,video,link',
-            'file_url' => $request->input('tipe_file') === 'link' ? 'required|url' : ($request->input('tipe_file') === 'tanpa' ? 'nullable' : 'nullable|file|mimes:pdf,doc,docx,mp4|max:102400'),
+            'tipe_file' => 'required|in:tanpa,dokumen,video,link,gambar',
+            'file_url' => $request->input('tipe_file') === 'link'
+                ? 'required|url'
+                : ($request->input('tipe_file') === 'tanpa'
+                    ? 'nullable'
+                    : ($request->input('tipe_file') === 'gambar'
+                        ? 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:51200'
+                        : 'nullable|file|mimes:pdf,doc,docx,mp4|max:102400')),
             'batas_waktu' => 'required|date',
             'nilai_maksimal' => 'required|numeric',
             'status' => 'required|in:draft,published,closed',
@@ -189,7 +232,7 @@ class TugasController extends Controller
 
         $validated['allow_late'] = $request->has('allow_late');
 
-        if ($request->hasFile('file_url') && in_array($validated['tipe_file'], ['dokumen', 'video'])) {
+        if ($request->hasFile('file_url') && in_array($validated['tipe_file'], ['dokumen', 'video', 'gambar'])) {
             if ($tugas->file_url && !str_starts_with($tugas->file_url, 'http')) {
                 Storage::disk('public')->delete($tugas->file_url);
             }
@@ -245,9 +288,137 @@ class TugasController extends Controller
 
     public function destroy(Tugas $tuga)
     {
-        $tugas = $tuga;
-        if ($tugas->file_url) Storage::disk('public')->delete($tugas->file_url);
-        $tugas->delete();
-        return back()->with('success', 'Tugas berhasil dihapus.');
+        $tuga->delete();
+        return back()->with('success', 'Tugas berhasil diarsipkan.');
+    }
+
+    public function trash(Request $request)
+    {
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        $q = $request->input('q');
+        $id_kelas = $request->input('id_kelas');
+
+        $query = Tugas::onlyTrashed()->with(['Pertemuan.JadwalBelajar.Kelas', 'Mapel', 'GuruMapel.Guru']);
+
+        if ($isGuru) {
+            $query->where('id_guru', $user->guru->id);
+        }
+
+        if ($id_kelas) {
+            $query->whereHas('Pertemuan.JadwalBelajar', function($subQuery) use ($id_kelas) {
+                $subQuery->where('id_kelas', $id_kelas);
+            });
+        }
+
+        if ($q) {
+            $query->where(function($subQuery) use ($q) {
+                $subQuery->where('judul', 'like', "%$q%")
+                         ->orWhere('deskripsi', 'like', "%$q%");
+            });
+        }
+
+        $tugas = $query->latest('deleted_at')->paginate(10)->withQueryString();
+
+        // Get kelas list for filters
+        $kelasQuery = \App\Models\Kelas::with(['tingkatan', 'jurusan', 'bagian']);
+        if ($isGuru) {
+            $guru = $user->guru;
+            $kelasQuery->whereHas('jadwalBelajars.guruMapel', function($subQuery) use ($guru) {
+                $subQuery->where('id_guru', $guru->id);
+            });
+        }
+        $kelasList = $kelasQuery->get();
+
+        return view('tugas.trash', compact('tugas', 'kelasList', 'q', 'id_kelas', 'isGuru'));
+    }
+
+    public function restore($id)
+    {
+        $tugas = Tugas::onlyTrashed()->findOrFail($id);
+        $user = auth()->user();
+
+        // Authorization check
+        if ($user->role === 'guru' && $user->guru) {
+            if ($tugas->id_guru !== $user->guru->id) {
+                abort(403, 'Anda tidak memiliki akses untuk memulihkan tugas ini.');
+            }
+        }
+
+        $tugas->restore();
+        return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dipulihkan.');
+    }
+
+    public function forceDelete($id)
+    {
+        $tugas = Tugas::onlyTrashed()->findOrFail($id);
+        $user = auth()->user();
+
+        // Authorization check
+        if ($user->role === 'guru' && $user->guru) {
+            if ($tugas->id_guru !== $user->guru->id) {
+                abort(403, 'Anda tidak memiliki akses untuk menghapus permanen tugas ini.');
+            }
+        }
+
+        // Delete associated file if exists
+        if ($tugas->file_url && !str_starts_with($tugas->file_url, 'http')) {
+            Storage::disk('public')->delete($tugas->file_url);
+        }
+
+        // Cascade delete submissions and their grades
+        foreach ($tugas->PengumpulanTugas as $pengumpulan) {
+            if ($pengumpulan->file_url && !str_starts_with($pengumpulan->file_url, 'http')) {
+                Storage::disk('public')->delete($pengumpulan->file_url);
+            }
+            $pengumpulan->penilaian()->forceDelete();
+            $pengumpulan->forceDelete();
+        }
+
+        $tugas->forceDelete();
+        return redirect()->route('tugas.trash')->with('success', 'Tugas dan data terkait berhasil dihapus permanen.');
+    }
+
+    public function restoreAll()
+    {
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        $query = Tugas::onlyTrashed();
+        if ($isGuru) {
+            $query->where('id_guru', $user->guru->id);
+        }
+
+        $query->restore();
+        return redirect()->route('tugas.index')->with('success', 'Semua tugas berhasil dipulihkan.');
+    }
+
+    public function forceDeleteAll()
+    {
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        $query = Tugas::onlyTrashed();
+        if ($isGuru) {
+            $query->where('id_guru', $user->guru->id);
+        }
+
+        $tugasList = $query->get();
+        foreach ($tugasList as $tugas) {
+            if ($tugas->file_url && !str_starts_with($tugas->file_url, 'http')) {
+                Storage::disk('public')->delete($tugas->file_url);
+            }
+            foreach ($tugas->PengumpulanTugas as $pengumpulan) {
+                if ($pengumpulan->file_url && !str_starts_with($pengumpulan->file_url, 'http')) {
+                    Storage::disk('public')->delete($pengumpulan->file_url);
+                }
+                $pengumpulan->penilaian()->forceDelete();
+                $pengumpulan->forceDelete();
+            }
+            $tugas->forceDelete();
+        }
+
+        return redirect()->route('tugas.trash')->with('success', 'Semua tugas berhasil dihapus permanen.');
     }
 }

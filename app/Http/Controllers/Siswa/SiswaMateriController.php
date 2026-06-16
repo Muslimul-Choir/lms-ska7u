@@ -7,11 +7,23 @@ use App\Models\Mapel;
 use App\Models\Pertemuan;
 use App\Models\Materi;
 use App\Models\Siswa;
+use App\Models\Tugas;
+use App\Models\Kuis;
+use App\Models\PengumpulanTugas;
+use App\Models\HasilKuis;
+use App\Services\AttendanceGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SiswaMateriController extends Controller
 {
+    protected $attendanceService;
+
+    public function __construct(AttendanceGatewayService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
+
     /**
      * Display a listing of subjects for the student's class.
      */
@@ -32,7 +44,35 @@ class SiswaMateriController extends Controller
         ->forAgama($siswa->agama)
         ->get();
 
-        return view('siswa.materi.index', compact('siswa', 'mapels'));
+        // Count pending tugas (published, released, not expired, not yet submitted)
+        $tugasBelumCount = Tugas::whereHas('guruMapel.JadwalBelajar', function ($q) use ($siswa) {
+                $q->where('id_kelas', $siswa->id_kelas);
+            })
+            ->whereHas('Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->where('status', 'published')
+            ->where(function($q) {
+                $q->whereNull('waktu_rilis')
+                  ->orWhere('waktu_rilis', '<=', now());
+            })
+            ->where(function($q) {
+                $q->whereNull('batas_waktu')
+                  ->orWhere('batas_waktu', '>', now());
+            })
+            ->whereNotIn('id', PengumpulanTugas::where('id_siswa', $siswa->id)->pluck('id_tugas'))
+            ->count();
+
+        // Count available kuis (published, within time range, not yet taken)
+        $kuisTersediaCount = Kuis::whereHas('guruMapel.JadwalBelajar', function ($q) use ($siswa) {
+                $q->where('id_kelas', $siswa->id_kelas);
+            })
+            ->whereHas('GuruMapel.Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->where('status', 'published')
+            ->where('batas_mulai', '<=', now())
+            ->where('batas_selesai', '>=', now())
+            ->whereNotIn('id', HasilKuis::where('id_siswa', $siswa->id)->pluck('id_kuis'))
+            ->count();
+
+        return view('siswa.materi.index', compact('siswa', 'mapels', 'tugasBelumCount', 'kuisTersediaCount'));
     }
 
     /**
@@ -59,9 +99,25 @@ class SiswaMateriController extends Controller
                         });
                 });
         })
-        ->with(['materis', 'tugas' => function ($q) {
-            $q->where('status', 'published');
-        }])
+        ->with([
+            'materis' => function ($q) {
+                $q->orderBy('waktu_rilis', 'asc');
+            },
+            'tugas' => function ($q) {
+                $q->where('status', 'published')
+                  ->orderBy('waktu_rilis', 'asc');
+            },
+            'kuis' => function ($q) use ($siswa) {
+                $q->where('status', 'published')
+                  ->with(['HasilKuis' => function ($hq) use ($siswa) {
+                      $hq->where('id_siswa', $siswa->id);
+                  }])
+                  ->orderBy('waktu_rilis', 'asc');
+            },
+            'absensis' => function ($q) use ($siswa) {
+                $q->where('id_siswa', $siswa->id)->whereNull('tipe_konten');
+            }
+        ])
         ->orderBy('nomor_pertemuan')
         ->get();
 
@@ -70,6 +126,7 @@ class SiswaMateriController extends Controller
 
     /**
      * Show a specific material content.
+     * Checks pertemuan-level attendance first; if not done, redirects to attendance modal.
      */
     public function showMateri($id)
     {
@@ -80,16 +137,39 @@ class SiswaMateriController extends Controller
             return redirect()->route('login');
         }
 
-        $materi = Materi::findOrFail($id);
+        $materi = Materi::with(['Pertemuan', 'guruMapel'])->findOrFail($id);
 
         // Validate access through JadwalBelajar
         if ($materi->guruMapel) {
             $hasAccess = $materi->guruMapel->JadwalBelajar()
                 ->where('id_kelas', $siswa->id_kelas)
                 ->exists();
-            
+
             if (!$hasAccess) {
                 abort(403, 'Anda tidak memiliki akses ke materi ini.');
+            }
+        }
+
+        // Check pertemuan-level attendance (shared with tugas & kuis of same pertemuan)
+        $pertemuan = $materi->Pertemuan;
+        if ($pertemuan) {
+            $alreadyAbsen = $this->attendanceService->hasMarkedAttendanceForPertemuan($siswa->id, $pertemuan->id);
+
+            if (!$alreadyAbsen) {
+                // Get attendance deadline
+                $batasAbsensi = $this->attendanceService->getPertemuanAttendanceDeadline($pertemuan);
+
+                // Only gate if deadline hasn't passed (or no deadline — always require)
+                $deadlinePassed = $batasAbsensi && now()->gt($batasAbsensi);
+
+                if (!$deadlinePassed) {
+                    $params = http_build_query([
+                        'tipe_konten' => 'materi',
+                        'id_konten'   => $materi->id,
+                        'redirect_to' => route('siswa.materi.show', $materi->id),
+                    ]);
+                    return redirect(route('siswa.attendance.modal', $pertemuan->id) . '?' . $params);
+                }
             }
         }
 

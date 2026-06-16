@@ -29,13 +29,29 @@ class Tugas extends Model
         'nilai_maksimal',
         'status',
         'allow_late',
+        'waktu_rilis',
+        'batas_absensi',
+        'auto_release',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
     protected $dates = [
+        'batas_waktu',
+        'waktu_rilis',
+        'batas_absensi',
         'created_at',
         'updated_at',
         'deleted_at',
+    ];
+
+    // Cast tipe data kolom
+    protected $casts = [
+        'batas_waktu' => 'datetime',
+        'waktu_rilis' => 'datetime',
+        'batas_absensi' => 'datetime',
+        'auto_release' => 'boolean',
+        'allow_late' => 'boolean',
+        'nilai_maksimal' => 'decimal:2',
     ];
 
      public function Mapel()
@@ -61,6 +77,91 @@ class Tugas extends Model
     public function PengumpulanTugas()
     {
         return $this->hasMany(PengumpulanTugas::class, 'id_tugas');
+    }
+
+    // ── Query Scopes ──────────────────────────────────────────
+
+    /**
+     * Scope to get content that is pending release
+     */
+    public function scopePendingRelease($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('waktu_rilis')
+              ->orWhere('waktu_rilis', '>', now());
+        });
+    }
+
+    /**
+     * Scope to get content that is already released
+     */
+    public function scopeReleased($query)
+    {
+        return $query->where('waktu_rilis', '<=', now());
+    }
+
+    /**
+     * Scope to get content that is currently accessible
+     */
+    public function scopeAccessible($query)
+    {
+        return $query->whereNotNull('waktu_rilis')
+                     ->where('waktu_rilis', '<=', now());
+    }
+
+    /**
+     * Scope to get content with upcoming deadlines
+     */
+    public function scopeUpcomingDeadline($query, $hours = 24)
+    {
+        return $query->where('batas_waktu', '>', now())
+                     ->where('batas_waktu', '<=', now()->addHours($hours));
+    }
+
+    // ── Accessors & Helpers ──────────────────────────────────────────
+
+    /**
+     * Check if content is released
+     */
+    public function isReleased(): bool
+    {
+        return $this->waktu_rilis && now()->gte($this->waktu_rilis);
+    }
+
+    /**
+     * Check if content is accessible
+     */
+    public function isAccessible(): bool
+    {
+        return $this->isReleased();
+    }
+
+    /**
+     * Check if deadline has passed
+     */
+    public function isExpired(): bool
+    {
+        return now()->gt($this->batas_waktu);
+    }
+
+    /**
+     * Get content status label
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        if (!$this->waktu_rilis) {
+            return 'Belum Dijadwalkan';
+        }
+        
+        if (now()->lt($this->waktu_rilis)) {
+            return 'Belum Dirilis';
+        }
+
+        if ($this->isExpired()) {
+            return 'Berakhir';
+        }
+        
+        return 'Tersedia';
     }
 }
 

@@ -58,5 +58,15 @@ class Pertemuan extends Model
     {
         return $this->hasMany(Tugas::class, 'id_pertemuan');
     }
+
+    public function kuis()
+    {
+        return $this->hasMany(Kuis::class, 'id_pertemuan');
+    }
+
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class, 'id_pertemuan');
+    }
 }
 

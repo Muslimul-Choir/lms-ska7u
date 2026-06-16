@@ -14,16 +14,56 @@ class PenilaianController extends Controller
         $user = auth()->user();
         $isGuru = $user->role === 'guru' && $user->guru;
 
-        $query = Penilaian::with(['pengumpulanTugas.siswa', 'pengumpulanTugas.tugas', 'guru']);
+        // Get published tugas that need grading
+        $query = \App\Models\Tugas::with(['GuruMapel.Mapel', 'Guru', 'Pertemuan'])
+            ->where('status', 'published');
+        
         if ($isGuru) {
             $guru = $user->guru;
-            $query->whereHas('pengumpulanTugas.tugas', function($q) use ($guru) {
-                $q->where('id_guru', $guru->id);
-            });
+            $query->where('id_guru', $guru->id);
         }
 
-        $penilaian = $query->latest()->paginate(15);
-        return view('penilaian.index', compact('penilaian'));
+        // Search by tugas title
+        if (request('search')) {
+            $search = request('search');
+            $query->where('judul', 'like', "%{$search}%");
+        }
+
+        // Get tugas with submission and grading statistics
+        $tugasList = $query->latest()->paginate(15);
+        
+        // Add statistics for each tugas
+        foreach ($tugasList as $tugas) {
+            // Get kelas IDs from JadwalBelajar
+            $kelasIds = $tugas->GuruMapel->JadwalBelajar()->pluck('id_kelas')->unique();
+            
+            // Count total students
+            $totalSiswa = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->count();
+            
+            // Count submissions
+            $totalSubmissions = \App\Models\PengumpulanTugas::where('id_tugas', $tugas->id)->count();
+            
+            // Count graded submissions
+            $totalGraded = \App\Models\PengumpulanTugas::where('id_tugas', $tugas->id)
+                ->whereHas('penilaian')
+                ->count();
+            
+            $tugas->stats = (object) [
+                'total_siswa' => $totalSiswa,
+                'total_submissions' => $totalSubmissions,
+                'total_graded' => $totalGraded,
+                'pending_grade' => $totalSubmissions - $totalGraded,
+            ];
+        }
+
+        // Count trashed tugas that acts as archived penilaian tasks
+        $trashQuery = \App\Models\Tugas::onlyTrashed();
+        if ($isGuru) {
+            $trashQuery->where('id_guru', $user->guru->id);
+        }
+        $trashCount = $trashQuery->count();
+
+        return view('penilaian.index', compact('tugasList', 'trashCount'));
     }
 
     /**
@@ -108,5 +148,52 @@ class PenilaianController extends Controller
                 'message' => 'Terjadi kesalahan saat menyimpan penilaian.',
             ], 500);
         }
+    }
+
+    public function trash()
+    {
+        $user = auth()->user();
+        $isGuru = $user->role === 'guru' && $user->guru;
+
+        // Get soft-deleted tugas
+        $query = \App\Models\Tugas::onlyTrashed()
+            ->with(['GuruMapel.Mapel', 'Guru', 'Pertemuan']);
+        
+        if ($isGuru) {
+            $query->where('id_guru', $user->guru->id);
+        }
+
+        if (request('search')) {
+            $search = request('search');
+            $query->where('judul', 'like', "%{$search}%");
+        }
+
+        $tugasList = $query->latest('deleted_at')->paginate(15)->withQueryString();
+        
+        // Add statistics for each tugas
+        foreach ($tugasList as $tugas) {
+            // Get kelas IDs from JadwalBelajar
+            $kelasIds = $tugas->GuruMapel->JadwalBelajar()->pluck('id_kelas')->unique();
+            
+            // Count total students
+            $totalSiswa = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->count();
+            
+            // Count submissions
+            $totalSubmissions = \App\Models\PengumpulanTugas::where('id_tugas', $tugas->id)->count();
+            
+            // Count graded submissions
+            $totalGraded = \App\Models\PengumpulanTugas::where('id_tugas', $tugas->id)
+                ->whereHas('penilaian')
+                ->count();
+            
+            $tugas->stats = (object) [
+                'total_siswa' => $totalSiswa,
+                'total_submissions' => $totalSubmissions,
+                'total_graded' => $totalGraded,
+                'pending_grade' => $totalSubmissions - $totalGraded,
+            ];
+        }
+
+        return view('penilaian.trash', compact('tugasList', 'isGuru'));
     }
 }
