@@ -153,6 +153,8 @@
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest w-12">#</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Siswa</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Pertemuan</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Waktu Absen</th>
+                                <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-32">Keterlambatan</th>
                                 <th class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest w-28">Status</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Keterangan</th>
                                 <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">Dihapus Pada</th>
@@ -190,6 +192,30 @@
                                                 Pertemuan ke-{{ $absensi->pertemuan->nomor_pertemuan ?? '-' }}
                                             </span>
                                         </span>
+                                    </td>
+
+                                    {{-- Waktu Absen --}}
+                                    <td class="px-6 py-4 text-gray-400 text-sm whitespace-nowrap line-through decoration-red-300">
+                                        {{ $absensi->waktu_absen ? $absensi->waktu_absen->format('d M Y, H:i') : '—' }}
+                                    </td>
+
+                                    {{-- Keterlambatan --}}
+                                    <td class="px-6 py-4 text-center opacity-75">
+                                        @if($absensi->status === 'hadir')
+                                            @php
+                                                $lateMap = [
+                                                    'tepat_waktu' => ['bg-emerald-50', 'text-emerald-400', 'border-emerald-100', 'Tepat Waktu'],
+                                                    'terlambat'  => ['bg-amber-50',    'text-amber-400',    'border-amber-100',    'Terlambat'],
+                                                    'sangat_terlambat' => ['bg-red-50',   'text-red-400',   'border-red-100',   'Sangat Terlambat'],
+                                                ];
+                                                [$lBg, $lText, $lBorder, $lLabel] = $lateMap[$absensi->status_keterlambatan] ?? ['bg-gray-50','text-gray-300','border-gray-200', 'Tepat Waktu'];
+                                            @endphp
+                                            <span class="inline-flex items-center px-2.5 py-1 {{ $lBg }} {{ $lText }} border {{ $lBorder }} text-[10px] font-bold rounded-full line-through">
+                                                {{ $lLabel }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-300 text-xs">—</span>
+                                        @endif
                                     </td>
 
                                     {{-- Status --}}
@@ -263,7 +289,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-20 text-center">
+                                    <td colspan="9" class="px-6 py-20 text-center">
                                         <div class="flex flex-col items-center gap-3">
                                             <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
                                                 <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

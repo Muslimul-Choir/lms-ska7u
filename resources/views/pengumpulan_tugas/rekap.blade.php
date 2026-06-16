@@ -24,7 +24,11 @@
         <svg class="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-        <a href="{{ route('tugas.index') }}" class="text-amber-600 hover:text-amber-700 transition">Tugas</a>
+        @if($source === 'penilaian')
+            <a href="{{ route('penilaian.index') }}" class="text-amber-600 hover:text-amber-700 transition">Penilaian</a>
+        @else
+            <a href="{{ route('tugas.index') }}" class="text-amber-600 hover:text-amber-700 transition">Tugas</a>
+        @endif
         <svg class="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -109,14 +113,25 @@
 
                     <!-- Action Buttons -->
                     <div class="mb-5 flex items-center justify-between gap-3">
-                        <a href="{{ route('tugas.index') }}"
-                            class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-lg transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            Kembali ke Daftar Tugas
-                        </a>
+                        @if($source === 'penilaian')
+                            <a href="{{ route('penilaian.index') }}"
+                                class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-lg transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Kembali ke Penilaian
+                            </a>
+                        @else
+                            <a href="{{ route('tugas.index') }}"
+                                class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-lg transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Kembali ke Daftar Tugas
+                            </a>
+                        @endif
 
                         <div class="flex items-center gap-2">
                             <!-- Print Button -->
@@ -253,27 +268,80 @@
                                         </td>
                                         <td class="px-6 py-4 text-sm">
                                             @if ($item['submission'] && $item['submission']->file_url)
-                                                @if (str_starts_with($item['submission']->file_url, 'http'))
-                                                    <a href="{{ $item['submission']->file_url }}" target="_blank"
-                                                        class="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center gap-1">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                            viewBox="0 0 24 24" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                                        </svg>
-                                                        Lihat Link
-                                                    </a>
-                                                @else
-                                                    <a href="{{ route('pengumpulan-tugas.download', $item['submission']) }}"
-                                                        class="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center gap-1">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                            viewBox="0 0 24 24" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                        </svg>
-                                                        Unduh File
-                                                    </a>
-                                                @endif
+                                                @php
+                                                    $fileUrl = $item['submission']->file_url;
+                                                    $isUrl = str_starts_with($fileUrl, 'http');
+                                                    $filePath = $isUrl ? $fileUrl : asset('storage/' . $fileUrl);
+                                                    $extension = strtolower(pathinfo($fileUrl, PATHINFO_EXTENSION));
+                                                    
+                                                    // Determine file type
+                                                    $fileIcon = '📄';
+                                                    $bgColor = 'bg-blue-50';
+                                                    $textColor = 'text-blue-700';
+                                                    $borderColor = 'border-blue-200';
+                                                    
+                                                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                                                        $fileIcon = '🖼️';
+                                                        $bgColor = 'bg-green-50';
+                                                        $textColor = 'text-green-700';
+                                                        $borderColor = 'border-green-200';
+                                                    } elseif ($extension === 'pdf') {
+                                                        $fileIcon = '📑';
+                                                        $bgColor = 'bg-amber-50';
+                                                        $textColor = 'text-amber-700';
+                                                        $borderColor = 'border-amber-200';
+                                                    } elseif (in_array($extension, ['doc', 'docx'])) {
+                                                        $fileIcon = '📝';
+                                                    } elseif (in_array($extension, ['zip', 'rar'])) {
+                                                        $fileIcon = '📦';
+                                                    }
+                                                @endphp
+                                                
+                                                <div class="flex flex-col gap-2">
+                                                    {{-- File info badge --}}
+                                                    <div class="inline-flex items-center gap-2 px-3 py-1.5 {{ $bgColor }} {{ $borderColor }} border rounded-lg w-fit">
+                                                        <span class="text-lg">{{ $fileIcon }}</span>
+                                                        <span class="font-semibold text-xs {{ $textColor }}">
+                                                            {{ strtoupper($extension) }}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {{-- Action buttons --}}
+                                                    <div class="flex items-center gap-2">
+                                                        @if ($isUrl)
+                                                            <a href="{{ $fileUrl }}" target="_blank"
+                                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-xs font-semibold transition-colors">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                </svg>
+                                                                Buka
+                                                            </a>
+                                                        @else
+                                                            <button onclick="previewFile('{{ $filePath }}', '{{ $extension }}', '{{ basename($fileUrl) }}')"
+                                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md text-xs font-semibold transition-colors">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                                Preview
+                                                            </button>
+                                                            <a href="{{ route('pengumpulan-tugas.download', $item['submission']) }}"
+                                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-xs font-semibold transition-colors">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                </svg>
+                                                                Unduh
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    {{-- Catatan siswa --}}
+                                                    @if ($item['submission']->catatan)
+                                                        <div class="mt-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600 italic">
+                                                            💬 "{{ Str::limit($item['submission']->catatan, 50) }}"
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             @else
                                                 <span class="text-gray-300 text-xs">-</span>
                                             @endif
@@ -398,6 +466,85 @@
         </div>
 
         <script>
+            function previewFile(filePath, extension, fileName) {
+                // Determine preview content based on file type
+                let previewContent = '';
+                
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension.toLowerCase())) {
+                    // Image preview
+                    previewContent = `
+                        <div style="text-align:center;background:#f8faff;padding:20px;border-radius:12px;">
+                            <img src="${filePath}" alt="${fileName}" style="max-width:100%;max-height:70vh;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                        </div>
+                    `;
+                } else if (extension.toLowerCase() === 'pdf') {
+                    // PDF preview
+                    previewContent = `
+                        <iframe src="${filePath}#toolbar=0&navpanes=0&scrollbar=1" 
+                                style="width:100%;height:70vh;border:none;border-radius:12px;background:#fff;">
+                        </iframe>
+                    `;
+                } else if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(extension.toLowerCase())) {
+                    // Office documents - use Microsoft Office Online Viewer
+                    const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(filePath)}`;
+                    previewContent = `
+                        <iframe src="${viewerUrl}" 
+                                style="width:100%;height:70vh;border:none;border-radius:12px;background:#fff;">
+                        </iframe>
+                    `;
+                } else {
+                    // Other files - show download option
+                    previewContent = `
+                        <div style="text-align:center;padding:40px;">
+                            <svg style="width:64px;height:64px;margin:0 auto 16px;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <p style="color:#64748b;font-size:14px;margin-bottom:16px;">Preview tidak tersedia untuk tipe file ini</p>
+                            <a href="${filePath}" download class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-sm transition-colors" style="text-decoration:none;">
+                                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Download File
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                // Show modal with preview
+                Swal.fire({
+                    title: fileName,
+                    html: previewContent,
+                    width: '90%',
+                    showCloseButton: true,
+                    showConfirmButton: false,
+                    customClass: {
+                        container: 'file-preview-modal',
+                        popup: 'file-preview-popup'
+                    },
+                    didOpen: () => {
+                        // Add custom styles
+                        const style = document.createElement('style');
+                        style.textContent = `
+                            .file-preview-modal .swal2-popup {
+                                padding: 20px !important;
+                            }
+                            .file-preview-modal .swal2-title {
+                                font-size: 16px !important;
+                                padding: 0 0 16px 0 !important;
+                                border-bottom: 1px solid #e2e8f0;
+                                margin-bottom: 16px;
+                                color: #0f172a;
+                            }
+                            .file-preview-modal .swal2-html-container {
+                                margin: 0 !important;
+                                padding: 0 !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                });
+            }
+            
             function penilaianModal() {
                 return {
                     showModal: false,

@@ -17,11 +17,25 @@ return new class extends Migration
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
         });
 
-        DB::table('pertemuan')
-            ->join('jadwal_belajar', 'pertemuan.id_jadwal', '=', 'jadwal_belajar.id')
-            ->join('guru_mapel', 'jadwal_belajar.id_guru_mapel', '=', 'guru_mapel.id')
-            ->join('guru', 'guru_mapel.id_guru', '=', 'guru.id')
-            ->update(['pertemuan.created_by' => DB::raw('guru.id_user')]);
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('
+                UPDATE pertemuan 
+                SET created_by = (
+                    SELECT guru.id_user 
+                    FROM jadwal_belajar
+                    JOIN guru_mapel ON jadwal_belajar.id_guru_mapel = guru_mapel.id
+                    JOIN guru ON guru_mapel.id_guru = guru.id
+                    WHERE jadwal_belajar.id = pertemuan.id_jadwal
+                    LIMIT 1
+                )
+            ');
+        } else {
+            DB::table('pertemuan')
+                ->join('jadwal_belajar', 'pertemuan.id_jadwal', '=', 'jadwal_belajar.id')
+                ->join('guru_mapel', 'jadwal_belajar.id_guru_mapel', '=', 'guru_mapel.id')
+                ->join('guru', 'guru_mapel.id_guru', '=', 'guru.id')
+                ->update(['pertemuan.created_by' => DB::raw('guru.id_user')]);
+        }
     }
 
     /**
