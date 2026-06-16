@@ -79,6 +79,26 @@ if (config('app.debug')) {
             ], 500);
         }
     })->name('test-email-send');
+
+    // Test materi access
+    Route::get('/test-materi', function() {
+        $siswa = \App\Models\Siswa::first();
+        $materis = \App\Models\Materi::where('judul', 'LIKE', '[TEST]%')->get();
+        
+        $output = "<h2>Test Materi Access</h2>";
+        $output .= "<p>Siswa: {$siswa->nama_lengkap} (Kelas ID: {$siswa->id_kelas})</p>";
+        $output .= "<h3>Test Materi:</h3><ul>";
+        
+        foreach ($materis as $m) {
+            $url = route('siswa.materi.show', $m->id);
+            $isReleased = $m->waktu_rilis && now()->gte($m->waktu_rilis);
+            $status = $isReleased ? "✅ Released" : "❌ Future";
+            $output .= "<li><a href='{$url}' target='_blank'>{$m->judul}</a> - {$status}</li>";
+        }
+        
+        $output .= "</ul>";
+        return $output;
+    });
 }
 
 // ============================================================
@@ -98,6 +118,9 @@ Route::bind('absensi',       fn($v) => Absensi::withTrashed()->findOrFail($v));
 Route::bind('kuis',          fn($v) => Kuis::withTrashed()->findOrFail($v));
 Route::bind('soal',          fn($v) => SoalKuis::withTrashed()->findOrFail($v));
 Route::bind('hasil',         fn($v) => HasilKuis::withTrashed()->findOrFail($v));
+Route::bind('materi',        fn($v) => \App\Models\Materi::withTrashed()->findOrFail($v));
+Route::bind('tugas',         fn($v) => \App\Models\Tugas::withTrashed()->findOrFail($v));
+Route::bind('tuga',          fn($v) => \App\Models\Tugas::withTrashed()->findOrFail($v));
 
 
 // ============================================================
@@ -288,9 +311,19 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::post('/ruang-belajar/{materi}/mark-done',            [\App\Http\Controllers\RuangBelajarController::class, 'markAsDone'])->name('ruang-belajar.mark-done');
 
     // Materi
+    Route::get('materi/trash',                                  [\App\Http\Controllers\MateriController::class, 'trash'])->name('materi.trash');
+    Route::patch('materi/trash/{id}/restore',                   [\App\Http\Controllers\MateriController::class, 'restore'])->name('materi.restore');
+    Route::delete('materi/trash/{id}/force-delete',             [\App\Http\Controllers\MateriController::class, 'forceDelete'])->name('materi.force-delete');
+    Route::patch('materi/trash/restore-all',                    [\App\Http\Controllers\MateriController::class, 'restoreAll'])->name('materi.restoreAll');
+    Route::delete('materi/trash/force-delete-all',              [\App\Http\Controllers\MateriController::class, 'forceDeleteAll'])->name('materi.forceDeleteAll');
     Route::resource('materi', \App\Http\Controllers\MateriController::class);
 
     // Tugas
+    Route::get('tugas/trash',                                   [\App\Http\Controllers\TugasController::class, 'trash'])->name('tugas.trash');
+    Route::patch('tugas/trash/{id}/restore',                    [\App\Http\Controllers\TugasController::class, 'restore'])->name('tugas.restore');
+    Route::delete('tugas/trash/{id}/force-delete',              [\App\Http\Controllers\TugasController::class, 'forceDelete'])->name('tugas.force-delete');
+    Route::patch('tugas/trash/restore-all',                     [\App\Http\Controllers\TugasController::class, 'restoreAll'])->name('tugas.restoreAll');
+    Route::delete('tugas/trash/force-delete-all',               [\App\Http\Controllers\TugasController::class, 'forceDeleteAll'])->name('tugas.forceDeleteAll');
     Route::resource('tugas', \App\Http\Controllers\TugasController::class);
 
     // Pengumpulan Tugas
@@ -300,6 +333,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::get('/pengumpulan-tugas/{pengumpulanTugas}/download', [\App\Http\Controllers\PengumpulanTugasController::class, 'download'])->name('pengumpulan-tugas.download');
 
     // Penilaian
+    Route::get('penilaian/trash',                               [\App\Http\Controllers\PenilaianController::class, 'trash'])->name('penilaian.trash');
     Route::resource('penilaian', \App\Http\Controllers\PenilaianController::class)->only(['index']);
     Route::post('/penilaian/quick-store',                       [\App\Http\Controllers\PenilaianController::class, 'quickStore'])->name('penilaian.quick-store');
 
@@ -339,16 +373,22 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     // Materi & Mapel
     Route::get('/siswa/materi', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'index'])->name('siswa.materi.index');
     Route::get('/siswa/materi/mapel/{id_mapel}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMapel'])->name('siswa.materi.mapel');
-    Route::get('/siswa/materi/{id}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMateri'])->name('siswa.materi.show');
+    Route::get('/siswa/materi/{id}', [\App\Http\Controllers\Siswa\SiswaMateriController::class, 'showMateri'])
+        ->middleware('attendance.gate')
+        ->name('siswa.materi.show');
 
     // Tugas
     Route::get('/siswa/tugas', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'index'])->name('siswa.tugas.index');
-    Route::get('/siswa/tugas/{id}', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'show'])->name('siswa.tugas.show');
+    Route::get('/siswa/tugas/{id}', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'show'])
+        ->middleware('attendance.gate')
+        ->name('siswa.tugas.show');
     Route::post('/siswa/tugas/{id}/submit', [\App\Http\Controllers\Siswa\SiswaTugasController::class, 'store'])->name('siswa.tugas.store');
 
     // Kuis
     Route::get('/siswa/kuis', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'index'])->name('siswa.kuis.index');
-    Route::get('/siswa/kuis/{kuis}', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'show'])->name('siswa.kuis.show');
+    Route::get('/siswa/kuis/{kuis}', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'show'])
+        ->middleware('attendance.gate')
+        ->name('siswa.kuis.show');
     Route::post('/siswa/kuis/{kuis}/mulai', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'mulai'])->name('siswa.kuis.mulai');
     Route::get('/siswa/kuis/{kuis}/kerjakan', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'kerjakan'])->name('siswa.kuis.kerjakan');
     Route::post('/siswa/kuis/{kuis}/submit', [\App\Http\Controllers\Siswa\SiswaKuisController::class, 'submit'])->name('siswa.kuis.submit');
@@ -357,6 +397,10 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     // Absensi
     Route::get('/siswa/absensi', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'index'])->name('siswa.absensi.index');
     Route::post('/siswa/absensi/clock-in', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'clockIn'])->name('siswa.absensi.clockIn');
+    
+    // Attendance for Content Access
+    Route::get('/siswa/attendance/modal/{pertemuan}', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'showAttendanceModal'])->name('siswa.attendance.modal');
+    Route::post('/siswa/attendance/mark', [\App\Http\Controllers\Siswa\SiswaAbsensiController::class, 'markContentAttendance'])->name('siswa.attendance.mark');
 
     // Jadwal Belajar
     Route::get('/siswa/jadwal', [\App\Http\Controllers\Siswa\SiswaJadwalController::class, 'index'])->name('siswa.jadwal.index');
@@ -368,6 +412,11 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     // Profil Siswa
     Route::get('/siswa/profil', [\App\Http\Controllers\Siswa\SiswaProfileController::class, 'show'])->name('siswa.profil');
     Route::put('/siswa/profil/password', [\App\Http\Controllers\Siswa\SiswaProfileController::class, 'updatePassword'])->name('siswa.profil.password');
+
+    // Notifikasi Siswa
+    Route::get('/siswa/notifications', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'index'])->name('siswa.notifications.index');
+    Route::get('/siswa/notifications/{id}/read', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'markAsRead'])->name('siswa.notifications.read');
+    Route::post('/siswa/notifications/read-all', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'markAllAsRead'])->name('siswa.notifications.readAll');
 });
 
 require __DIR__ . '/auth.php';

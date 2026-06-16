@@ -7,11 +7,19 @@ use App\Http\Requests\Kuis\UpdateKuisRequest;
 use App\Models\GuruMapel;
 use App\Models\Kuis;
 use App\Models\Pertemuan;
+use App\Services\ContentReleaseService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class KuisController extends Controller
 {
+    protected $contentReleaseService;
+
+    public function __construct(ContentReleaseService $contentReleaseService)
+    {
+        $this->contentReleaseService = $contentReleaseService;
+    }
+
     /**
      * Display a listing of kuis.
      * Guru sees only their own kuis, admin sees all.
@@ -47,7 +55,14 @@ class KuisController extends Controller
 
         $kuisList = $query->latest()->paginate(10)->withQueryString();
 
-        return view('kuis.index', compact('kuisList'));
+        // Count trashed kuis
+        $trashQuery = Kuis::onlyTrashed();
+        if ($user->role === 'guru' && $user->Guru) {
+            $trashQuery->where('id_guru', $user->Guru->id);
+        }
+        $trashCount = $trashQuery->count();
+
+        return view('kuis.index', compact('kuisList', 'trashCount'));
     }
 
     /**
@@ -105,7 +120,22 @@ class KuisController extends Controller
             
             $validated['status'] = 'draft'; // Default status (Req 6.3)
 
+            // Handle auto_release (default true if not provided)
+            $autoRelease = $request->input('auto_release', true);
+            $validated['auto_release'] = $autoRelease;
+
             $kuis = Kuis::create($validated);
+
+            // Set release time using service
+            if ($autoRelease) {
+                $this->contentReleaseService->setReleaseTime($kuis);
+            } elseif (isset($validated['waktu_rilis'])) {
+                $this->contentReleaseService->setReleaseTime(
+                    $kuis,
+                    \Carbon\Carbon::parse($validated['waktu_rilis']),
+                    isset($validated['batas_absensi']) ? \Carbon\Carbon::parse($validated['batas_absensi']) : null
+                );
+            }
 
             DB::commit();
 

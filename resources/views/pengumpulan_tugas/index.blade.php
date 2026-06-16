@@ -108,6 +108,9 @@
                                 <th
                                     class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                                     Waktu Kirim</th>
+                                <th
+                                    class="px-6 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                                    Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -176,10 +179,19 @@
                                         <div class="text-xs text-gray-500">{{ $item->created_at->format('H:i') }}
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <a href="{{ route('tugas.rekap', $item->tugas) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                            </svg>
+                                            Rekap
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-16 text-center text-gray-400">
+                                    <td colspan="7" class="px-6 py-16 text-center text-gray-400">
                                         <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
