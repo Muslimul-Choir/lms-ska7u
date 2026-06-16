@@ -64,7 +64,15 @@ class SiswaKuisController extends Controller
             }
         }
 
-        return view('siswa.kuis.index', compact('siswa', 'tersedia', 'sudahDikerjakan', 'ditutup'));
+        // Badge counts for nav tabs
+        $tugasBelumCount = \App\Models\Tugas::whereHas('guruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswa->id_kelas))
+            ->whereHas('Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->where('status', 'published')
+            ->whereNotIn('id', \App\Models\PengumpulanTugas::where('id_siswa', $siswa->id)->pluck('id_tugas'))
+            ->count();
+        $kuisTersediaCount = count($tersedia);
+
+        return view('siswa.kuis.index', compact('siswa', 'tersedia', 'sudahDikerjakan', 'ditutup', 'tugasBelumCount', 'kuisTersediaCount'));
     }
 
     /**

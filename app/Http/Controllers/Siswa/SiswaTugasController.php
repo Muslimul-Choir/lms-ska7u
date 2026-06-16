@@ -8,6 +8,9 @@ use App\Models\Tugas;
 use App\Models\PengumpulanTugas;
 use App\Models\Penilaian;
 use App\Models\Siswa;
+use App\Models\Kuis;
+use App\Models\HasilKuis;
+use App\Services\AttendanceGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +18,12 @@ use Illuminate\Support\Facades\Storage;
 
 class SiswaTugasController extends Controller
 {
+    protected $attendanceService;
+
+    public function __construct(AttendanceGatewayService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
     /**
      * Display a listing of assignments categorized by status.
      */
@@ -69,7 +78,17 @@ class SiswaTugasController extends Controller
             }
         }
 
-        return view('siswa.tugas.index', compact('siswa', 'belumDikerjakan', 'menungguDinilai', 'selesai'));
+        // Badge counts for nav tabs
+        $tugasBelumCount = count($belumDikerjakan);
+        $kuisTersediaCount = Kuis::whereHas('guruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswa->id_kelas))
+            ->whereHas('GuruMapel.Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->where('status', 'published')
+            ->where('batas_mulai', '<=', now())
+            ->where('batas_selesai', '>=', now())
+            ->whereNotIn('id', HasilKuis::where('id_siswa', $siswa->id)->pluck('id_kuis'))
+            ->count();
+
+        return view('siswa.tugas.index', compact('siswa', 'belumDikerjakan', 'menungguDinilai', 'selesai', 'tugasBelumCount', 'kuisTersediaCount'));
     }
 
     /**
@@ -84,7 +103,7 @@ class SiswaTugasController extends Controller
             return redirect()->route('login');
         }
 
-        $tugas = Tugas::findOrFail($id);
+        $tugas = Tugas::with(['Pertemuan', 'guruMapel'])->findOrFail($id);
 
         // Verify class access through JadwalBelajar
         if ($tugas->guruMapel) {
@@ -105,6 +124,26 @@ class SiswaTugasController extends Controller
         $assessment = null;
         if ($submission) {
             $assessment = Penilaian::where('id_pengumpulan_tugas', $submission->id)->first();
+        }
+
+        // Check pertemuan-level attendance (shared with materi & kuis of same pertemuan)
+        $pertemuan = $tugas->Pertemuan;
+        if ($pertemuan) {
+            $alreadyAbsen = $this->attendanceService->hasMarkedAttendanceForPertemuan($siswa->id, $pertemuan->id);
+
+            if (!$alreadyAbsen) {
+                $batasAbsensi = $this->attendanceService->getPertemuanAttendanceDeadline($pertemuan);
+                $deadlinePassed = $batasAbsensi && now()->gt($batasAbsensi);
+
+                if (!$deadlinePassed) {
+                    $params = http_build_query([
+                        'tipe_konten' => 'tugas',
+                        'id_konten'   => $tugas->id,
+                        'redirect_to' => route('siswa.tugas.show', $tugas->id),
+                    ]);
+                    return redirect(route('siswa.attendance.modal', $pertemuan->id) . '?' . $params);
+                }
+            }
         }
 
         return view('siswa.tugas.show', compact('siswa', 'tugas', 'submission', 'assessment'));

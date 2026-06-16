@@ -59,6 +59,9 @@ class PengumpulanTugasController extends Controller
     {
         $user = Auth::user();
 
+        // Get source page for back button
+        $source = request('source', 'tugas'); // default to 'tugas' if not specified
+
         // Get all students in the task's class through JadwalBelajar
         // GuruMapel tidak punya id_kelas lagi, ambil dari JadwalBelajar
         $kelasIds = $tugas->GuruMapel->JadwalBelajar()->pluck('id_kelas')->unique();
@@ -109,7 +112,7 @@ class PengumpulanTugasController extends Controller
             $isCreator = true;
         }
 
-        return view('pengumpulan_tugas.rekap', compact('tugas', 'rekapData', 'statistik', 'isCreator'));
+        return view('pengumpulan_tugas.rekap', compact('tugas', 'rekapData', 'statistik', 'isCreator', 'source'));
     }
 
     /**

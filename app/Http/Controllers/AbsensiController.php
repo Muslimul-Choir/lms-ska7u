@@ -9,6 +9,7 @@ use App\Models\GuruMapel;
 use App\Models\JadwalBelajar;
 use App\Models\Pertemuan;
 use App\Models\Siswa;
+use App\Services\AttendanceGatewayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,13 @@ use Illuminate\View\View;
 
 class AbsensiController extends Controller
 {
+    protected $attendanceService;
+
+    public function __construct(AttendanceGatewayService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
+
     public function index(Request $request): View|JsonResponse
     {
         $user = Auth::user();
@@ -26,7 +34,7 @@ class AbsensiController extends Controller
         //  Cek status walikelas & kelas yang diampu 
         $isWaliKelas   = $guru && in_array($guru->status_pengajar, ['walikelas', 'keduanya']);
         $kelasWali     = $isWaliKelas ? $guru->kelas : null; // hasOne
-        $belumAdaKelas = $isWaliKelas && !$kelasWali;
+        $belumAdaKelas = ($guru && $guru->status_pengajar === 'walikelas') && !$kelasWali;
 
         $search           = $request->get('search');
         $pertemuan_filter = $request->get('id_pertemuan');
@@ -50,7 +58,9 @@ class AbsensiController extends Controller
             ));
         }
 
-        $absensis = Absensi::with(['pertemuan', 'siswa'])
+        $absensis = Absensi::whereNotNull('id_pertemuan')
+            ->whereNull('tipe_konten')
+            ->with(['pertemuan', 'siswa'])
             ->when($search, function ($query, $search) {
                 $query->whereHas('siswa', function ($q) use ($search) {
                     $q->where('nama_lengkap', 'like', "%{$search}%")
@@ -59,22 +69,28 @@ class AbsensiController extends Controller
             })
             ->when($pertemuan_filter, fn($q) => $q->where('id_pertemuan', $pertemuan_filter))
             ->when($status_filter,    fn($q) => $q->where('status', $status_filter))
-            ->when($isWaliKelas, function ($query) use ($kelasWali) {
-                // Walikelas: scope ke siswa di kelasnya
-                $query->whereHas('siswa', fn($q) => $q->where('id_kelas', $kelasWali->id));
-            })
-            ->when($isGuru && !$isWaliKelas, function ($query) use ($user) {
-                // Guru pengajar biasa: scope ke pertemuan yang dia ajar
-                $query->whereHas(
-                    'pertemuan.jadwalBelajar.guruMapel',
-                    fn($q) => $q->where('id_guru', $user->guru->id)
-                );
+            ->when($isGuru, function ($query) use ($guru, $isWaliKelas, $kelasWali) {
+                $query->where(function ($q) use ($guru, $isWaliKelas, $kelasWali) {
+                    if ($isWaliKelas && $kelasWali) {
+                        $q->whereHas('siswa', fn($s) => $s->where('id_kelas', $kelasWali->id));
+                    }
+                    if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                        $method = ($isWaliKelas && $kelasWali) ? 'orWhereHas' : 'whereHas';
+                        $q->$method(
+                            'pertemuan.jadwalBelajar.guruMapel',
+                            fn($gm) => $gm->where('id_guru', $guru->id)
+                        );
+                    }
+                });
             })
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        $trashCount = Absensi::onlyTrashed()->count();
+        $trashCount = Absensi::onlyTrashed()
+            ->whereNotNull('id_pertemuan')
+            ->whereNull('tipe_konten')
+            ->count();
 
         if ($request->ajax()) {
             return response()->json([
@@ -87,24 +103,35 @@ class AbsensiController extends Controller
         $pertemuanQuery = Pertemuan::query();
         $siswaQuery     = Siswa::query();
 
-        if ($isWaliKelas) {
-            // Walikelas: pertemuan & siswa di kelasnya
-            $pertemuanQuery->whereHas(
-                'jadwalBelajar',
-                fn($q) => $q->where('id_kelas', $kelasWali->id)
-            );
-            $siswaQuery->where('id_kelas', $kelasWali->id);
-        } elseif ($isGuru) {
-            // Guru pengajar biasa: pertemuan & siswa dari kelas yang dia ajar
+        if ($isGuru) {
             $myGuruMapelIds = GuruMapel::where('id_guru', $guru->id)->pluck('id');
-            $kelasIds = JadwalBelajar::whereIn('id_guru_mapel', $myGuruMapelIds)
+            $teachesKelasIds = JadwalBelajar::whereIn('id_guru_mapel', $myGuruMapelIds)
                 ->pluck('id_kelas')->filter()->unique();
 
-            $pertemuanQuery->whereHas(
-                'jadwalBelajar.guruMapel',
-                fn($q) => $q->where('id_guru', $guru->id)
-            );
-            $siswaQuery->whereIn('id_kelas', $kelasIds);
+            $pertemuanQuery->where(function ($q) use ($guru, $isWaliKelas, $kelasWali) {
+                if ($isWaliKelas && $kelasWali) {
+                    $q->whereHas('jadwalBelajar', fn($jb) => $jb->where('id_kelas', $kelasWali->id));
+                }
+                
+                if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                    $method = ($isWaliKelas && $kelasWali) ? 'orWhereHas' : 'whereHas';
+                    $q->$method('jadwalBelajar.guruMapel', fn($gm) => $gm->where('id_guru', $guru->id));
+                }
+            });
+
+            $siswaQuery->where(function ($q) use ($guru, $isWaliKelas, $kelasWali, $teachesKelasIds) {
+                if ($isWaliKelas && $kelasWali) {
+                    $q->where('id_kelas', $kelasWali->id);
+                }
+                
+                if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                    if ($isWaliKelas && $kelasWali) {
+                        $q->orWhereIn('id_kelas', $teachesKelasIds);
+                    } else {
+                        $q->whereIn('id_kelas', $teachesKelasIds);
+                    }
+                }
+            });
         }
 
         $pertemuans = $pertemuanQuery->get();
@@ -132,16 +159,37 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            // Ambil id_kelas dari JadwalBelajar yang terkait dengan GuruMapel guru ini
-            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
-                $q->where('id_guru', $guru->id);
-            })->pluck('id_kelas')->unique();
+            $isWaliKelas = in_array($guru->status_pengajar, ['walikelas', 'keduanya']);
+            $kelasWali   = $isWaliKelas ? $guru->kelas : null;
 
-            $pertemuanQuery->whereHas(
-                'jadwalBelajar.guruMapel',
-                fn($q) => $q->where('id_guru', $guru->id)
-            );
-            $siswaQuery->whereIn('id_kelas', $kelasIds);
+            $myGuruMapelIds = GuruMapel::where('id_guru', $guru->id)->pluck('id');
+            $teachesKelasIds = JadwalBelajar::whereIn('id_guru_mapel', $myGuruMapelIds)
+                ->pluck('id_kelas')->filter()->unique();
+
+            $pertemuanQuery->where(function ($q) use ($guru, $isWaliKelas, $kelasWali) {
+                if ($isWaliKelas && $kelasWali) {
+                    $q->whereHas('jadwalBelajar', fn($jb) => $jb->where('id_kelas', $kelasWali->id));
+                }
+                
+                if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                    $method = ($isWaliKelas && $kelasWali) ? 'orWhereHas' : 'whereHas';
+                    $q->$method('jadwalBelajar.guruMapel', fn($gm) => $gm->where('id_guru', $guru->id));
+                }
+            });
+
+            $siswaQuery->where(function ($q) use ($guru, $isWaliKelas, $kelasWali, $teachesKelasIds) {
+                if ($isWaliKelas && $kelasWali) {
+                    $q->where('id_kelas', $kelasWali->id);
+                }
+                
+                if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                    if ($isWaliKelas && $kelasWali) {
+                        $q->orWhereIn('id_kelas', $teachesKelasIds);
+                    } else {
+                        $q->whereIn('id_kelas', $teachesKelasIds);
+                    }
+                }
+            });
         }
 
         return view('absensi.create', [
@@ -152,7 +200,20 @@ class AbsensiController extends Controller
 
     public function store(StoreAbsensiRequest $request): RedirectResponse
     {
-        Absensi::create($request->validated());
+        $validated = $request->validated();
+        
+        // Fetch pertemuan to get deadline
+        $pertemuan = Pertemuan::findOrFail($validated['id_pertemuan']);
+        $batasWaktu = $this->attendanceService->getPertemuanAttendanceDeadline($pertemuan);
+
+        // Mark attendance using service
+        $this->attendanceService->markAttendanceForPertemuan(
+            $validated['id_siswa'],
+            $validated['id_pertemuan'],
+            $validated['status'],
+            $validated['keterangan'] ?? null,
+            $batasWaktu
+        );
 
         return redirect()->route('absensi.index')->with('success', 'Absensi berhasil ditambahkan.');
     }
@@ -174,16 +235,37 @@ class AbsensiController extends Controller
 
         if ($isGuru) {
             $guru    = $user->guru;
-            // Ambil id_kelas dari JadwalBelajar yang terkait dengan GuruMapel guru ini
-            $kelasIds = JadwalBelajar::whereHas('GuruMapel', function ($q) use ($guru) {
-                $q->where('id_guru', $guru->id);
-            })->pluck('id_kelas')->unique();
+            $isWaliKelas = in_array($guru->status_pengajar, ['walikelas', 'keduanya']);
+            $kelasWali   = $isWaliKelas ? $guru->kelas : null;
 
-            $pertemuanQuery->whereHas(
-                'jadwalBelajar.guruMapel',
-                fn($q) => $q->where('id_guru', $guru->id)
-            );
-            $siswaQuery->whereIn('id_kelas', $kelasIds);
+            $myGuruMapelIds = GuruMapel::where('id_guru', $guru->id)->pluck('id');
+            $teachesKelasIds = JadwalBelajar::whereIn('id_guru_mapel', $myGuruMapelIds)
+                ->pluck('id_kelas')->filter()->unique();
+
+            $pertemuanQuery->where(function ($q) use ($guru, $isWaliKelas, $kelasWali) {
+                if ($isWaliKelas && $kelasWali) {
+                    $q->whereHas('jadwalBelajar', fn($jb) => $jb->where('id_kelas', $kelasWali->id));
+                }
+                
+                if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                    $method = ($isWaliKelas && $kelasWali) ? 'orWhereHas' : 'whereHas';
+                    $q->$method('jadwalBelajar.guruMapel', fn($gm) => $gm->where('id_guru', $guru->id));
+                }
+            });
+
+            $siswaQuery->where(function ($q) use ($guru, $isWaliKelas, $kelasWali, $teachesKelasIds) {
+                if ($isWaliKelas && $kelasWali) {
+                    $q->where('id_kelas', $kelasWali->id);
+                }
+                
+                if (in_array($guru->status_pengajar, ['pengajar', 'keduanya'])) {
+                    if ($isWaliKelas && $kelasWali) {
+                        $q->orWhereIn('id_kelas', $teachesKelasIds);
+                    } else {
+                        $q->whereIn('id_kelas', $teachesKelasIds);
+                    }
+                }
+            });
         }
 
         return view('absensi.edit', [
@@ -195,7 +277,35 @@ class AbsensiController extends Controller
 
     public function update(UpdateAbsensiRequest $request, Absensi $absensi): RedirectResponse
     {
-        $absensi->update($request->validated());
+        $validated = $request->validated();
+
+        // If status is updated or pertemuan is updated, recalculate lateness status
+        $status = $validated['status'] ?? $absensi->status;
+        $idPertemuan = $validated['id_pertemuan'] ?? $absensi->id_pertemuan;
+
+        if ($status === 'hadir') {
+            $pertemuan = Pertemuan::findOrFail($idPertemuan);
+            $batasWaktu = $this->attendanceService->getPertemuanAttendanceDeadline($pertemuan);
+            
+            $waktuAbsen = $absensi->waktu_absen ?? now();
+            if ($batasWaktu) {
+                $validated['status_keterlambatan'] = $this->attendanceService->calculateLatenessStatus($batasWaktu, $waktuAbsen);
+                $validated['batas_waktu_absen'] = $batasWaktu;
+            } else {
+                $validated['status_keterlambatan'] = 'tepat_waktu';
+                $validated['batas_waktu_absen'] = null;
+            }
+        } else {
+            $validated['status_keterlambatan'] = null;
+            $validated['batas_waktu_absen'] = null;
+        }
+
+        // Set waktu_absen if not already set
+        if (!$absensi->waktu_absen) {
+            $validated['waktu_absen'] = now();
+        }
+
+        $absensi->update($validated);
 
         return redirect()->route('absensi.index')->with('success', 'Absensi berhasil diperbarui.');
     }
@@ -216,6 +326,8 @@ class AbsensiController extends Controller
         $status_filter    = $request->get('status');
 
         $absensis = Absensi::onlyTrashed()
+            ->whereNotNull('id_pertemuan')
+            ->whereNull('tipe_konten')
             ->with(['pertemuan', 'siswa'])
             ->when($search, function ($query, $search) {
                 $query->whereHas('siswa', function ($q) use ($search) {

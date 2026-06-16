@@ -23,13 +23,25 @@ class Materi extends Model
         'deskripsi',
         'file_url',
         'tipe_materi',
+        'waktu_rilis',
+        'batas_absensi',
+        'auto_release',
     ];
 
     // Kolom tanggal yang otomatis diubah menjadi Carbon
     protected $dates = [
+        'waktu_rilis',
+        'batas_absensi',
         'created_at',
         'updated_at',
         'deleted_at',
+    ];
+
+    // Cast tipe data kolom
+    protected $casts = [
+        'waktu_rilis' => 'datetime',
+        'batas_absensi' => 'datetime',
+        'auto_release' => 'boolean',
     ];
 
      public function Mapel()
@@ -45,6 +57,70 @@ class Materi extends Model
     public function Pertemuan()
     {
         return $this->belongsTo(Pertemuan::class, 'id_pertemuan');
+    }
+
+    // ── Query Scopes ──────────────────────────────────────────
+
+    /**
+     * Scope to get content that is pending release (waktu_rilis in the future or null)
+     */
+    public function scopePendingRelease($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('waktu_rilis')
+              ->orWhere('waktu_rilis', '>', now());
+        });
+    }
+
+    /**
+     * Scope to get content that is already released
+     */
+    public function scopeReleased($query)
+    {
+        return $query->where('waktu_rilis', '<=', now());
+    }
+
+    /**
+     * Scope to get content that is currently accessible (released and not expired)
+     */
+    public function scopeAccessible($query)
+    {
+        return $query->whereNotNull('waktu_rilis')
+                     ->where('waktu_rilis', '<=', now());
+    }
+
+    // ── Accessors & Helpers ──────────────────────────────────────────
+
+    /**
+     * Check if content is released
+     */
+    public function isReleased(): bool
+    {
+        return $this->waktu_rilis && now()->gte($this->waktu_rilis);
+    }
+
+    /**
+     * Check if content is accessible to students
+     */
+    public function isAccessible(): bool
+    {
+        return $this->isReleased();
+    }
+
+    /**
+     * Get content status label
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        if (!$this->waktu_rilis) {
+            return 'Belum Dijadwalkan';
+        }
+        
+        if (now()->lt($this->waktu_rilis)) {
+            return 'Belum Dirilis';
+        }
+        
+        return 'Tersedia';
     }
 }
 
