@@ -365,7 +365,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
 });
 
 // ============================================================
-// 👨‍🎓 STUDENT ROUTES - Protected with Student Role Middleware
+// 👨‍ STUDENT ROUTES - Protected with Student Role Middleware
 // ============================================================
 Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     Route::get('/siswa/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
@@ -417,6 +417,10 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     Route::get('/siswa/notifications', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'index'])->name('siswa.notifications.index');
     Route::get('/siswa/notifications/{id}/read', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'markAsRead'])->name('siswa.notifications.read');
     Route::post('/siswa/notifications/read-all', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'markAllAsRead'])->name('siswa.notifications.readAll');
+    Route::delete('/siswa/notifications/{id}', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'destroy'])->name('siswa.notifications.destroy');
+    
+    // Real-Time Content Updates
+    Route::get('/siswa/check-updates', [\App\Http\Controllers\Siswa\SiswaNotificationController::class, 'checkUpdates'])->name('siswa.check-updates');
 });
 
 require __DIR__ . '/auth.php';

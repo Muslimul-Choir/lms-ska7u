@@ -265,7 +265,7 @@
 
         {{-- Notification Bell --}}
         @auth
-        <div style="position:relative;flex-shrink:0;margin-right:4px;" x-data="{ open: false, unreadCount: 0, notifications: [], loading: false,
+        <div style="position:relative;flex-shrink:0;margin-right:4px;" x-data="{ open: false, unreadCount: 0, notifications: [], loading: false, contentUpdated: false,
             async fetchNotifications() {
                 this.loading = true;
                 try {
@@ -277,6 +277,43 @@
                     }
                 } catch(e) { console.error(e); }
                 this.loading = false;
+            },
+            async checkForContentUpdates() {
+                try {
+                    let res = await fetch('{{ route('siswa.check-updates') }}');
+                    if (res.ok) {
+                        let data = await res.json();
+                        if (data.updated) {
+                            console.log('Content updates detected, reloading page...', data.updates);
+                            // Solution 2: Auto-reload tanpa modal
+                            location.reload();
+                        }
+                    }
+                } catch(e) { console.error(e); }
+            },
+            showUpdateNotification(updates) {
+                // Build update message
+                let messages = [];
+                updates.forEach(update => {
+                    let typeLabel = {'materi': 'Materi', 'tugas': 'Tugas', 'kuis': 'Kuis', 'absensi': 'Absensi'}[update.contentType] || update.contentType;
+                    messages.push(`${typeLabel} ${update.action}`);
+                });
+                
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Update Baru!',
+                        html: 'Data telah diperbarui:<br>' + messages.join('<br>'),
+                        icon: 'info',
+                        confirmButtonText: 'Refresh',
+                        allowOutsideClick: false,
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    // Fallback: auto reload setelah 3 detik
+                    console.log('Content updated, reloading in 3 seconds...');
+                    setTimeout(() => location.reload(), 3000);
+                }
             },
             async markAllAsRead() {
                 try {
@@ -290,6 +327,30 @@
                     if (res.ok) {
                         this.unreadCount = 0;
                         this.notifications.forEach(n => n.read_at = new Date().toISOString());
+                    }
+                } catch(e) { console.error(e); }
+            },
+            async deleteNotification(id, event) {
+                event.preventDefault();
+                event.stopPropagation();
+                try {
+                    let res = await fetch('/siswa/notifications/' + id, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+                    if (res.ok) {
+                        // Remove from array
+                        let index = this.notifications.findIndex(n => n.id === id);
+                        if (index !== -1) {
+                            // Check if it was unread
+                            if (this.notifications[index].read_at === null) {
+                                this.unreadCount = Math.max(0, this.unreadCount - 1);
+                            }
+                            this.notifications.splice(index, 1);
+                        }
                     }
                 } catch(e) { console.error(e); }
             },
@@ -308,7 +369,11 @@
             },
             init() {
                 this.fetchNotifications();
-                setInterval(() => this.fetchNotifications(), 30000);
+                this.checkForContentUpdates();
+                // Check for notifications every 10 seconds (faster polling)
+                setInterval(() => this.fetchNotifications(), 10000);
+                // Check for content updates every 5 seconds (very responsive)
+                setInterval(() => this.checkForContentUpdates(), 5000);
             }
         }">
             <button @click="open = !open" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#94a3b8;cursor:pointer;position:relative;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#f1f5f9';" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.color='#94a3b8';">
@@ -328,7 +393,7 @@
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="sl-dropdown" style="position:absolute;top:calc(100% + 12px);right:0;width:360px;max-width:calc(100vw - 32px);z-index:100;max-height:min(500px,calc(100vh - 100px));display:flex;flex-direction:column;background:rgba(22,28,45,0.98);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.4);" x-cloak>
+                 class="sl-dropdown" style="position:absolute;top:calc(100% + 12px);right:0;width:420px;max-width:calc(100vw - 32px);z-index:100;max-height:min(600px,calc(100vh - 100px));display:flex;flex-direction:column;background:rgba(22,28,45,0.98);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.4);" x-cloak>
                  
                  <div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;">
                      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">
@@ -347,7 +412,23 @@
                      </button>
                  </div>
 
-                 <div style="flex:1;overflow-y:auto;min-height:0;">
+                 <div style="flex:1;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(201,152,42,0.3) transparent;">
+                     <style>
+                         /* Custom scrollbar untuk notifikasi */
+                         .sl-dropdown > div:last-of-type::-webkit-scrollbar {
+                             width: 6px;
+                         }
+                         .sl-dropdown > div:last-of-type::-webkit-scrollbar-track {
+                             background: transparent;
+                         }
+                         .sl-dropdown > div:last-of-type::-webkit-scrollbar-thumb {
+                             background: rgba(201,152,42,0.3);
+                             border-radius: 3px;
+                         }
+                         .sl-dropdown > div:last-of-type::-webkit-scrollbar-thumb:hover {
+                             background: rgba(201,152,42,0.5);
+                         }
+                     </style>
                      <template x-if="loading && notifications.length === 0">
                          <div style="padding:48px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
                              <div style="width:48px;height:48px;border-radius:50%;background:rgba(100,116,139,0.1);display:flex;align-items:center;justify-content:center;">
@@ -374,57 +455,71 @@
                      </template>
 
                      <template x-for="item in notifications" :key="item.id">
-                         <a :href="'/siswa/notifications/' + item.id + '/read'" 
-                            style="display:block;padding:16px 20px;text-decoration:none;transition:all 0.2s;border-bottom:1px solid rgba(255,255,255,0.04);position:relative;"
-                            :style="item.read_at === null ? 'background:rgba(201,152,42,0.05);border-left:3px solid #c9982a;' : 'border-left:3px solid transparent;'"
-                            onmouseover="this.style.background='rgba(255,255,255,0.06)'"
-                            :onmouseout="item.read_at === null ? 'this.style.background=\'rgba(201,152,42,0.05)\'' : 'this.style.background=\'transparent\''">
+                         <div style="display:flex;position:relative;border-bottom:1px solid rgba(255,255,255,0.04);"
+                              :style="item.read_at === null ? 'background:rgba(201,152,42,0.05);border-left:3px solid #c9982a;' : 'border-left:3px solid transparent;'">
                              
-                             <div style="display:flex;gap:14px;align-items:flex-start;">
-                                 {{-- Icon --}}
-                                 <div style="flex-shrink:0;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;"
-                                      :style="
-                                         item.data.type === 'jadwal' ? 'background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(59,130,246,0.05)); border:1px solid rgba(59,130,246,0.25); color:#60a5fa;' :
-                                         item.data.type === 'mapel'  ? 'background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05)); border:1px solid rgba(245,158,11,0.25); color:#fbbf24;' :
-                                         item.data.type === 'materi' ? 'background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.25); color:#34d399;' :
-                                         item.data.type === 'tugas'  ? 'background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05)); border:1px solid rgba(239,68,68,0.25); color:#f87171;' :
-                                         'background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(167,139,250,0.05)); border:1px solid rgba(167,139,250,0.25); color:#c084fc;'
-                                      ">
-                                 <template x-if="item.data.type === 'jadwal'">
-                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                 </template>
-                                 <template x-if="item.data.type === 'mapel'">
-                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-                                 </template>
-                                 <template x-if="item.data.type === 'materi'">
-                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-                                 </template>
-                                 <template x-if="item.data.type === 'tugas'">
-                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                                 </template>
-                                 <template x-if="item.data.type === 'kuis'">
-                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
-                                 </template>
-                             </div>
-
-                                 {{-- Content --}}
-                                 <div style="flex:1;min-width:0;">
-                                     <div style="font-size:13.5px;font-weight:700;color:#f1f5f9;line-height:1.4;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:4px;word-wrap:break-word;" x-text="item.data.title"></div>
-                                     <div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:6px;word-wrap:break-word;" x-text="item.data.message"></div>
-                                     <div style="display:flex;align-items:center;gap:6px;">
-                                         <svg width="12" height="12" fill="none" stroke="#64748b" viewBox="0 0 24 24" stroke-width="2.5">
-                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                         </svg>
-                                         <span style="font-size:11px;color:#64748b;font-weight:600;" x-text="formatTime(item.created_at)"></span>
-                                     </div>
+                             <a :href="'/siswa/notifications/' + item.id + '/read'" 
+                                style="display:flex;flex:1;padding:16px 12px 16px 20px;text-decoration:none;transition:all 0.2s;min-width:0;"
+                                onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+                                onmouseout="this.style.background='transparent'">
+                                 
+                                 <div style="display:flex;gap:14px;align-items:flex-start;flex:1;min-width:0;">
+                                     {{-- Icon --}}
+                                     <div style="flex-shrink:0;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;"
+                                          :style="
+                                             item.data.type === 'jadwal' ? 'background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(59,130,246,0.05)); border:1px solid rgba(59,130,246,0.25); color:#60a5fa;' :
+                                             item.data.type === 'mapel'  ? 'background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05)); border:1px solid rgba(245,158,11,0.25); color:#fbbf24;' :
+                                             item.data.type === 'materi' ? 'background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.25); color:#34d399;' :
+                                             item.data.type === 'tugas'  ? 'background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05)); border:1px solid rgba(239,68,68,0.25); color:#f87171;' :
+                                             'background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(167,139,250,0.05)); border:1px solid rgba(167,139,250,0.25); color:#c084fc;'
+                                          ">
+                                     <template x-if="item.data.type === 'jadwal'">
+                                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                     </template>
+                                     <template x-if="item.data.type === 'mapel'">
+                                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                                     </template>
+                                     <template x-if="item.data.type === 'materi'">
+                                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                                     </template>
+                                     <template x-if="item.data.type === 'tugas'">
+                                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                     </template>
+                                     <template x-if="item.data.type === 'kuis'">
+                                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                                     </template>
                                  </div>
 
-                                 {{-- Unread indicator --}}
-                                 <template x-if="item.read_at === null">
-                                     <div style="flex-shrink:0;width:10px;height:10px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.15);margin-top:4px;"></div>
-                                 </template>
-                             </div>
-                         </a>
+                                     {{-- Content --}}
+                                     <div style="flex:1;min-width:0;">
+                                         <div style="font-size:13.5px;font-weight:700;color:#f1f5f9;line-height:1.4;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:4px;word-wrap:break-word;" x-text="item.data.title"></div>
+                                         <div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:6px;word-wrap:break-word;" x-text="item.data.message"></div>
+                                         <div style="display:flex;align-items:center;gap:6px;">
+                                             <svg width="12" height="12" fill="none" stroke="#64748b" viewBox="0 0 24 24" stroke-width="2.5">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                             </svg>
+                                             <span style="font-size:11px;color:#64748b;font-weight:600;" x-text="formatTime(item.created_at)"></span>
+                                         </div>
+                                     </div>
+
+                                     {{-- Unread indicator --}}
+                                     <template x-if="item.read_at === null">
+                                         <div style="flex-shrink:0;width:10px;height:10px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.15);margin-top:4px;"></div>
+                                     </template>
+                                 </div>
+                             </a>
+
+                             {{-- Delete Button --}}
+                             <button @click="deleteNotification(item.id, $event)" 
+                                     style="flex-shrink:0;width:40px;display:flex;align-items:center;justify-content:center;color:#64748b;background:transparent;border:none;cursor:pointer;transition:all 0.2s;"
+                                     onmouseover="this.style.color='#ef4444';this.style.background='rgba(239,68,68,0.1)';"
+                                     onmouseout="this.style.color='#64748b';this.style.background='transparent';"
+                                     title="Hapus notifikasi">
+                                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                 </svg>
+                             </button>
+                         </div>
                      </template>
                  </div>
             </div>
@@ -511,14 +606,28 @@
         if(Auth::check()) {
             $siswaModel = \App\Models\Siswa::where('id_user', Auth::id())->first();
             if($siswaModel) {
+                // FILTER BARU: Hanya hitung tugas dari pertemuan yang tanggalnya sudah lewat atau hari ini
                 $pendingTugas = \App\Models\Tugas::whereHas('GuruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswaModel->id_kelas))
                     ->whereHas('Mapel', fn($q) => $q->forAgama($siswaModel->agama))
+                    ->whereHas('Pertemuan', function($q) {
+                        $q->where(function($query) {
+                            $query->whereNull('tanggal')
+                                  ->orWhere('tanggal', '<=', now()->toDateString());
+                        });
+                    })
                     ->where('status','published')
                     ->whereDoesntHave('PengumpulanTugas', fn($q) => $q->where('id_siswa', $siswaModel->id))
                     ->count();
                 $now = now();
+                // FILTER BARU: Hanya hitung kuis dari pertemuan yang tanggalnya sudah lewat atau hari ini
                 $pendingKuis = \App\Models\Kuis::whereHas('guruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswaModel->id_kelas))
                     ->whereHas('guruMapel.Mapel', fn($q) => $q->forAgama($siswaModel->agama))
+                    ->whereHas('Pertemuan', function($q) {
+                        $q->where(function($query) {
+                            $query->whereNull('tanggal')
+                                  ->orWhere('tanggal', '<=', now()->toDateString());
+                        });
+                    })
                     ->where('status', 'published')
                     ->where('batas_mulai', '<=', $now)
                     ->where('batas_selesai', '>=', $now)

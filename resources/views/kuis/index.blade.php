@@ -74,6 +74,7 @@
                         </a>
 
                         {{-- Tombol Tambah --}}
+                        @if (Auth::user()->role === 'guru')
                         <a href="{{ route('kuis.create') }}"
                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -81,6 +82,7 @@
                             </svg>
                             Tambah Kuis
                         </a>
+                        @endif
                     </div>
                 </div>
 
@@ -153,22 +155,55 @@
                                     {{ $kuis->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($kuis->status === 'draft')
-                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-700 border-gray-200">Draft</span>
-                                    @elseif($kuis->status === 'published')
-                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border-emerald-200">Published</span>
+                                    @php
+                                        $statusLabel = $kuis->getStatusLabelAttribute();
+                                        $isReleased = $kuis->isReleased();
+                                        $isAccessible = $kuis->isAccessible();
+                                        $isExpired = $kuis->isExpired();
+                                        $isActive = $kuis->isActive();
+                                    @endphp
+                                    
+                                    @if($statusLabel === 'Belum Dijadwalkan' || $kuis->status === 'draft')
+                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-700 border-gray-200">
+                                            {{ $statusLabel === 'Belum Dijadwalkan' ? 'Draft' : 'Draft' }}
+                                        </span>
+                                    @elseif($statusLabel === 'Belum Dirilis')
+                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border-blue-200">
+                                            Terjadwal
+                                        </span>
+                                    @elseif($statusLabel === 'Tersedia')
+                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border-emerald-200">
+                                            Tersedia
+                                        </span>
+                                    @elseif($statusLabel === 'Belum Dimulai')
+                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border-amber-200">
+                                            Dirilis
+                                        </span>
+                                    @elseif($statusLabel === 'Berakhir' || $kuis->status === 'closed')
+                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-red-50 text-red-700 border-red-200">
+                                            Berakhir
+                                        </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-red-50 text-red-700 border-red-200">Closed</span>
+                                        <span class="inline-flex items-center px-2.5 py-1 border rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-700 border-gray-200">
+                                            {{ $statusLabel }}
+                                        </span>
+                                    @endif
+                                    
+                                    {{-- Show release time if scheduled --}}
+                                    @if($kuis->waktu_rilis && !$isReleased)
+                                        <div class="text-[9px] text-gray-400 mt-1">
+                                            Rilis: {{ \Carbon\Carbon::parse($kuis->waktu_rilis)->format('d/m H:i') }}
+                                        </div>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-50 text-amber-600 font-bold border border-amber-100 text-xs">{{ $kuis->soal_kuis_count }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-xs font-semibold text-gray-700">
-                                    ⏱️ {{ $kuis->durasi }} menit
+                                     {{ $kuis->durasi }} menit
                                 </td>
                                 <td class="px-6 py-4 text-xs text-gray-600">
-                                    <div class="font-medium">📅 {{ \Carbon\Carbon::parse($kuis->batas_mulai)->format('d M Y') }}</div>
+                                    <div class="font-medium"> {{ \Carbon\Carbon::parse($kuis->batas_mulai)->format('d M Y') }}</div>
                                     <div class="text-[10px] text-gray-400 mt-0.5">s/d {{ \Carbon\Carbon::parse($kuis->batas_selesai)->format('d M Y, H:i') }}</div>
                                 </td>
                                 <td class="px-6 py-4">
@@ -187,6 +222,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                                             </svg>
                                         </a>
+                                        @if (Auth::user()->role === 'guru')
                                         <a href="{{ route('kuis.edit', $kuis) }}" 
                                             class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition" 
                                             title="Edit">
@@ -194,6 +230,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </a>
+                                        @endif
                                         <form action="{{ route('kuis.destroy', $kuis) }}" method="POST" class="inline" onsubmit="return handleDelete(event)">
                                             @csrf @method('DELETE')
                                             <button type="submit" 

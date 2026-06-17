@@ -231,7 +231,7 @@
             
             if (sisaDetik <= 0) {
                 clearInterval(interval);
-                alert('⏰ Waktu habis! Kuis akan dikumpulkan otomatis.');
+                alert(' Waktu habis! Kuis akan dikumpulkan otomatis.');
                 document.getElementById('form-kuis').submit();
                 return;
             }
@@ -241,7 +241,7 @@
             // Warnings
             if (sisaDetik === 300) {
                 new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGN0fPTgjMGHm7A7+OZURE=').play().catch(() => {});
-                setTimeout(() => alert('⏰ Perhatian!\n\nSisa waktu 5 menit lagi!'), 100);
+                setTimeout(() => alert(' Perhatian!\n\nSisa waktu 5 menit lagi!'), 100);
             }
             
             if (sisaDetik === 60) {

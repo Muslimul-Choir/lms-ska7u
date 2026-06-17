@@ -469,6 +469,76 @@
     0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,0.4); } 
     50% { box-shadow:0 0 0 5px rgba(239,68,68,0); }
 }
+
+/* ─── PAGINATION STYLE ─── */
+.pagination-wrapper { 
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between; 
+    padding:16px 18px; 
+    background:rgba(15,20,35,0.6); 
+    backdrop-filter:blur(12px); 
+    border:1px solid rgba(255,255,255,0.06); 
+    border-radius:12px; 
+    margin-top:18px;
+    gap:12px;
+    flex-wrap:wrap;
+}
+.pagination-info { 
+    font-size:11px; 
+    color:#64748b; 
+    font-weight:600; 
+    letter-spacing:0.02em;
+}
+.pagination-nav { 
+    display:flex; 
+    align-items:center; 
+    gap:6px;
+    flex-wrap:wrap;
+}
+.pagination-nav a,
+.pagination-nav span { 
+    min-width:36px; 
+    height:36px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    border-radius:8px; 
+    font-size:12px; 
+    font-weight:700; 
+    text-decoration:none; 
+    transition:all .2s ease;
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.03);
+    color:#94a3b8;
+}
+.pagination-nav a:hover { 
+    background:rgba(201,152,42,0.15); 
+    border-color:rgba(201,152,42,0.3); 
+    color:#f0be3d; 
+    transform:translateY(-1px);
+}
+.pagination-nav .active { 
+    background:linear-gradient(135deg,#c9982a,#f0be3d); 
+    border-color:transparent; 
+    color:#1a0800; 
+    box-shadow:0 4px 12px rgba(201,152,42,0.3);
+}
+.pagination-nav .disabled { 
+    opacity:0.3; 
+    cursor:not-allowed; 
+    pointer-events:none;
+}
+.pagination-nav svg { 
+    width:14px; 
+    height:14px;
+}
+@media (max-width:640px) {
+    .pagination-wrapper { padding:12px 14px; }
+    .pagination-info { font-size:10px; }
+    .pagination-nav a,
+    .pagination-nav span { min-width:32px; height:32px; font-size:11px; }
+}
 </style>
 
 <div class="page-container">
@@ -528,7 +598,7 @@
             $totalPending = $pendingTugasCount + $pendingKuisCount;
         @endphp
 
-        <div class="meeting-card" x-data="{ expanded: true }">
+        <div class="meeting-card" x-data="{ expanded: false }">
             {{-- Header --}}
             <div class="meeting-header" @click.stop="expanded = !expanded">
                 <div class="meeting-title-group">
@@ -924,6 +994,44 @@
             </div>
         </div>
         @endforeach
+        
+        {{-- Pagination --}}
+        @if($pertemuans->hasPages())
+            <div class="pagination-wrapper">
+                <div class="pagination-info">
+                    Menampilkan {{ $pertemuans->firstItem() ?? 0 }} - {{ $pertemuans->lastItem() ?? 0 }} dari {{ $pertemuans->total() }} pertemuan
+                </div>
+                <nav class="pagination-nav">
+                    @if ($pertemuans->onFirstPage())
+                        <span class="disabled">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </span>
+                    @else
+                        <a href="{{ $pertemuans->previousPageUrl() }}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </a>
+                    @endif
+
+                    @foreach ($pertemuans->getUrlRange(1, $pertemuans->lastPage()) as $page => $url)
+                        @if ($page == $pertemuans->currentPage())
+                            <span class="active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($pertemuans->hasMorePages())
+                        <a href="{{ $pertemuans->nextPageUrl() }}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <span class="disabled">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                    @endif
+                </nav>
+            </div>
+        @endif
     @else
         <div class="empty-state" style="margin-top:20px;">
             <div class="empty-icon">

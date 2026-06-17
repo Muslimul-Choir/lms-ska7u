@@ -19,3 +19,15 @@ Schedule::command('content:check-release')
     ->onFailure(function () {
         \Illuminate\Support\Facades\Log::error('Content release check failed');
     });
+
+// Auto-publish content based on waktu_rilis
+Schedule::command('content:auto-publish')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Auto-publish content completed successfully');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Auto-publish content failed');
+    });

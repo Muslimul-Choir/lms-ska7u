@@ -54,6 +54,52 @@
                             </div>
                         </div>
                     @endif
+
+                    {{-- Konfirmasi Publish Setelah Tambah Soal --}}
+                    @if (session('show_publish_confirmation') && $kuis->status === 'draft')
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-blue-800 mb-1">Kuis Siap Dipublikasikan?</h4>
+                                    <p class="text-sm text-blue-700 mb-3">
+                                        Kuis ini sekarang memiliki {{ session('total_soal', $soalList->count()) }} soal. 
+                                        Apakah Anda ingin mempublikasikan kuis sekarang agar siswa dapat mengaksesnya?
+                                    </p>
+                                    <div class="flex gap-2">
+                                        <form action="{{ route('kuis.update', $kuis) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="status" value="published">
+                                            <input type="hidden" name="judul" value="{{ $kuis->judul }}">
+                                            <input type="hidden" name="id_pertemuan" value="{{ $kuis->id_pertemuan }}">
+                                            <input type="hidden" name="id_guru_mapel" value="{{ $kuis->id_guru_mapel }}">
+                                            <input type="hidden" name="durasi" value="{{ $kuis->durasi }}">
+                                            <input type="hidden" name="nilai_maksimal" value="{{ $kuis->nilai_maksimal }}">
+                                            <input type="hidden" name="batas_mulai" value="{{ \Carbon\Carbon::parse($kuis->batas_mulai)->format('Y-m-d\TH:i') }}">
+                                            <input type="hidden" name="batas_selesai" value="{{ \Carbon\Carbon::parse($kuis->batas_selesai)->format('Y-m-d\TH:i') }}">
+                                            
+                                            <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                Ya, Publikasikan Sekarang
+                                            </button>
+                                        </form>
+                                        
+                                        <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" 
+                                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+                                            Nanti Saja
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     @if (session('error'))
                         <div
                             class="flex items-center justify-between px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm mb-4">
@@ -92,6 +138,30 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Status Kuis Info --}}
+                    @if($kuis->status === 'draft')
+                        @php
+                            $soalCount = $soalList->count();
+                        @endphp
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-amber-800">Kuis dalam Status Draft</h4>
+                                    <p class="text-sm text-amber-700">
+                                        Kuis memiliki {{ $soalCount }} soal. Siswa belum dapat melihat kuis ini. 
+                                        <a href="{{ route('kuis.edit', $kuis) }}" class="underline hover:no-underline">Publikasikan kuis</a> 
+                                        agar siswa dapat mengakses.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     @if ($sudahDikerjakan)
                         <div

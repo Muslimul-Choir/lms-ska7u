@@ -34,24 +34,45 @@ class DashboardController extends Controller
         // Get materials for the student's class
         // Kelas diambil dari JadwalBelajar yang memiliki relasi ke GuruMapel
         // Filter juga berdasarkan agama siswa untuk mapel agama
+        // Filter berdasarkan status: hanya tampilkan yang published (auto-publish command akan update status saat waktu rilis tiba)
+        // FILTER BARU: Hanya tampilkan materi dari pertemuan yang tanggalnya sudah lewat atau hari ini
         $materi = Materi::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
         })
         ->whereHas('Mapel', function ($query) use ($siswa) {
             $query->forAgama($siswa->agama);
         })
+        ->whereHas('Pertemuan', function ($query) {
+            $query->where(function($q) {
+                $q->whereNull('tanggal') // Jika tanggal tidak diset, tampilkan (backward compatibility)
+                  ->orWhere('tanggal', '<=', now()->toDateString()); // Atau tanggal pertemuan sudah lewat/hari ini
+            });
+        })
+        ->where('status', 'published')
         ->latest()->get();
 
         // Get assignments for the student's class
         // Kelas diambil dari JadwalBelajar yang memiliki relasi ke GuruMapel
         // Filter juga berdasarkan agama siswa untuk mapel agama
+        // Filter berdasarkan waktu rilis (hanya tampilkan yang sudah dirilis)
+        // FILTER BARU: Hanya tampilkan tugas dari pertemuan yang tanggalnya sudah lewat atau hari ini
         $tugas = Tugas::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
         })
             ->whereHas('Mapel', function ($query) use ($siswa) {
                 $query->forAgama($siswa->agama);
             })
+            ->whereHas('Pertemuan', function ($query) {
+                $query->where(function($q) {
+                    $q->whereNull('tanggal') // Jika tanggal tidak diset, tampilkan (backward compatibility)
+                      ->orWhere('tanggal', '<=', now()->toDateString()); // Atau tanggal pertemuan sudah lewat/hari ini
+                });
+            })
             ->where('status', 'published')
+            ->where(function($query) {
+                $query->whereNull('waktu_rilis')
+                      ->orWhere('waktu_rilis', '<=', now());
+            })
             ->latest()
             ->get();
 

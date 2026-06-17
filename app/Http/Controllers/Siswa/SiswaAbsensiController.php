@@ -96,11 +96,11 @@ class SiswaAbsensiController extends Controller
         
         // Check if current time is within allowed window
         if ($now->lt($startTime)) {
-            return back()->with('error', '⏰ Absensi belum dibuka. Waktu clock-in: 05:00 - 12:00 WIB');
+            return back()->with('error', ' Absensi belum dibuka. Waktu clock-in: 05:00 - 12:00 WIB');
         }
         
         if ($now->gt($endTime)) {
-            return back()->with('error', '⏰ Waktu absensi sudah ditutup. Waktu clock-in: 05:00 - 12:00 WIB');
+            return back()->with('error', ' Waktu absensi sudah ditutup. Waktu clock-in: 05:00 - 12:00 WIB');
         }
 
         // Determine status based on time (07:00 cutoff)

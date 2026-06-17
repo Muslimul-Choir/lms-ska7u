@@ -22,6 +22,11 @@ class StoreKuisRequest extends FormRequest
             'nilai_maksimal' => 'required|numeric|min:1|max:100',
             'batas_mulai'    => 'required|date',
             'batas_selesai'  => 'required|date|after:batas_mulai',
+            
+            // Scheduled release fields
+            'auto_release'   => 'sometimes|boolean',
+            'waktu_rilis'    => 'nullable|date|required_if:auto_release,false',
+            'batas_absensi'  => 'nullable|date|after_or_equal:waktu_rilis',
         ];
     }
 
@@ -44,6 +49,13 @@ class StoreKuisRequest extends FormRequest
             'batas_selesai.required'  => 'Batas selesai wajib diisi.',
             'batas_selesai.date'      => 'Format batas selesai tidak valid.',
             'batas_selesai.after'     => 'Batas selesai harus setelah batas mulai.',
+            
+            // Scheduled release messages
+            'auto_release.boolean'         => 'Format auto release tidak valid.',
+            'waktu_rilis.required_if'      => 'Waktu rilis wajib diisi untuk rilis manual.',
+            'waktu_rilis.date'             => 'Format waktu rilis tidak valid.',
+            'batas_absensi.date'           => 'Format batas absensi tidak valid.',
+            'batas_absensi.after_or_equal' => 'Batas absensi harus setelah atau sama dengan waktu rilis.',
         ];
     }
 }

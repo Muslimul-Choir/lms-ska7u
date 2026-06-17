@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ContentUpdated;
 use App\Http\Requests\Kuis\StoreKuisRequest;
 use App\Http\Requests\Kuis\UpdateKuisRequest;
 use App\Models\GuruMapel;
@@ -117,24 +118,64 @@ class KuisController extends Controller
             } else {
                 throw new \Exception('User tidak memiliki akses untuk membuat kuis.');
             }
-            
-            $validated['status'] = 'draft'; // Default status (Req 6.3)
 
             // Handle auto_release (default true if not provided)
             $autoRelease = $request->input('auto_release', true);
             $validated['auto_release'] = $autoRelease;
 
-            $kuis = Kuis::create($validated);
-
-            // Set release time using service
+            // CRITICAL: Calculate waktu_rilis BEFORE creating kuis to set correct status
+            $waktuRilis = null;
             if ($autoRelease) {
-                $this->contentReleaseService->setReleaseTime($kuis);
-            } elseif (isset($validated['waktu_rilis'])) {
-                $this->contentReleaseService->setReleaseTime(
-                    $kuis,
-                    \Carbon\Carbon::parse($validated['waktu_rilis']),
-                    isset($validated['batas_absensi']) ? \Carbon\Carbon::parse($validated['batas_absensi']) : null
-                );
+                // Calculate release time from pertemuan
+                $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.JamBelajar')->find($validated['id_pertemuan']);
+                $waktuRilis = $this->contentReleaseService->calculateReleaseTime($pertemuan);
+                $validated['waktu_rilis'] = $waktuRilis;
+                
+                // Set batas_absensi to 24 hours after release (same as ContentReleaseService default)
+                if ($waktuRilis) {
+                    $validated['batas_absensi'] = $waktuRilis->copy()->addHours(24);
+                }
+                
+                \Log::info('[KUIS CREATE] Auto-release: Calculated waktu_rilis BEFORE create', [
+                    'pertemuan_id' => $validated['id_pertemuan'],
+                    'waktu_rilis' => $waktuRilis,
+                    'batas_absensi' => $validated['batas_absensi'] ?? null
+                ]);
+            } else {
+                // Manual release: use waktu_rilis from form
+                $waktuRilis = isset($validated['waktu_rilis']) ? \Carbon\Carbon::parse($validated['waktu_rilis']) : null;
+                \Log::info('[KUIS CREATE] Manual release: Using waktu_rilis from form', [
+                    'waktu_rilis' => $waktuRilis
+                ]);
+            }
+
+            // CRITICAL: Kuis SELALU dimulai dengan status DRAFT sampai ada soal
+            // Status akan otomatis berubah melalui ContentReleaseService setelah ada soal
+            $validated['status'] = 'draft';
+            
+            \Log::info('[KUIS CREATE] Status set to DRAFT (default for new kuis)', [
+                'waktu_rilis' => $waktuRilis,
+                'now' => now()->toDateTimeString()
+            ]);
+
+            // Create kuis with draft status from the start
+            $kuis = Kuis::create($validated);
+            
+            \Log::info('[KUIS CREATE] Kuis created successfully', [
+                'kuis_id' => $kuis->id,
+                'judul' => $kuis->judul,
+                'status' => $kuis->status,
+                'waktu_rilis' => $kuis->waktu_rilis
+            ]);
+
+            // Broadcast content update event
+            $pertemuan = Pertemuan::find($validated['id_pertemuan']);
+            $kelas_id = $pertemuan?->JadwalBelajar?->id_kelas;
+            if ($kelas_id) {
+                event(new ContentUpdated('kuis', 'created', $kuis->id, [$kelas_id], [
+                    'judul' => $kuis->judul,
+                    'status' => $kuis->status
+                ]));
             }
 
             DB::commit();
@@ -220,7 +261,57 @@ class KuisController extends Controller
         try {
             DB::beginTransaction();
 
-            $kuis->update($request->validated());
+            $validated = $request->validated();
+            
+            // Handle auto_release
+            $autoRelease = $request->input('auto_release', false);
+            $validated['auto_release'] = $autoRelease;
+
+            // Calculate waktu_rilis if auto_release is enabled
+            if ($autoRelease) {
+                // Calculate release time from pertemuan
+                $pertemuan = \App\Models\Pertemuan::with('JadwalBelajar.JamBelajar')->find($validated['id_pertemuan']);
+                $waktuRilis = $this->contentReleaseService->calculateReleaseTime($pertemuan);
+                $validated['waktu_rilis'] = $waktuRilis;
+                
+                // Set batas_absensi to 24 hours after release (same as ContentReleaseService default)
+                if ($waktuRilis) {
+                    $validated['batas_absensi'] = $waktuRilis->copy()->addHours(24);
+                }
+                
+                \Log::info('[KUIS UPDATE] Auto-release: Calculated waktu_rilis', [
+                    'kuis_id' => $kuis->id,
+                    'pertemuan_id' => $validated['id_pertemuan'],
+                    'waktu_rilis' => $waktuRilis,
+                    'batas_absensi' => $validated['batas_absensi'] ?? null
+                ]);
+            } else {
+                // Manual release: use waktu_rilis from form
+                $waktuRilis = isset($validated['waktu_rilis']) ? \Carbon\Carbon::parse($validated['waktu_rilis']) : null;
+                \Log::info('[KUIS UPDATE] Manual release: Using waktu_rilis from form', [
+                    'kuis_id' => $kuis->id,
+                    'waktu_rilis' => $waktuRilis
+                ]);
+            }
+
+            $kuis->update($validated);
+            
+            \Log::info('[KUIS UPDATE] Kuis updated successfully', [
+                'kuis_id' => $kuis->id,
+                'judul' => $kuis->judul,
+                'status' => $kuis->status,
+                'waktu_rilis' => $kuis->waktu_rilis
+            ]);
+
+            // Broadcast content update event
+            $pertemuan = Pertemuan::find($validated['id_pertemuan']);
+            $kelas_id = $pertemuan?->JadwalBelajar?->id_kelas;
+            if ($kelas_id) {
+                event(new ContentUpdated('kuis', 'updated', $kuis->id, [$kelas_id], [
+                    'judul' => $kuis->judul,
+                    'status' => $kuis->status
+                ]));
+            }
 
             DB::commit();
 
@@ -228,7 +319,7 @@ class KuisController extends Controller
                 ->with('success', 'Kuis berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat memperbarui kuis.');
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui kuis: ' . $e->getMessage());
         }
     }
 
@@ -245,9 +336,16 @@ class KuisController extends Controller
         }
 
         try {
+            $kelas_id = $kuis->Pertemuan?->JadwalBelajar?->id_kelas;
             $kuis->delete();
+            
+            // Broadcast content update event
+            if ($kelas_id) {
+                event(new ContentUpdated('kuis', 'deleted', $kuis->id, [$kelas_id]));
+            }
+            
             return redirect()->route('kuis.index')
-                ->with('success', 'Kuis berhasil dihapus.');
+                ->with('success', 'Kuis berhasil dihapus');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat menghapus kuis.');
         }

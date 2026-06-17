@@ -45,10 +45,17 @@ class SiswaMateriController extends Controller
         ->get();
 
         // Count pending tugas (published, released, not expired, not yet submitted)
+        // FILTER BARU: Hanya hitung tugas dari pertemuan yang tanggalnya sudah lewat atau hari ini
         $tugasBelumCount = Tugas::whereHas('guruMapel.JadwalBelajar', function ($q) use ($siswa) {
                 $q->where('id_kelas', $siswa->id_kelas);
             })
             ->whereHas('Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->whereHas('Pertemuan', function ($q) {
+                $q->where(function($query) {
+                    $query->whereNull('tanggal')
+                          ->orWhere('tanggal', '<=', now()->toDateString());
+                });
+            })
             ->where('status', 'published')
             ->where(function($q) {
                 $q->whereNull('waktu_rilis')
@@ -62,10 +69,17 @@ class SiswaMateriController extends Controller
             ->count();
 
         // Count available kuis (published, within time range, not yet taken)
+        // FILTER BARU: Hanya hitung kuis dari pertemuan yang tanggalnya sudah lewat atau hari ini
         $kuisTersediaCount = Kuis::whereHas('guruMapel.JadwalBelajar', function ($q) use ($siswa) {
                 $q->where('id_kelas', $siswa->id_kelas);
             })
             ->whereHas('GuruMapel.Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->whereHas('Pertemuan', function ($q) {
+                $q->where(function($query) {
+                    $query->whereNull('tanggal')
+                          ->orWhere('tanggal', '<=', now()->toDateString());
+                });
+            })
             ->where('status', 'published')
             ->where('batas_mulai', '<=', now())
             ->where('batas_selesai', '>=', now())
@@ -99,16 +113,30 @@ class SiswaMateriController extends Controller
                         });
                 });
         })
+        // FILTER: Hanya tampilkan pertemuan yang tanggalnya sudah lewat atau hari ini
+        ->where(function($query) {
+            $query->whereNull('tanggal') // Jika tanggal tidak diset, tampilkan (backward compatibility)
+                  ->orWhere('tanggal', '<=', now()->toDateString()); // Atau tanggal pertemuan sudah lewat/hari ini
+        })
         ->with([
             'materis' => function ($q) {
-                $q->orderBy('waktu_rilis', 'asc');
+                $q->where('status', 'published')
+                  ->orderBy('waktu_rilis', 'asc');
             },
             'tugas' => function ($q) {
                 $q->where('status', 'published')
+                  ->where(function($query) {
+                      $query->whereNull('waktu_rilis')
+                            ->orWhere('waktu_rilis', '<=', now());
+                  })
                   ->orderBy('waktu_rilis', 'asc');
             },
             'kuis' => function ($q) use ($siswa) {
                 $q->where('status', 'published')
+                  ->where(function($query) {
+                      $query->whereNull('waktu_rilis')
+                            ->orWhere('waktu_rilis', '<=', now());
+                  })
                   ->with(['HasilKuis' => function ($hq) use ($siswa) {
                       $hq->where('id_siswa', $siswa->id);
                   }])
@@ -119,7 +147,8 @@ class SiswaMateriController extends Controller
             }
         ])
         ->orderBy('nomor_pertemuan')
-        ->get();
+        ->paginate(5)
+        ->withQueryString();
 
         return view('siswa.materi.show_mapel', compact('siswa', 'mapel', 'pertemuans'));
     }

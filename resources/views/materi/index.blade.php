@@ -41,8 +41,8 @@
             modalMateri: false,
             modalEditMateri: false,
             editMateriData: {},
-            tipeMateri: 'dokumen',
-            tipeMateriEdit: 'dokumen',
+            tipeMateri: '',
+            tipeMateriEdit: '',
             autoRelease: true,
             autoReleaseEdit: false,
         
@@ -55,6 +55,11 @@
                 this.tipeMateriEdit = materi.tipe_materi;
                 this.autoReleaseEdit = materi.auto_release || false;
                 this.modalEditMateri = true;
+            },
+        
+            resetCreateForm() {
+                this.tipeMateri = '';
+                this.autoRelease = true;
             }
         }">
 
@@ -69,6 +74,22 @@
                         </svg>
                         <span class="font-medium">{{ session('success') }}</span>
                     </div>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="flex flex-col gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm">
+                    <div class="flex items-center gap-2 font-semibold">
+                        <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Validation Error</span>
+                    </div>
+                    <ul class="list-disc pl-6 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -94,9 +115,8 @@
                         </a>
 
                         {{-- Tombol Tambah --}}
-                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
-                                in_array(Auth::user()->role, ['super_admin', 'admin']))
-                            <button @click="modalMateri = true"
+                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']))
+                            <button @click="resetCreateForm(); modalMateri = true"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -284,22 +304,21 @@
                                                     <td class="px-5 py-4 align-top">
                                                         @if($m->waktu_rilis)
                                                             <div class="text-xs text-gray-600 font-medium">
-                                                                📅 {{ \Carbon\Carbon::parse($m->waktu_rilis)->format('d M Y') }}
+                                                                {{ \Carbon\Carbon::parse($m->waktu_rilis)->format('d M Y') }}
                                                             </div>
                                                             <div class="text-[10px] text-gray-400 mt-0.5">
-                                                                🕐 {{ \Carbon\Carbon::parse($m->waktu_rilis)->format('H:i') }}
+                                                                {{ \Carbon\Carbon::parse($m->waktu_rilis)->format('H:i') }}
                                                             </div>
                                                         @else
-                                                            <span class="text-xs text-gray-400 italic">Auto</span>
+                                                            <span class="text-xs text-gray-400 italic">Belum diatur</span>
                                                         @endif
                                                     </td>
                                                     <td class="px-5 py-4 align-top">
                                                         @php
                                                             $status = $m->status_label;
                                                             $statusColors = match($status) {
-                                                                'Belum Dirilis' => 'bg-yellow-50 text-yellow-700 border-yellow-200',
-                                                                'Tersedia' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                                                'Berakhir' => 'bg-red-50 text-red-700 border-red-200',
+                                                                'Draft' => 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                                                                'Published' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
                                                                 default => 'bg-gray-100 text-gray-700 border-gray-200',
                                                             };
                                                         @endphp
@@ -326,8 +345,7 @@
                                                                     </svg>
                                                                 </a>
                                                             @endif
-                                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
-                                                                    in_array(Auth::user()->role, ['super_admin', 'admin']))
+                                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']))
                                                                 <button type="button"
                                                                     @click="openEditMateri({
                                                                     id: {{ $m->id }},
@@ -346,6 +364,9 @@
                                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                                 </svg>
                                                             </button>
+                                                            @endif
+                                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                                                    in_array(Auth::user()->role, ['super_admin', 'admin']))
                                                             <form action="{{ route('materi.destroy', $m->id) }}" method="POST" class="inline" onsubmit="return handleDelete(event)">
                                                                 @csrf @method('DELETE')
                                                                 <button type="submit"
@@ -440,7 +461,8 @@
 
                         {{-- Body --}}
                         <form action="{{ route('materi.store') }}" method="POST" enctype="multipart/form-data"
-                            class="p-6 flex flex-col gap-[18px]">
+                            class="p-6 flex flex-col gap-[18px]"
+                            onsubmit="console.log('Form submitting...', new FormData(this)); return true;">
                             @csrf
 
                             {{-- Pertemuan --}}
@@ -453,9 +475,15 @@
                                     <option value="">-- Pilih Pertemuan --</option>
                                     @foreach ($allPertemuan as $p)
                                         <option value="{{ $p->id }}">
-                                            Pertemuan {{ $p->nomor_pertemuan }} - 🎓
+                                            Pertemuan {{ $p->nomor_pertemuan }} - 
                                             [{{ $p->jadwalBelajar?->kelas?->nama_kelas ?? 'Tanpa Kelas' }}] -
                                             {{ $p->jadwalBelajar?->guruMapel?->mapel?->nama_mapel ?? ($p->jadwalBelajar?->mapel?->nama_mapel ?? 'Tanpa Mapel') }}
+                                            @if($p->tanggal)
+                                                |  {{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}
+                                            @endif
+                                            @if($p->jadwalBelajar?->jamBelajar)
+                                                |  {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_selesai)->format('H:i') }}
+                                            @endif
                                         </option>
                                     @endforeach
                                 </select>
@@ -479,22 +507,25 @@
                                 </label>
                                 <select name="tipe_materi" x-model="tipeMateri" required
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                    <option value="dokumen">Dokumen</option>
-                                    <option value="video">Video</option>
-                                    <option value="link">Link</option>
-                                    <option value="lainnya">Lainnya</option>
+                                    <option value="">-- Pilih Tipe --</option>
+                                    <option value="dokumen">Dokumen/Gambar (PDF/DOC/JPG/PNG)</option>
+                                    <option value="video">Video (MP4)</option>
+                                    <option value="link">Link/URL</option>
+                                    <option value="lainnya">Lainnya (Tanpa File)</option>
                                 </select>
                             </div>
 
                             {{-- File Upload --}}
-                            <div x-show="tipeMateri !== 'link'" class="flex flex-col gap-[7px]">
+                            <div x-show="tipeMateri === 'dokumen' || tipeMateri === 'video'" class="flex flex-col gap-[7px]">
                                 <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
-                                    File Materi <span x-show="tipeMateri !== 'lainnya'" class="text-red-500">*</span>
+                                    File Materi <span class="text-red-500">*</span>
                                 </label>
                                 <input type="file" name="file_url"
-                                    :required="tipeMateri !== 'link' && tipeMateri !== 'lainnya'"
+                                    :required="tipeMateri === 'dokumen' || tipeMateri === 'video'"
+                                    :accept="tipeMateri === 'video' ? '.mp4,.webm' : '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                <p class="text-xs text-gray-500">Format: PDF, DOC, DOCX, MP4 (Max: 100MB)</p>
+                                <p class="text-xs text-gray-500" x-show="tipeMateri === 'dokumen'">Format: PDF, DOC, DOCX, JPG, PNG, GIF, WebP (Max: 100MB)</p>
+                                <p class="text-xs text-gray-500" x-show="tipeMateri === 'video'">Format: MP4, WebM (Max: 100MB)</p>
                             </div>
 
                             {{-- Link Input --}}
@@ -503,7 +534,8 @@
                                     Tautan (URL) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="url" name="file_url_link"
-                                    x-bind:disabled="tipeMateri !== 'link'"
+                                    :required="tipeMateri === 'link'"
+                                    :disabled="tipeMateri !== 'link'"
                                     placeholder="https://..."
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                             </div>
@@ -529,7 +561,7 @@
 
                                 {{-- Auto Release Toggle --}}
                                 <div class="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                                    <input type="checkbox" name="auto_release" id="auto_release" x-model="autoRelease" checked
+                                    <input type="checkbox" name="auto_release" id="auto_release" value="1" x-model="autoRelease" checked
                                         class="mt-0.5 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
                                     <div class="flex-1">
                                         <label for="auto_release" class="text-[13px] font-semibold text-gray-700 cursor-pointer">
@@ -648,9 +680,15 @@
                                     <option value="">-- Pilih Pertemuan --</option>
                                     @foreach ($allPertemuan as $p)
                                         <option value="{{ $p->id }}">
-                                            Pertemuan {{ $p->nomor_pertemuan }} - 🎓
+                                            Pertemuan {{ $p->nomor_pertemuan }} - 
                                             [{{ $p->jadwalBelajar?->kelas?->nama_kelas ?? 'Tanpa Kelas' }}] -
                                             {{ $p->jadwalBelajar?->guruMapel?->mapel?->nama_mapel ?? ($p->jadwalBelajar?->mapel?->nama_mapel ?? 'Tanpa Mapel') }}
+                                            @if($p->tanggal)
+                                                |  {{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}
+                                            @endif
+                                            @if($p->jadwalBelajar?->jamBelajar)
+                                                |  {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_selesai)->format('H:i') }}
+                                            @endif
                                         </option>
                                     @endforeach
                                 </select>
@@ -672,23 +710,27 @@
                                 </label>
                                 <select name="tipe_materi" x-model="tipeMateriEdit" required
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                    <option value="dokumen">Dokumen</option>
-                                    <option value="video">Video</option>
-                                    <option value="link">Link</option>
-                                    <option value="lainnya">Lainnya</option>
+                                    <option value="dokumen">Dokumen/Gambar (PDF/DOC/JPG/PNG)</option>
+                                    <option value="video">Video (MP4)</option>
+                                    <option value="link">Link/URL</option>
+                                    <option value="lainnya">Lainnya (Tanpa File)</option>
                                 </select>
                             </div>
 
-                            <div x-show="tipeMateriEdit !== 'link'" class="flex flex-col gap-[7px]">
+                            <div x-show="tipeMateriEdit === 'dokumen' || tipeMateriEdit === 'video'" class="flex flex-col gap-[7px]">
                                 <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
                                     File Materi <span
                                         class="text-gray-400 font-normal normal-case tracking-normal">(opsional -
                                         kosongkan jika tidak ingin mengubah)</span>
                                 </label>
                                 <input type="file" name="file_url"
+                                    :accept="tipeMateriEdit === 'video' ? '.mp4,.webm' : '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                <p class="text-xs text-gray-500">File saat ini: <span
-                                        x-text="editMateriData.file_url ? editMateriData.file_url.split('/').pop() : 'Tidak ada'"></span>
+                                <p class="text-xs text-gray-500" x-show="tipeMateriEdit === 'dokumen'">File saat ini: <span
+                                        x-text="editMateriData.file_url ? editMateriData.file_url.split('/').pop() : 'Tidak ada'"></span> · Format: PDF, DOC, DOCX, JPG, PNG, GIF, WebP (Max: 100MB)
+                                </p>
+                                <p class="text-xs text-gray-500" x-show="tipeMateriEdit === 'video'">File saat ini: <span
+                                        x-text="editMateriData.file_url ? editMateriData.file_url.split('/').pop() : 'Tidak ada'"></span> · Format: MP4, WebM (Max: 100MB)
                                 </p>
                             </div>
 
@@ -697,7 +739,7 @@
                                     Tautan (URL) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="url" name="file_url_link" x-model="editMateriData.file_url"
-                                    x-bind:disabled="tipeMateriEdit !== 'link'"
+                                    :disabled="tipeMateriEdit !== 'link'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                             </div>
 

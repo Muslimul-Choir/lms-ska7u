@@ -30,15 +30,17 @@
                         </label>
                         
                         {{-- Existing Image Preview --}}
-                        <div x-show="editData.gambar_soal" class="mb-3">
-                            <div class="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                <img :src="`/storage/${editData.gambar_soal}`" alt="Current Image" class="h-20 rounded border border-gray-300">
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-700">Gambar Saat Ini</p>
-                                    <p class="text-xs text-gray-500 mt-1">Upload gambar baru untuk menggantinya</p>
+                        <template x-if="editData.gambar_soal && editData.gambar_soal !== 'undefined' && editData.gambar_soal !== null">
+                            <div class="mb-3">
+                                <div class="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <img :src="`/storage/${editData.gambar_soal}`" alt="Current Image" class="h-20 rounded border border-gray-300" onerror="this.style.display='none'">
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-700">Gambar Saat Ini</p>
+                                        <p class="text-xs text-gray-500 mt-1">Upload gambar baru untuk menggantinya</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
 
                         <div class="mt-1 flex items-center gap-3">
                             <label class="flex-1 cursor-pointer">

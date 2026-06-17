@@ -124,6 +124,12 @@ class AppServiceProvider extends ServiceProvider
                 ->line('Jika Anda tidak membuat akun, abaikan email ini.');
         });
 
+        // ── Event Listener for Real-Time Content Updates ──
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\ContentUpdated::class,
+            \App\Listeners\BroadcastContentUpdate::class
+        );
+
         // ── Model Observers for Notifications ──
         \App\Models\Mapel::created(function ($mapel) {
             try {
@@ -178,6 +184,12 @@ class AppServiceProvider extends ServiceProvider
 
         \App\Models\Materi::created(function ($materi) {
             try {
+                // Only notify if status is 'published' (not draft)
+                if ($materi->status !== 'published') {
+                    \Illuminate\Support\Facades\Log::info("Materi #{$materi->id} is DRAFT, skipping notification on CREATE");
+                    return;
+                }
+
                 $kelasIds = [];
                 if ($materi->Pertemuan && $materi->Pertemuan->JadwalBelajar) {
                     $kelasIds[] = $materi->Pertemuan->JadwalBelajar->id_kelas;
@@ -198,6 +210,7 @@ class AppServiceProvider extends ServiceProvider
                             ));
                         }
                     }
+                    \Illuminate\Support\Facades\Log::info("Materi #{$materi->id} notifications sent to {$students->count()} students on CREATE");
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Error notifying Materi creation: " . $e->getMessage());
@@ -207,8 +220,51 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        \App\Models\Materi::updated(function ($materi) {
+            try {
+                // Only notify when status changes from 'draft' to 'published'
+                if ($materi->isDirty('status') && $materi->status === 'published' && $materi->getOriginal('status') === 'draft') {
+                    \Illuminate\Support\Facades\Log::info("Materi #{$materi->id} status changed from DRAFT to PUBLISHED, sending notifications");
+                    
+                    $kelasIds = [];
+                    if ($materi->Pertemuan && $materi->Pertemuan->JadwalBelajar) {
+                        $kelasIds[] = $materi->Pertemuan->JadwalBelajar->id_kelas;
+                    } elseif ($materi->id_guru_mapel) {
+                        $kelasIds = \App\Models\JadwalBelajar::where('id_guru_mapel', $materi->id_guru_mapel)->pluck('id_kelas')->toArray();
+                    }
+                    
+                    if (!empty($kelasIds)) {
+                        $students = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->with('User')->get();
+                        foreach ($students as $siswa) {
+                            if ($siswa->User) {
+                                $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                    'materi',
+                                    'Materi Baru: ' . $materi->judul,
+                                    "Materi pembelajaran baru '" . $materi->judul . "' telah diterbitkan untuk mata pelajaran " . ($materi->Mapel?->nama_mapel ?? $materi->GuruMapel?->Mapel?->nama_mapel ?? '') . ".",
+                                    route('siswa.materi.show', $materi->id),
+                                    true
+                                ));
+                            }
+                        }
+                        \Illuminate\Support\Facades\Log::info("Materi #{$materi->id} auto-publish notifications sent to {$students->count()} students");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Materi update: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Materi Update Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
         \App\Models\Tugas::created(function ($tugas) {
             try {
+                // Only notify if status is 'published' (not draft)
+                if ($tugas->status !== 'published') {
+                    \Illuminate\Support\Facades\Log::info("Tugas #{$tugas->id} is DRAFT, skipping notification on CREATE");
+                    return;
+                }
+
                 $kelasIds = [];
                 if ($tugas->Pertemuan && $tugas->Pertemuan->JadwalBelajar) {
                     $kelasIds[] = $tugas->Pertemuan->JadwalBelajar->id_kelas;
@@ -230,6 +286,7 @@ class AppServiceProvider extends ServiceProvider
                             ));
                         }
                     }
+                    \Illuminate\Support\Facades\Log::info("Tugas #{$tugas->id} notifications sent to {$students->count()} students on CREATE");
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Error notifying Tugas creation: " . $e->getMessage());
@@ -239,8 +296,52 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        \App\Models\Tugas::updated(function ($tugas) {
+            try {
+                // Only notify when status changes from 'draft' to 'published'
+                if ($tugas->isDirty('status') && $tugas->status === 'published' && $tugas->getOriginal('status') === 'draft') {
+                    \Illuminate\Support\Facades\Log::info("Tugas #{$tugas->id} status changed from DRAFT to PUBLISHED, sending notifications");
+                    
+                    $kelasIds = [];
+                    if ($tugas->Pertemuan && $tugas->Pertemuan->JadwalBelajar) {
+                        $kelasIds[] = $tugas->Pertemuan->JadwalBelajar->id_kelas;
+                    } elseif ($tugas->id_guru_mapel) {
+                        $kelasIds = \App\Models\JadwalBelajar::where('id_guru_mapel', $tugas->id_guru_mapel)->pluck('id_kelas')->toArray();
+                    }
+
+                    if (!empty($kelasIds)) {
+                        $students = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->with('User')->get();
+                        $batasWaktuFormatted = $tugas->batas_waktu ? $tugas->batas_waktu->format('d M Y H:i') : '-';
+                        foreach ($students as $siswa) {
+                            if ($siswa->User) {
+                                $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                    'tugas',
+                                    'Tugas Baru: ' . $tugas->judul,
+                                    "Tugas baru '" . $tugas->judul . "' telah diterbitkan. Batas waktu pengumpulan: " . $batasWaktuFormatted . ".",
+                                    route('siswa.tugas.show', $tugas->id),
+                                    true
+                                ));
+                            }
+                        }
+                        \Illuminate\Support\Facades\Log::info("Tugas #{$tugas->id} auto-publish notifications sent to {$students->count()} students");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Tugas update: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Tugas Update Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
         \App\Models\Kuis::created(function ($kuis) {
             try {
+                // Only notify if status is 'published' (not draft)
+                if ($kuis->status !== 'published') {
+                    \Illuminate\Support\Facades\Log::info("Kuis #{$kuis->id} is DRAFT, skipping notification on CREATE");
+                    return;
+                }
+
                 $kelasIds = [];
                 if ($kuis->Pertemuan && $kuis->Pertemuan->JadwalBelajar) {
                     $kelasIds[] = $kuis->Pertemuan->JadwalBelajar->id_kelas;
@@ -258,16 +359,56 @@ class AppServiceProvider extends ServiceProvider
                                 'kuis',
                                 'Kuis Baru: ' . $kuis->judul,
                                 "Kuis baru '" . $kuis->judul . "' telah ditambahkan. Batas pengerjaan mulai: " . $batasMulaiFormatted . " sampai " . $batasSelesaiFormatted . ".",
-                                route('siswa.kuis.show', $kuis->id),
+                                route('siswa.kuis.index'),
                                 true
                             ));
                         }
                     }
+                    \Illuminate\Support\Facades\Log::info("Kuis #{$kuis->id} notifications sent to {$students->count()} students on CREATE");
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Error notifying Kuis creation: " . $e->getMessage());
                 if (app()->runningInConsole()) {
                     echo "Kuis Observer Exception: " . $e->getMessage() . "\n";
+                }
+            }
+        });
+
+        \App\Models\Kuis::updated(function ($kuis) {
+            try {
+                // Only notify when status changes from 'draft' to 'published'
+                if ($kuis->isDirty('status') && $kuis->status === 'published' && $kuis->getOriginal('status') === 'draft') {
+                    \Illuminate\Support\Facades\Log::info("Kuis #{$kuis->id} status changed from DRAFT to PUBLISHED, sending notifications");
+                    
+                    $kelasIds = [];
+                    if ($kuis->Pertemuan && $kuis->Pertemuan->JadwalBelajar) {
+                        $kelasIds[] = $kuis->Pertemuan->JadwalBelajar->id_kelas;
+                    } elseif ($kuis->id_guru_mapel) {
+                        $kelasIds = \App\Models\JadwalBelajar::where('id_guru_mapel', $kuis->id_guru_mapel)->pluck('id_kelas')->toArray();
+                    }
+
+                    if (!empty($kelasIds)) {
+                        $students = \App\Models\Siswa::whereIn('id_kelas', $kelasIds)->with('User')->get();
+                        $batasMulaiFormatted = $kuis->batas_mulai ? $kuis->batas_mulai->format('d M Y H:i') : '-';
+                        $batasSelesaiFormatted = $kuis->batas_selesai ? $kuis->batas_selesai->format('d M Y H:i') : '-';
+                        foreach ($students as $siswa) {
+                            if ($siswa->User) {
+                                $siswa->User->notify(new \App\Notifications\AcademicNotification(
+                                    'kuis',
+                                    'Kuis Baru: ' . $kuis->judul,
+                                    "Kuis baru '" . $kuis->judul . "' telah ditambahkan. Batas pengerjaan mulai: " . $batasMulaiFormatted . " sampai " . $batasSelesaiFormatted . ".",
+                                    route('siswa.kuis.index'),
+                                    true
+                                ));
+                            }
+                        }
+                        \Illuminate\Support\Facades\Log::info("Kuis #{$kuis->id} auto-publish notifications sent to {$students->count()} students");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error notifying Kuis update: " . $e->getMessage());
+                if (app()->runningInConsole()) {
+                    echo "Kuis Update Observer Exception: " . $e->getMessage() . "\n";
                 }
             }
         });

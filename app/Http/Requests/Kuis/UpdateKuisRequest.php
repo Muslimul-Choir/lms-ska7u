@@ -25,6 +25,11 @@ class UpdateKuisRequest extends FormRequest
             'batas_mulai'    => 'required|date',
             'batas_selesai'  => 'required|date|after:batas_mulai',
             'status'         => 'required|in:draft,published,closed',
+            
+            // Scheduled release fields
+            'auto_release'   => 'sometimes|boolean',
+            'waktu_rilis'    => 'nullable|date|required_if:auto_release,false',
+            'batas_absensi'  => 'nullable|date|after_or_equal:waktu_rilis',
         ];
     }
 
@@ -60,6 +65,13 @@ class UpdateKuisRequest extends FormRequest
             'batas_selesai.after'     => 'Batas selesai harus setelah batas mulai.',
             'status.required'         => 'Status wajib dipilih.',
             'status.in'               => 'Status tidak valid.',
+            
+            // Scheduled release messages
+            'auto_release.boolean'         => 'Format auto release tidak valid.',
+            'waktu_rilis.required_if'      => 'Waktu rilis wajib diisi untuk rilis manual.',
+            'waktu_rilis.date'             => 'Format waktu rilis tidak valid.',
+            'batas_absensi.date'           => 'Format batas absensi tidak valid.',
+            'batas_absensi.after_or_equal' => 'Batas absensi harus setelah atau sama dengan waktu rilis.',
         ];
     }
 }

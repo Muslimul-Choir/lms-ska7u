@@ -29,9 +29,79 @@
     .empty-state { padding:56px 20px; text-align:center; background:rgba(15,20,35,0.5); border-radius:18px; border:1px dashed rgba(255,255,255,0.09); }
     .empty-icon { width:64px; height:64px; margin:0 auto 16px; border-radius:18px; display:flex; align-items:center; justify-content:center; }
     .badge { font-size:10px; font-weight:800; padding:3px 10px; border-radius:99px; white-space:nowrap; flex-shrink:0; border-width:1px; border-style:solid; letter-spacing:.02em; }
+    
+    /* ─── PAGINATION STYLE ─── */
+    .pagination-wrapper { 
+        display:flex; 
+        align-items:center; 
+        justify-content:space-between; 
+        padding:16px 18px; 
+        background:rgba(15,20,35,0.6); 
+        backdrop-filter:blur(12px); 
+        border:1px solid rgba(255,255,255,0.06); 
+        border-radius:12px; 
+        margin-top:18px;
+        gap:12px;
+        flex-wrap:wrap;
+    }
+    .pagination-info { 
+        font-size:11px; 
+        color:#64748b; 
+        font-weight:600; 
+        letter-spacing:0.02em;
+    }
+    .pagination-nav { 
+        display:flex; 
+        align-items:center; 
+        gap:6px;
+        flex-wrap:wrap;
+    }
+    .pagination-nav a,
+    .pagination-nav span { 
+        min-width:36px; 
+        height:36px; 
+        display:flex; 
+        align-items:center; 
+        justify-content:center; 
+        border-radius:8px; 
+        font-size:12px; 
+        font-weight:700; 
+        text-decoration:none; 
+        transition:all .2s ease;
+        border:1px solid rgba(255,255,255,0.08);
+        background:rgba(255,255,255,0.03);
+        color:#94a3b8;
+    }
+    .pagination-nav a:hover { 
+        background:rgba(201,152,42,0.15); 
+        border-color:rgba(201,152,42,0.3); 
+        color:#f0be3d; 
+        transform:translateY(-1px);
+    }
+    .pagination-nav .active { 
+        background:linear-gradient(135deg,#c9982a,#f0be3d); 
+        border-color:transparent; 
+        color:#1a0800; 
+        box-shadow:0 4px 12px rgba(201,152,42,0.3);
+    }
+    .pagination-nav .disabled { 
+        opacity:0.3; 
+        cursor:not-allowed; 
+        pointer-events:none;
+    }
+    .pagination-nav svg { 
+        width:14px; 
+        height:14px;
+    }
+    @media (max-width:640px) {
+        .pagination-wrapper { padding:12px 14px; }
+        .pagination-info { font-size:10px; }
+        .pagination-nav a,
+        .pagination-nav span { min-width:32px; height:32px; font-size:11px; }
+    }
     </style>
 
-    <div style="max-width:960px;margin:0 auto;padding:20px 16px;" x-data="{ tab: 'belum' }">
+    <div style="max-width:960px;margin:0 auto;padding:20px 16px;">
 
     {{-- Main tab navigation --}}
         <div class="mp-tab-nav">
@@ -57,25 +127,25 @@
 
         {{-- Status tabs --}}
         <div class="status-tabs">
-            <button @click="tab='belum'"
-                :class="tab==='belum' ? 'status-tab-btn active-red' : 'status-tab-btn'"
-                class="status-tab-btn">
-                Belum ({{ count($belumDikerjakan) }})
-            </button>
-            <button @click="tab='pending'"
-                :class="tab==='pending' ? 'status-tab-btn active-blue' : 'status-tab-btn'"
-                class="status-tab-btn">
-                Diperiksa ({{ count($menungguDinilai) }})
-            </button>
-            <button @click="tab='selesai'"
-                :class="tab==='selesai' ? 'status-tab-btn active-green' : 'status-tab-btn'"
-                class="status-tab-btn">
-                Selesai ({{ count($selesai) }})
-            </button>
+            <a href="{{ route('siswa.tugas.index', ['status' => 'belum']) }}"
+                class="status-tab-btn {{ $currentTab === 'belum' ? 'active-red' : '' }}"
+                style="text-decoration:none;">
+                Belum ({{ $totalBelumCount }})
+            </a>
+            <a href="{{ route('siswa.tugas.index', ['status' => 'pending']) }}"
+                class="status-tab-btn {{ $currentTab === 'pending' ? 'active-blue' : '' }}"
+                style="text-decoration:none;">
+                Diperiksa ({{ $totalPendingCount }})
+            </a>
+            <a href="{{ route('siswa.tugas.index', ['status' => 'selesai']) }}"
+                class="status-tab-btn {{ $currentTab === 'selesai' ? 'active-green' : '' }}"
+                style="text-decoration:none;">
+                Selesai ({{ $totalSelesaiCount }})
+            </a>
         </div>
 
         {{-- Tab: Belum Dikerjakan --}}
-        <div x-show="tab==='belum'" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:{{ $currentTab === 'belum' ? 'flex' : 'none' }};flex-direction:column;gap:10px;">
             @forelse($belumDikerjakan as $item)
                 @php $task=$item['task']; $isPast=$task->batas_waktu && \Carbon\Carbon::parse($task->batas_waktu)->isPast(); @endphp
                 <a href="{{ route('siswa.tugas.show', $task->id) }}"
@@ -114,10 +184,48 @@
                     <div style="font-size:12px;color:#334155;">Tidak ada tugas yang tersisa.</div>
                 </div>
             @endforelse
+            
+            {{-- Pagination for Belum Dikerjakan --}}
+            @if($tugasList->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $tugasList->firstItem() ?? 0 }} - {{ $tugasList->lastItem() ?? 0 }} dari {{ $tugasList->total() }} tugas
+                    </div>
+                    <nav class="pagination-nav">
+                        @if ($tugasList->onFirstPage())
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $tugasList->previousPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                        @endif
+
+                        @foreach ($tugasList->getUrlRange(1, $tugasList->lastPage()) as $page => $url)
+                            @if ($page == $tugasList->currentPage())
+                                <span class="active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($tugasList->hasMorePages())
+                            <a href="{{ $tugasList->nextPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            @endif
         </div>
 
         {{-- Tab: Menunggu Dinilai --}}
-        <div x-show="tab==='pending'" style="display:flex;flex-direction:column;gap:10px;" x-cloak>
+        <div style="display:{{ $currentTab === 'pending' ? 'flex' : 'none' }};flex-direction:column;gap:10px;">
             @forelse($menungguDinilai as $item)
                 @php $task=$item['task']; @endphp
                 <a href="{{ route('siswa.tugas.show', $task->id) }}"
@@ -146,10 +254,48 @@
                     <div style="font-size:14px;font-weight:700;color:#64748b;">Tidak ada tugas yang sedang diperiksa</div>
                 </div>
             @endforelse
+            
+            {{-- Pagination for Menunggu Dinilai --}}
+            @if($tugasList->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $tugasList->firstItem() ?? 0 }} - {{ $tugasList->lastItem() ?? 0 }} dari {{ $tugasList->total() }} tugas
+                    </div>
+                    <nav class="pagination-nav">
+                        @if ($tugasList->onFirstPage())
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $tugasList->previousPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                        @endif
+
+                        @foreach ($tugasList->getUrlRange(1, $tugasList->lastPage()) as $page => $url)
+                            @if ($page == $tugasList->currentPage())
+                                <span class="active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($tugasList->hasMorePages())
+                            <a href="{{ $tugasList->nextPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            @endif
         </div>
 
         {{-- Tab: Selesai --}}
-        <div x-show="tab==='selesai'" style="display:flex;flex-direction:column;gap:10px;" x-cloak>
+        <div style="display:{{ $currentTab === 'selesai' ? 'flex' : 'none' }};flex-direction:column;gap:10px;">
             @forelse($selesai as $item)
                 @php $task=$item['task']; $pct=min(($item['assessment']->nilai/$task->nilai_maksimal)*100,100); @endphp
                 <a href="{{ route('siswa.tugas.show', $task->id) }}"
@@ -181,6 +327,44 @@
                     <div style="font-size:14px;font-weight:700;color:#64748b;">Belum ada tugas yang selesai dinilai</div>
                 </div>
             @endforelse
+            
+            {{-- Pagination for Selesai --}}
+            @if($tugasList->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $tugasList->firstItem() ?? 0 }} - {{ $tugasList->lastItem() ?? 0 }} dari {{ $tugasList->total() }} tugas
+                    </div>
+                    <nav class="pagination-nav">
+                        @if ($tugasList->onFirstPage())
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $tugasList->previousPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                        @endif
+
+                        @foreach ($tugasList->getUrlRange(1, $tugasList->lastPage()) as $page => $url)
+                            @if ($page == $tugasList->currentPage())
+                                <span class="active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($tugasList->hasMorePages())
+                            <a href="{{ $tugasList->nextPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            @endif
         </div>
 
     </div>

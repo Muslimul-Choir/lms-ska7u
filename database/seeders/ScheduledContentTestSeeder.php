@@ -39,7 +39,7 @@ class ScheduledContentTestSeeder extends Seeder
                 return;
             }
 
-            $this->command->info('👨‍🎓 Testing with siswa: ' . $siswa->nama_lengkap);
+            $this->command->info('👨‍ Testing with siswa: ' . $siswa->nama_lengkap);
             $this->command->info('   Kelas ID: ' . $siswa->id_kelas);
 
             // Get pertemuans for the siswa's class only
@@ -156,7 +156,7 @@ class ScheduledContentTestSeeder extends Seeder
      */
     protected function createRecentlyReleasedMateri($pertemuan, $siswa)
     {
-        $this->command->info('⏰ Creating recently released materi (needs attendance)...');
+        $this->command->info(' Creating recently released materi (needs attendance)...');
 
         $releaseTime = Carbon::now()->subMinutes(30); // Released 30 minutes ago
         $batasAbsensi = $releaseTime->copy()->addHours(2); // 2 hours deadline
@@ -370,7 +370,7 @@ class ScheduledContentTestSeeder extends Seeder
         $this->command->info('🎯 TEST SCENARIOS CREATED:');
         $this->command->line('  1. ✅ Already released content (needs attendance)');
         $this->command->line('  2. 🔮 Future scheduled content (hidden from students)');
-        $this->command->line('  3. ⏰ Recently released (tight deadline)');
+        $this->command->line('  3.  Recently released (tight deadline)');
         $this->command->line('  4. 📝 Tugas with various deadlines');
         $this->command->line('  5. 📊 Kuis with attendance gate');
         $this->command->line('  6. 🎫 Exempted content (skip attendance)');

@@ -23,6 +23,7 @@ class Materi extends Model
         'deskripsi',
         'file_url',
         'tipe_materi',
+        'status',
         'waktu_rilis',
         'batas_absensi',
         'auto_release',
@@ -112,15 +113,12 @@ class Materi extends Model
      */
     public function getStatusLabelAttribute(): string
     {
-        if (!$this->waktu_rilis) {
-            return 'Belum Dijadwalkan';
-        }
-        
-        if (now()->lt($this->waktu_rilis)) {
-            return 'Belum Dirilis';
-        }
-        
-        return 'Tersedia';
+        // Use database status field for accurate status
+        return match($this->status) {
+            'draft' => 'Draft',
+            'published' => 'Published',
+            default => 'Unknown'
+        };
     }
 }
 

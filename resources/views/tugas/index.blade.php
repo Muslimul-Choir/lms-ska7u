@@ -45,6 +45,8 @@
             tipeFile: 'dokumen',
             tipeTugasEdit: 'individu',
             tipeFileEdit: 'dokumen',
+            autoRelease: true,
+            autoReleaseEdit: false,
         
             togglePertemuan(id) {
                 this.activePertemuan = this.activePertemuan === id ? null : id;
@@ -54,6 +56,7 @@
                 this.editTugasData = tugas;
                 this.tipeTugasEdit = tugas.tipe_tugas;
                 this.tipeFileEdit = tugas.tipe_file;
+                this.autoReleaseEdit = tugas.auto_release || false;
                 this.modalEditTugas = true;
             }
         }">
@@ -94,8 +97,7 @@
                         </a>
 
                         {{-- Tombol Tambah --}}
-                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
-                                in_array(Auth::user()->role, ['super_admin', 'admin']))
+                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']))
                             <button @click="modalTugas = true"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -307,8 +309,7 @@
                                                                 </svg>
                                                                 Nilai
                                                             </a>
-                                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
-                                                                    in_array(Auth::user()->role, ['super_admin', 'admin']))
+                                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']))
                                                                 <button type="button"
                                                                     @click="openEditTugas({
                                                                     id: {{ $t->id }},
@@ -318,11 +319,14 @@
                                                                     tipe_file: '{{ $t->tipe_file }}',
                                                                     id_pertemuan: {{ $t->id_pertemuan }},
                                                                     id_guru: {{ $t->id_guru }},
-                                                                    batas_waktu: '{{ $t->batas_waktu }}',
+                                                                    batas_waktu: '{{ $t->batas_waktu->format('Y-m-d\TH:i') }}',
                                                                     nilai_maksimal: {{ $t->nilai_maksimal }},
                                                                     status: '{{ $t->status }}',
                                                                     allow_late: {{ $t->allow_late ? 'true' : 'false' }},
-                                                                    file_url: '{{ $t->file_url ?? '' }}'
+                                                                    file_url: '{{ $t->file_url ?? '' }}',
+                                                                    waktu_rilis: '{{ $t->waktu_rilis ? $t->waktu_rilis->format('Y-m-d\TH:i') : '' }}',
+                                                                    batas_absensi: '{{ $t->batas_absensi ? $t->batas_absensi->format('Y-m-d\TH:i') : '' }}',
+                                                                    auto_release: {{ $t->auto_release ? 'true' : 'false' }}
                                                                 })"
                                                                 class="w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-lg transition"
                                                                 title="Edit">
@@ -330,6 +334,9 @@
                                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                                 </svg>
                                                             </button>
+                                                            @endif
+                                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                                                    in_array(Auth::user()->role, ['super_admin', 'admin']))
                                                             <form action="{{ route('tugas.destroy', $t->id) }}" method="POST" class="inline" onsubmit="return handleDelete(event)">
                                                                 @csrf @method('DELETE')
                                                                 <button type="submit"
@@ -424,7 +431,16 @@
 
                         {{-- Body --}}
                         <form action="{{ route('tugas.store') }}" method="POST" enctype="multipart/form-data"
-                            class="p-6 flex flex-col gap-[18px]">
+                            class="p-6 flex flex-col gap-[18px]"
+                            x-data="{
+                                selectedPertemuanId: '',
+                                pertemuanData: @js($allPertemuan->keyBy('id')),
+                                getPertemuanDate() {
+                                    if (!this.selectedPertemuanId || !this.pertemuanData[this.selectedPertemuanId]) return '';
+                                    const pertemuan = this.pertemuanData[this.selectedPertemuanId];
+                                    return pertemuan.tanggal || '';
+                                }
+                            }">
                             @csrf
 
                             {{-- Pertemuan --}}
@@ -432,14 +448,20 @@
                                 <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
                                     Pertemuan <span class="text-red-500">*</span>
                                 </label>
-                                <select name="id_pertemuan" required
+                                <select name="id_pertemuan" x-model="selectedPertemuanId" required
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                                     <option value="">-- Pilih Pertemuan --</option>
                                     @foreach ($allPertemuan as $p)
                                         <option value="{{ $p->id }}">
-                                            Pertemuan {{ $p->nomor_pertemuan }} - 🎓
+                                            Pertemuan {{ $p->nomor_pertemuan }} - 
                                             [{{ $p->jadwalBelajar?->kelas?->nama_kelas ?? 'Tanpa Kelas' }}] -
                                             {{ $p->jadwalBelajar?->guruMapel?->mapel?->nama_mapel ?? ($p->jadwalBelajar?->mapel?->nama_mapel ?? 'Tanpa Mapel') }}
+                                            @if($p->tanggal)
+                                                |  {{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}
+                                            @endif
+                                            @if($p->jadwalBelajar?->jamBelajar)
+                                                |  {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_selesai)->format('H:i') }}
+                                            @endif
                                         </option>
                                     @endforeach
                                 </select>
@@ -492,8 +514,7 @@
                                     <select name="tipe_file" x-model="tipeFile" required
                                         class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                                         <option value="tanpa">Tanpa File</option>
-                                        <option value="dokumen">Dokumen (PDF/DOC)</option>
-                                        <option value="gambar">Gambar (JPG/PNG)</option>
+                                        <option value="dokumen">Dokumen/Gambar (PDF/DOC/JPG/PNG)</option>
                                         <option value="video">Video (MP4)</option>
                                         <option value="link">Link/URL</option>
                                     </select>
@@ -507,10 +528,9 @@
                                 </label>
                                 <input type="file" name="file_url"
                                     :required="tipeFile !== 'tanpa' && tipeFile !== 'link'"
-                                    :accept="tipeFile === 'gambar' ? '.jpg,.jpeg,.png,.gif,.webp' : (tipeFile === 'video' ? '.mp4,.webm' : '.pdf,.doc,.docx')"
+                                    :accept="tipeFile === 'video' ? '.mp4,.webm' : '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                <p class="text-xs text-gray-500" x-show="tipeFile === 'dokumen'">Format: PDF, DOC, DOCX (Maks 100MB)</p>
-                                <p class="text-xs text-gray-500" x-show="tipeFile === 'gambar'">Format: JPG, PNG, GIF, WebP (Maks 50MB)</p>
+                                <p class="text-xs text-gray-500" x-show="tipeFile === 'dokumen'">Format: PDF, DOC, DOCX, JPG, PNG, GIF, WebP (Maks 100MB)</p>
                                 <p class="text-xs text-gray-500" x-show="tipeFile === 'video'">Format: MP4, WebM (Maks 100MB)</p>
                             </div>
 
@@ -531,7 +551,11 @@
                                         Batas Waktu <span class="text-red-500">*</span>
                                     </label>
                                     <input type="datetime-local" name="batas_waktu" required
-                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        :min="getPertemuanDate()"
+                                        :disabled="!selectedPertemuanId"
+                                        class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <p class="text-xs text-gray-500 italic" x-show="!selectedPertemuanId">⚠️ Pilih pertemuan terlebih dahulu</p>
+                                    <p class="text-xs text-gray-500 italic" x-show="selectedPertemuanId && getPertemuanDate()"> Minimal tanggal: <span x-text="new Date(getPertemuanDate()).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})"></span></p>
                                 </div>
 
                                 <div class="flex flex-col gap-[7px]">
@@ -544,25 +568,18 @@
                                 </div>
                             </div>
 
-                            {{-- Status --}}
-                            <div class="flex flex-col gap-[7px]">
-                                <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
-                                    Status <span class="text-red-500">*</span>
-                                </label>
-                                <select name="status" required
-                                    class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                    <option value="published">Published</option>
-                                    <option value="draft">Draft</option>
-                                    <option value="closed">Closed</option>
-                                </select>
-                            </div>
-
                             {{-- Allow Late --}}
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" name="allow_late" value="1" id="allow_late"
-                                    class="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                                <label for="allow_late" class="text-sm text-gray-700">Izinkan pengumpulan
-                                    terlambat</label>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" name="allow_late" value="1" id="allow_late"
+                                        class="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                                    <label for="allow_late" class="text-sm text-gray-700 font-medium">Izinkan pengumpulan
+                                        terlambat</label>
+                                </div>
+                                <div class="pl-6 text-xs text-gray-600 space-y-1">
+                                    <p>✓ <strong>Dicentang:</strong> Siswa dapat mengumpulkan setelah batas waktu, nilai tetap dinilai guru</p>
+                                    <p>✗ <strong>Tidak dicentang:</strong> Pengumpulan setelah batas waktu otomatis bernilai 0</p>
+                                </div>
                             </div>
 
                             {{-- Deskripsi --}}
@@ -575,6 +592,49 @@
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white"></textarea>
                             </div>
 
+                            {{-- Scheduled Release Section --}}
+                            <div class="border-t border-gray-200 pt-4 mt-2">
+                                <h4 class="text-[12px] font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Pengaturan Waktu Rilis
+                                </h4>
+
+                                {{-- Auto Release Toggle --}}
+                                <div class="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                    <input type="checkbox" name="auto_release" id="auto_release_create" value="1" x-model="autoRelease" checked
+                                        class="mt-0.5 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                    <div class="flex-1">
+                                        <label for="auto_release_create" class="text-[13px] font-semibold text-gray-700 cursor-pointer">
+                                            Rilis Otomatis Sesuai Jadwal Pertemuan
+                                        </label>
+                                        <p class="text-[11px] text-gray-600 mt-0.5">
+                                            Tugas akan otomatis dirilis sesuai waktu mulai jam belajar pertemuan yang dipilih
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Manual Release Time --}}
+                                <div x-show="!autoRelease" x-cloak class="space-y-3">
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Waktu Rilis Manual
+                                        </label>
+                                        <input type="datetime-local" name="waktu_rilis"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    </div>
+
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Batas Waktu Absensi <span class="text-gray-400 font-normal normal-case tracking-normal">(opsional)</span>
+                                        </label>
+                                        <input type="datetime-local" name="batas_absensi"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <p class="text-xs text-gray-500">Default: 24 jam setelah waktu rilis</p>
+                                    </div>
+                                </div>
+                            </div>
                             {{-- Footer --}}
                             <div class="flex items-center justify-end gap-[10px] pt-[6px] border-t border-gray-100">
                                 <button type="button" @click="modalTugas = false"
@@ -648,7 +708,15 @@
                         </div>
 
                         <form :action="'/tugas/' + editTugasData.id" method="POST" enctype="multipart/form-data"
-                            class="p-6 flex flex-col gap-[18px]">
+                            class="p-6 flex flex-col gap-[18px]"
+                            x-data="{
+                                pertemuanData: @js($allPertemuan->keyBy('id')),
+                                getEditPertemuanDate() {
+                                    if (!editTugasData.id_pertemuan || !this.pertemuanData[editTugasData.id_pertemuan]) return '';
+                                    const pertemuan = this.pertemuanData[editTugasData.id_pertemuan];
+                                    return pertemuan.tanggal || '';
+                                }
+                            }">
                             @csrf
                             @method('PUT')
 
@@ -661,9 +729,15 @@
                                     <option value="">-- Pilih Pertemuan --</option>
                                     @foreach ($allPertemuan as $p)
                                         <option value="{{ $p->id }}">
-                                            Pertemuan {{ $p->nomor_pertemuan }} - 🎓
+                                            Pertemuan {{ $p->nomor_pertemuan }} - 
                                             [{{ $p->jadwalBelajar?->kelas?->nama_kelas ?? 'Tanpa Kelas' }}] -
                                             {{ $p->jadwalBelajar?->guruMapel?->mapel?->nama_mapel ?? ($p->jadwalBelajar?->mapel?->nama_mapel ?? 'Tanpa Mapel') }}
+                                            @if($p->tanggal)
+                                                |  {{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}
+                                            @endif
+                                            @if($p->jadwalBelajar?->jamBelajar)
+                                                |  {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($p->jadwalBelajar->jamBelajar->jam_selesai)->format('H:i') }}
+                                            @endif
                                         </option>
                                     @endforeach
                                 </select>
@@ -712,8 +786,7 @@
                                     <select name="tipe_file" x-model="tipeFileEdit" required
                                         class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                                         <option value="tanpa">Tanpa File</option>
-                                        <option value="dokumen">Dokumen (PDF/DOC)</option>
-                                        <option value="gambar">Gambar (JPG/PNG)</option>
+                                        <option value="dokumen">Dokumen/Gambar (PDF/DOC/JPG/PNG)</option>
                                         <option value="video">Video (MP4)</option>
                                         <option value="link">Link/URL</option>
                                     </select>
@@ -728,13 +801,11 @@
                                         kosongkan jika tidak ingin mengubah)</span>
                                 </label>
                                 <input type="file" name="file_url"
-                                    :accept="tipeFileEdit === 'gambar' ? '.jpg,.jpeg,.png,.gif,.webp' : (tipeFileEdit === 'video' ? '.mp4,.webm' : '.pdf,.doc,.docx')"
+                                    :disabled="tipeFileEdit === 'tanpa' || tipeFileEdit === 'link'"
+                                    :accept="tipeFileEdit === 'video' ? '.mp4,.webm' : '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                                 <p class="text-xs text-gray-500" x-show="tipeFileEdit === 'dokumen'">File saat ini: <span
-                                        x-text="editTugasData.file_url ? editTugasData.file_url.split('/').pop() : 'Tidak ada'"></span> · Format: PDF, DOC, DOCX (Maks 100MB)
-                                </p>
-                                <p class="text-xs text-gray-500" x-show="tipeFileEdit === 'gambar'">File saat ini: <span
-                                        x-text="editTugasData.file_url ? editTugasData.file_url.split('/').pop() : 'Tidak ada'"></span> · Format: JPG, PNG, GIF, WebP (Maks 50MB)
+                                        x-text="editTugasData.file_url ? editTugasData.file_url.split('/').pop() : 'Tidak ada'"></span> · Format: PDF, DOC, DOCX, JPG, PNG, GIF, WebP (Maks 100MB)
                                 </p>
                                 <p class="text-xs text-gray-500" x-show="tipeFileEdit === 'video'">File saat ini: <span
                                         x-text="editTugasData.file_url ? editTugasData.file_url.split('/').pop() : 'Tidak ada'"></span> · Format: MP4, WebM (Maks 100MB)
@@ -745,8 +816,9 @@
                                 <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
                                     Tautan (URL) <span class="text-red-500">*</span>
                                 </label>
-                                <input type="url" name="file_url" x-model="editTugasData.file_url"
+                                <input type="url" name="file_url_link" x-model="editTugasData.file_url"
                                     :required="tipeFileEdit === 'link'"
+                                    :disabled="tipeFileEdit !== 'link'"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
                             </div>
 
@@ -757,7 +829,9 @@
                                     </label>
                                     <input type="datetime-local" name="batas_waktu"
                                         x-model="editTugasData.batas_waktu" required
+                                        :min="getEditPertemuanDate()"
                                         class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    <p class="text-xs text-gray-500 italic" x-show="editTugasData.id_pertemuan && getEditPertemuanDate()"> Minimal tanggal: <span x-text="new Date(getEditPertemuanDate()).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})"></span></p>
                                 </div>
 
                                 <div class="flex flex-col gap-[7px]">
@@ -770,23 +844,18 @@
                                 </div>
                             </div>
 
-                            <div class="flex flex-col gap-[7px]">
-                                <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
-                                    Status <span class="text-red-500">*</span>
-                                </label>
-                                <select name="status" x-model="editTugasData.status" required
-                                    class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none cursor-pointer transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
-                                    <option value="published">Published</option>
-                                    <option value="draft">Draft</option>
-                                    <option value="closed">Closed</option>
-                                </select>
-                            </div>
 
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" name="allow_late" value="1"
-                                    x-model="editTugasData.allow_late"
-                                    class="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                                <label class="text-sm text-gray-700">Izinkan pengumpulan terlambat</label>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" name="allow_late" value="1"
+                                        x-model="editTugasData.allow_late"
+                                        class="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                                    <label class="text-sm text-gray-700 font-medium">Izinkan pengumpulan terlambat</label>
+                                </div>
+                                <div class="pl-6 text-xs text-gray-600 space-y-1">
+                                    <p>✓ <strong>Dicentang:</strong> Siswa dapat mengumpulkan setelah batas waktu, nilai tetap dinilai guru</p>
+                                    <p>✗ <strong>Tidak dicentang:</strong> Pengumpulan setelah batas waktu otomatis bernilai 0</p>
+                                </div>
                             </div>
 
                             <div class="flex flex-col gap-[7px]">
@@ -796,6 +865,50 @@
                                 </label>
                                 <textarea name="deskripsi" x-model="editTugasData.deskripsi" rows="3"
                                     class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white"></textarea>
+                            </div>
+
+                            {{-- Scheduled Release Section --}}
+                            <div class="border-t border-gray-200 pt-4 mt-2">
+                                <h4 class="text-[12px] font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Pengaturan Waktu Rilis
+                                </h4>
+
+                                {{-- Auto Release Toggle --}}
+                                <div class="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                    <input type="checkbox" name="auto_release" id="auto_release_edit" value="1" x-model="autoReleaseEdit"
+                                        class="mt-0.5 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                    <div class="flex-1">
+                                        <label for="auto_release_edit" class="text-[13px] font-semibold text-gray-700 cursor-pointer">
+                                            Rilis Otomatis Sesuai Jadwal Pertemuan
+                                        </label>
+                                        <p class="text-[11px] text-gray-600 mt-0.5">
+                                            Tugas akan otomatis dirilis sesuai waktu mulai jam belajar pertemuan yang dipilih
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Manual Release Time --}}
+                                <div x-show="!autoReleaseEdit" x-cloak class="space-y-3">
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Waktu Rilis Manual
+                                        </label>
+                                        <input type="datetime-local" name="waktu_rilis" x-model="editTugasData.waktu_rilis"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    </div>
+
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Batas Waktu Absensi <span class="text-gray-400 font-normal normal-case tracking-normal">(opsional)</span>
+                                        </label>
+                                        <input type="datetime-local" name="batas_absensi" x-model="editTugasData.batas_absensi"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <p class="text-xs text-gray-500">Default: 24 jam setelah waktu rilis</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex items-center justify-end gap-[10px] pt-[6px] border-t border-gray-100">
