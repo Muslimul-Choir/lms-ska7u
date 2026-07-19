@@ -29,10 +29,8 @@ class StorePengumpulanTugasRequest extends FormRequest
             $rules['file_url'] = 'required|url|max:2048';
         } elseif ($tipeFile === 'dokumen') {
             // Untuk update, file tidak wajib (optional)
-            $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:pdf,doc,docx,zip,rar|max:51200';
-        } elseif ($tipeFile === 'gambar') {
-            // Untuk update, file tidak wajib (optional)
-            $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:png,jpg,jpeg,gif,webp|max:51200';
+            // Support dokumen DAN gambar (karena gambar di-merge ke dokumen di database)
+            $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:pdf,doc,docx,zip,rar,png,jpg,jpeg,gif,webp|max:51200';
         } elseif ($tipeFile === 'video') {
             // Untuk update, file tidak wajib (optional)
             $rules['file_upload'] = ($isUpdate ? 'nullable' : 'required') . '|file|mimes:mp4,webm,ogg|max:51200';

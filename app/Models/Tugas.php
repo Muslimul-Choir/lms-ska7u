@@ -149,19 +149,13 @@ class Tugas extends Model
      */
     public function getStatusLabelAttribute(): string
     {
-        if (!$this->waktu_rilis) {
-            return 'Belum Dijadwalkan';
-        }
-        
-        if (now()->lt($this->waktu_rilis)) {
-            return 'Belum Dirilis';
-        }
-
-        if ($this->isExpired()) {
-            return 'Berakhir';
-        }
-        
-        return 'Tersedia';
+        // Use database status field for accurate status
+        return match($this->status) {
+            'draft' => 'Draft',
+            'published' => 'Published',
+            'closed' => 'Closed',
+            default => 'Unknown'
+        };
     }
 }
 

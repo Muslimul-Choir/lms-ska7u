@@ -129,7 +129,7 @@
             
             if (sisaDetik <= 0) {
                 clearInterval(interval);
-                alert('⏰ Waktu kuis telah habis! Jawaban Anda akan dikumpulkan otomatis.');
+                alert(' Waktu kuis telah habis! Jawaban Anda akan dikumpulkan otomatis.');
                 document.getElementById('form-kuis').submit();
                 return;
             }
@@ -141,7 +141,7 @@
                 warningShown = true;
                 playWarning();
                 setTimeout(() => {
-                    confirm('⏰ Perhatian!\n\nSisa waktu 5 menit lagi!\n\nPastikan semua jawaban sudah terisi.');
+                    confirm(' Perhatian!\n\nSisa waktu 5 menit lagi!\n\nPastikan semua jawaban sudah terisi.');
                 }, 100);
             }
             

@@ -7,6 +7,7 @@ use App\Http\Requests\Kuis\SubmitKuisRequest;
 use App\Models\HasilKuis;
 use App\Models\Kuis;
 use App\Models\Siswa;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ class SiswaKuisController extends Controller
      * Display a listing of quizzes for the student's class.
      * Shows status: "Tersedia", "Sudah Dikerjakan", or "Ditutup"
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $siswa = Siswa::where('id_user', $user->id)->first();
@@ -25,24 +26,62 @@ class SiswaKuisController extends Controller
             return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        // Fetch all published quizzes for the student's class through JadwalBelajar
-        // Filter juga berdasarkan agama siswa untuk mapel agama
-        $kuisList = Kuis::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
+        // Get current status tab (default: 'tersedia')
+        $currentTab = $request->get('status', 'tersedia');
+
+        // Base query for all kuis
+        $baseQuery = Kuis::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
         })
         ->whereHas('GuruMapel.Mapel', function ($query) use ($siswa) {
             $query->forAgama($siswa->agama);
         })
+        ->whereHas('Pertemuan', function ($query) {
+            $query->where(function($q) {
+                $q->whereNull('tanggal')
+                  ->orWhere('tanggal', '<=', now()->toDateString());
+            });
+        })
         ->where('status', 'published')
-        ->with(['Pertemuan', 'GuruMapel.Mapel'])
-        ->latest()
-        ->get();
+        ->where(function($query) {
+            $query->whereNull('waktu_rilis')
+                  ->orWhere('waktu_rilis', '<=', now());
+        })
+        ->with(['Pertemuan', 'GuruMapel.Mapel']);
 
-        $tersedia = [];
-        $sudahDikerjakan = [];
-        $ditutup = [];
-
+        // Get IDs for status filtering
+        $completedIds = HasilKuis::where('id_siswa', $siswa->id)->pluck('id_kuis');
         $now = now();
+
+        // Filter by status and paginate
+        $kuisList = match($currentTab) {
+            'selesai' => (clone $baseQuery)
+                ->whereIn('id', $completedIds)
+                ->latest()
+                ->paginate(10)
+                ->appends(['status' => 'selesai']),
+            'ditutup' => (clone $baseQuery)
+                ->whereNotIn('id', $completedIds)
+                ->where(function($q) use ($now) {
+                    $q->where('batas_mulai', '>', $now)
+                      ->orWhere('batas_selesai', '<', $now);
+                })
+                ->latest()
+                ->paginate(10)
+                ->appends(['status' => 'ditutup']),
+            default => (clone $baseQuery)
+                ->whereNotIn('id', $completedIds)
+                ->where('batas_mulai', '<=', $now)
+                ->where('batas_selesai', '>=', $now)
+                ->latest()
+                ->paginate(10)
+                ->appends(['status' => 'tersedia'])
+        };
+
+        // Build collections for display
+        $tersedia = collect();
+        $sudahDikerjakan = collect();
+        $ditutup = collect();
 
         foreach ($kuisList as $kuis) {
             // Check if student has already taken this quiz
@@ -56,23 +95,49 @@ class SiswaKuisController extends Controller
             ];
 
             if ($hasilKuis) {
-                $sudahDikerjakan[] = $item;
+                $sudahDikerjakan->push($item);
             } elseif ($now->lt($kuis->batas_mulai) || $now->gt($kuis->batas_selesai)) {
-                $ditutup[] = $item;
+                $ditutup->push($item);
             } else {
-                $tersedia[] = $item;
+                $tersedia->push($item);
             }
         }
+
+        // Get total counts for each status (not paginated)
+        $totalTersediaCount = (clone $baseQuery)
+            ->whereNotIn('id', $completedIds)
+            ->where('batas_mulai', '<=', $now)
+            ->where('batas_selesai', '>=', $now)
+            ->count();
+            
+        $totalSelesaiCount = (clone $baseQuery)
+            ->whereIn('id', $completedIds)
+            ->count();
+            
+        $totalDitutupCount = (clone $baseQuery)
+            ->whereNotIn('id', $completedIds)
+            ->where(function($q) use ($now) {
+                $q->where('batas_mulai', '>', $now)
+                  ->orWhere('batas_selesai', '<', $now);
+            })
+            ->count();
 
         // Badge counts for nav tabs
         $tugasBelumCount = \App\Models\Tugas::whereHas('guruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswa->id_kelas))
             ->whereHas('Mapel', fn($q) => $q->forAgama($siswa->agama))
+            ->whereHas('Pertemuan', function($q) {
+                $q->where(function($query) {
+                    $query->whereNull('tanggal')
+                          ->orWhere('tanggal', '<=', now()->toDateString());
+                });
+            })
             ->where('status', 'published')
             ->whereNotIn('id', \App\Models\PengumpulanTugas::where('id_siswa', $siswa->id)->pluck('id_tugas'))
             ->count();
-        $kuisTersediaCount = count($tersedia);
 
-        return view('siswa.kuis.index', compact('siswa', 'tersedia', 'sudahDikerjakan', 'ditutup', 'tugasBelumCount', 'kuisTersediaCount'));
+        $kuisTersediaCount = $totalTersediaCount;
+
+        return view('siswa.kuis.index', compact('siswa', 'tersedia', 'sudahDikerjakan', 'ditutup', 'tugasBelumCount', 'kuisTersediaCount', 'kuisList', 'currentTab', 'totalTersediaCount', 'totalSelesaiCount', 'totalDitutupCount'));
     }
 
     /**
@@ -324,7 +389,7 @@ class SiswaKuisController extends Controller
                     ->with('info', 'Anda sudah mengumpulkan kuis ini.');
             }
 
-            // ⏰ FIX: Server-side time validation
+            //  FIX: Server-side time validation
             $durasiDetik = $kuis->durasi * 60;
             $elapsedDetik = now()->diffInSeconds($hasilKuis->waktu_mulai);
             $timeExpired = $elapsedDetik > $durasiDetik;
@@ -359,7 +424,7 @@ class SiswaKuisController extends Controller
             DB::commit();
 
             $message = $timeExpired 
-                ? '⏰ Waktu habis! Kuis telah dikumpulkan otomatis dengan jawaban yang tersedia.' 
+                ? ' Waktu habis! Kuis telah dikumpulkan otomatis dengan jawaban yang tersedia.' 
                 : '✅ Kuis berhasil dikumpulkan!';
 
             return redirect()->route('siswa.kuis.hasil', $kuis)

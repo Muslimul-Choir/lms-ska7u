@@ -27,7 +27,7 @@ class SiswaTugasController extends Controller
     /**
      * Display a listing of assignments categorized by status.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $siswa = Siswa::where('id_user', $user->id)->first();
@@ -36,22 +36,59 @@ class SiswaTugasController extends Controller
             return redirect()->route('login')->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        // Fetch all published tasks for the student's class through JadwalBelajar
-        // Filter juga berdasarkan agama siswa untuk mapel agama
-        $tugasList = Tugas::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
+        // Get current status tab (default: 'belum')
+        $currentTab = $request->get('status', 'belum');
+
+        // Base query for all tugas
+        $baseQuery = Tugas::whereHas('guruMapel.JadwalBelajar', function ($query) use ($siswa) {
             $query->where('id_kelas', $siswa->id_kelas);
         })
         ->whereHas('Mapel', function ($query) use ($siswa) {
             $query->forAgama($siswa->agama);
         })
+        ->whereHas('Pertemuan', function ($query) {
+            $query->where(function($q) {
+                $q->whereNull('tanggal')
+                  ->orWhere('tanggal', '<=', now()->toDateString());
+            });
+        })
         ->where('status', 'published')
-        ->with(['Mapel', 'Pertemuan'])
-        ->latest()
-        ->get();
+        ->where(function($query) {
+            $query->whereNull('waktu_rilis')
+                  ->orWhere('waktu_rilis', '<=', now());
+        })
+        ->with(['Mapel', 'Pertemuan']);
 
-        $belumDikerjakan = [];
-        $menungguDinilai = [];
-        $selesai = [];
+        // Get IDs for status filtering
+        $submittedIds = PengumpulanTugas::where('id_siswa', $siswa->id)->pluck('id_tugas');
+        $assessedIds = PengumpulanTugas::where('id_siswa', $siswa->id)
+            ->whereHas('Penilaian')
+            ->pluck('id_tugas');
+
+        // Filter by status and paginate
+        $tugasList = match($currentTab) {
+            'pending' => (clone $baseQuery)
+                ->whereIn('id', $submittedIds)
+                ->whereNotIn('id', $assessedIds)
+                ->latest()
+                ->paginate(10)
+                ->appends(['status' => 'pending']),
+            'selesai' => (clone $baseQuery)
+                ->whereIn('id', $assessedIds)
+                ->latest()
+                ->paginate(10)
+                ->appends(['status' => 'selesai']),
+            default => (clone $baseQuery)
+                ->whereNotIn('id', $submittedIds)
+                ->latest()
+                ->paginate(10)
+                ->appends(['status' => 'belum'])
+        };
+
+        // Build collections for display
+        $belumDikerjakan = collect();
+        $menungguDinilai = collect();
+        $selesai = collect();
 
         foreach ($tugasList as $t) {
             $submission = PengumpulanTugas::where('id_tugas', $t->id)
@@ -70,16 +107,31 @@ class SiswaTugasController extends Controller
             ];
 
             if (!$submission) {
-                $belumDikerjakan[] = $item;
+                $belumDikerjakan->push($item);
             } elseif (!$assessment) {
-                $menungguDinilai[] = $item;
+                $menungguDinilai->push($item);
             } else {
-                $selesai[] = $item;
+                $selesai->push($item);
             }
         }
 
+        // Get total counts for each status (not paginated)
+        $totalBelumCount = (clone $baseQuery)
+            ->whereNotIn('id', $submittedIds)
+            ->count();
+            
+        $totalPendingCount = (clone $baseQuery)
+            ->whereIn('id', $submittedIds)
+            ->whereNotIn('id', $assessedIds)
+            ->count();
+            
+        $totalSelesaiCount = (clone $baseQuery)
+            ->whereIn('id', $assessedIds)
+            ->count();
+
         // Badge counts for nav tabs
-        $tugasBelumCount = count($belumDikerjakan);
+        $tugasBelumCount = $totalBelumCount;
+        
         $kuisTersediaCount = Kuis::whereHas('guruMapel.JadwalBelajar', fn($q) => $q->where('id_kelas', $siswa->id_kelas))
             ->whereHas('GuruMapel.Mapel', fn($q) => $q->forAgama($siswa->agama))
             ->where('status', 'published')
@@ -88,7 +140,7 @@ class SiswaTugasController extends Controller
             ->whereNotIn('id', HasilKuis::where('id_siswa', $siswa->id)->pluck('id_kuis'))
             ->count();
 
-        return view('siswa.tugas.index', compact('siswa', 'belumDikerjakan', 'menungguDinilai', 'selesai', 'tugasBelumCount', 'kuisTersediaCount'));
+        return view('siswa.tugas.index', compact('siswa', 'belumDikerjakan', 'menungguDinilai', 'selesai', 'tugasBelumCount', 'kuisTersediaCount', 'tugasList', 'currentTab', 'totalBelumCount', 'totalPendingCount', 'totalSelesaiCount'));
     }
 
     /**

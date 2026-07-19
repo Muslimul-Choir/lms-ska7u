@@ -26,9 +26,14 @@ class SiswaPertemuanController extends Controller
         $mapelFilter = $request->get('id_mapel');
 
         // Ambil semua pertemuan kelas siswa ini
+        // FILTER BARU: Hanya tampilkan pertemuan yang tanggalnya sudah lewat atau hari ini
         $query = Pertemuan::with(['jadwalBelajar.mapel', 'jadwalBelajar.guruMapel.guru'])
             ->whereHas('jadwalBelajar', function ($q) use ($idKelas) {
                 $q->where('id_kelas', $idKelas);
+            })
+            ->where(function($q) {
+                $q->whereNull('tanggal') // Jika tanggal tidak diset, tampilkan (backward compatibility)
+                  ->orWhere('tanggal', '<=', now()->toDateString()); // Atau tanggal pertemuan sudah lewat/hari ini
             })
             ->when($mapelFilter, function ($q) use ($mapelFilter) {
                 $q->whereHas('jadwalBelajar', function ($q2) use ($mapelFilter) {

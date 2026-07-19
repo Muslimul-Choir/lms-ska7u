@@ -81,7 +81,8 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('kuis.store') }}" method="POST">
+                    <form action="{{ route('kuis.store') }}" method="POST"
+                        x-data="{ autoRelease: {{ old('auto_release', 1) }} }">
                         @csrf
 
                         <div class="flex flex-col gap-[18px]">
@@ -114,7 +115,13 @@
                                         @foreach ($pertemuanList as $p)
                                             <option value="{{ $p->id }}"
                                                 {{ old('id_pertemuan') == $p->id ? 'selected' : '' }}>
-                                                Pertemuan {{ $p->nomor_pertemuan }} - 🎓 [{{ $p->JadwalBelajar?->Kelas?->nama_kelas ?? 'Tanpa Kelas' }}] - {{ $p->JadwalBelajar?->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
+                                                Pertemuan {{ $p->nomor_pertemuan }} - [{{ $p->JadwalBelajar?->Kelas?->nama_kelas ?? 'Tanpa Kelas' }}] - {{ $p->JadwalBelajar?->GuruMapel?->Mapel?->nama_mapel ?? '-' }}
+                                                @if($p->tanggal)
+                                                    | {{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}
+                                                @endif
+                                                @if($p->JadwalBelajar?->JamBelajar)
+                                                    | {{ \Carbon\Carbon::parse($p->JadwalBelajar->JamBelajar->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($p->JadwalBelajar->JamBelajar->jam_selesai)->format('H:i') }}
+                                                @endif
                                             </option>
                                         @endforeach
                                     </select>
@@ -166,8 +173,9 @@
                                         Batas Mulai <span class="text-red-500">*</span>
                                     </label>
                                     <input type="datetime-local" name="batas_mulai" value="{{ old('batas_mulai') }}"
-                                        required
+                                        required id="batas_mulai"
                                         class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    <p class="text-xs text-gray-500">Tidak boleh sebelum tanggal pertemuan</p>
                                 </div>
 
                                 <div class="flex flex-col gap-[7px]">
@@ -175,8 +183,52 @@
                                         Batas Selesai <span class="text-red-500">*</span>
                                     </label>
                                     <input type="datetime-local" name="batas_selesai" value="{{ old('batas_selesai') }}"
-                                        required
+                                        required id="batas_selesai"
                                         class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                </div>
+                            </div>
+
+                            {{-- Scheduled Release Section --}}
+                            <div class="border-t border-gray-200 pt-4 mt-2">
+                                <h4 class="text-[12px] font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Pengaturan Waktu Rilis
+                                </h4>
+
+                                {{-- Auto Release Toggle --}}
+                                <div class="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                    <input type="checkbox" name="auto_release" id="auto_release" value="1" x-model="autoRelease" checked
+                                        class="mt-0.5 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                    <div class="flex-1">
+                                        <label for="auto_release" class="text-[13px] font-semibold text-gray-700 cursor-pointer">
+                                            Rilis Otomatis Sesuai Jadwal Pertemuan
+                                        </label>
+                                        <p class="text-[11px] text-gray-600 mt-0.5">
+                                            Kuis akan otomatis dirilis sesuai waktu mulai jam belajar pertemuan yang dipilih
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Manual Release Time --}}
+                                <div x-show="!autoRelease" x-cloak class="space-y-3">
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Waktu Rilis Manual
+                                        </label>
+                                        <input type="datetime-local" name="waktu_rilis" value="{{ old('waktu_rilis') }}"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                    </div>
+
+                                    <div class="flex flex-col gap-[7px]">
+                                        <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
+                                            Batas Waktu Absensi <span class="text-gray-400 font-normal normal-case tracking-normal">(opsional)</span>
+                                        </label>
+                                        <input type="datetime-local" name="batas_absensi" value="{{ old('batas_absensi') }}"
+                                            class="w-full rounded-[10px] border border-gray-200 py-[10px] px-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white">
+                                        <p class="text-xs text-gray-500">Default: 24 jam setelah waktu rilis</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -187,8 +239,9 @@
                                         clip-rule="evenodd" />
                                 </svg>
                                 <div>
-                                    <strong>Catatan:</strong> Kuis akan dibuat dengan status <strong>Draft</strong>. Anda
-                                    dapat menambahkan soal terlebih dahulu sebelum mempublikasikan.
+                                    <strong>Catatan:</strong> Kuis akan dibuat dengan status <strong>Draft</strong>. 
+                                    Setelah selesai menambahkan soal, Anda akan ditawarkan opsi untuk mempublikasikan kuis. 
+                                    Kuis juga dapat dipublikasikan manual melalui halaman edit.
                                 </div>
                             </div>
 
@@ -217,3 +270,51 @@
 </x-app-layout>
 
 <x-alerts.success />
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data pertemuan untuk validasi
+    const pertemuanData = @json($pertemuanList->mapWithKeys(function($p) {
+        return [$p->id => [
+            'tanggal' => $p->tanggal,
+            'jam_mulai' => $p->JadwalBelajar?->JamBelajar?->jam_mulai,
+            'jam_selesai' => $p->JadwalBelajar?->JamBelajar?->jam_selesai
+        ]];
+    }));
+    
+    const pertemuanSelect = document.querySelector('select[name="id_pertemuan"]');
+    const batasMulaiInput = document.getElementById('batas_mulai');
+    const batasSelesaiInput = document.getElementById('batas_selesai');
+    
+    // Validasi pertemuan
+    if (pertemuanSelect && batasMulaiInput) {
+        pertemuanSelect.addEventListener('change', function() {
+            const pertemuanId = this.value;
+            if (pertemuanId && pertemuanData[pertemuanId]) {
+                const pertemuan = pertemuanData[pertemuanId];
+                
+                if (pertemuan.tanggal) {
+                    // Set minimum date untuk batas_mulai
+                    const tanggalPertemuan = pertemuan.tanggal;
+                    batasMulaiInput.setAttribute('min', tanggalPertemuan + 'T00:00');
+                    
+                    // Auto-fill dengan tanggal pertemuan jika kosong
+                    if (!batasMulaiInput.value && pertemuan.jam_mulai) {
+                        batasMulaiInput.value = tanggalPertemuan + 'T' + pertemuan.jam_mulai;
+                    }
+                    if (!batasSelesaiInput.value && pertemuan.jam_selesai) {
+                        batasSelesaiInput.value = tanggalPertemuan + 'T' + pertemuan.jam_selesai;
+                    }
+                }
+            }
+        });
+        
+        // Validasi batas_selesai > batas_mulai
+        batasMulaiInput.addEventListener('change', function() {
+            if (this.value) {
+                batasSelesaiInput.setAttribute('min', this.value);
+            }
+        });
+    }
+});
+</script>

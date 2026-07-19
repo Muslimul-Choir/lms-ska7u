@@ -205,7 +205,7 @@
                             
                         @elseif($tugas->tipe_file === 'dokumen')
                             <div style="margin-bottom:12px;">
-                                <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Unggah Dokumen Baru</label>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">Unggah Dokumen/Gambar Baru</label>
                                 @if($submission->file_url && !str_starts_with($submission->file_url, 'http'))
                                 <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;margin-bottom:8px;font-size:12px;color:#166534;">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -217,10 +217,10 @@
                                 <input type="file" 
                                        name="file_upload" 
                                        id="file-edit-upload" 
-                                       accept=".pdf,.doc,.docx,.zip,.rar" 
+                                       accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp" 
                                        style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;background:#fff;" 
                                        onchange="showFilePreview(this, 'file-edit-preview', 'file-edit-name')">
-                                <p id="file-edit-name" style="font-size:11px;color:#94a3b8;margin-top:4px;">PDF, DOC, DOCX, ZIP, RAR (Maks 50MB) - Kosongkan jika tidak ingin mengubah</p>
+                                <p id="file-edit-name" style="font-size:11px;color:#94a3b8;margin-top:4px;">PDF, DOC, DOCX, ZIP, RAR, JPG, PNG, GIF, WebP (Maks 50MB) - Kosongkan jika tidak ingin mengubah</p>
                                 <div id="file-edit-preview" style="display:none;margin-top:10px;"></div>
                             </div>
                             
@@ -323,17 +323,17 @@
                         @elseif($tugas->tipe_file === 'dokumen')
                             <div style="margin-bottom:12px;">
                                 <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:5px;">
-                                    Pilih Dokumen Jawaban <span style="color:#ef4444;">*</span>
+                                    Pilih Dokumen/Gambar Jawaban <span style="color:#ef4444;">*</span>
                                 </label>
                                 <input type="file" 
                                        name="file_upload" 
                                        id="file-new-upload" 
                                        required 
-                                       accept=".pdf,.doc,.docx,.zip,.rar" 
+                                       accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp" 
                                        style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;background:#fff;" 
                                        onchange="showFilePreview(this, 'file-new-preview', 'file-new-name')">
                                 <p id="file-new-name" style="font-size:11px;color:#94a3b8;margin-top:4px;">
-                                    PDF, DOC, DOCX, ZIP, RAR (Maks 50MB)
+                                    PDF, DOC, DOCX, ZIP, RAR, JPG, PNG, GIF, WebP (Maks 50MB)
                                 </p>
                                 <div id="file-new-preview" style="display:none;margin-top:10px;"></div>
                             </div>

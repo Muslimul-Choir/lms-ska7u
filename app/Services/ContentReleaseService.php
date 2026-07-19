@@ -26,11 +26,24 @@ class ContentReleaseService
         
         $jadwal = $pertemuan->JadwalBelajar;
         if (!$jadwal) {
+            Log::warning('[ContentReleaseService] No JadwalBelajar found for pertemuan', ['pertemuan_id' => $pertemuan->id]);
             return null;
         }
 
         $jamBelajar = $jadwal->JamBelajar;
         if (!$jamBelajar) {
+            Log::warning('[ContentReleaseService] No JamBelajar found for jadwal', [
+                'pertemuan_id' => $pertemuan->id,
+                'jadwal_id' => $jadwal->id
+            ]);
+            return null;
+        }
+        
+        if (!$pertemuan->tanggal) {
+            Log::warning('[ContentReleaseService] Pertemuan tanggal is NULL', [
+                'pertemuan_id' => $pertemuan->id,
+                'nomor_pertemuan' => $pertemuan->nomor_pertemuan
+            ]);
             return null;
         }
 
@@ -38,10 +51,20 @@ class ContentReleaseService
         $tanggalPertemuan = Carbon::parse($pertemuan->tanggal);
         $jamMulai = Carbon::parse($jamBelajar->jam_mulai);
         
-        return $tanggalPertemuan->copy()
+        $releaseTime = $tanggalPertemuan->copy()
             ->setHour($jamMulai->hour)
             ->setMinute($jamMulai->minute)
             ->setSecond(0);
+        
+        Log::info('[ContentReleaseService] Release time calculated', [
+            'pertemuan_id' => $pertemuan->id,
+            'pertemuan_tanggal' => $pertemuan->tanggal,
+            'jam_mulai' => $jamBelajar->jam_mulai,
+            'release_time' => $releaseTime->toDateTimeString(),
+            'is_future' => now()->lt($releaseTime)
+        ]);
+        
+        return $releaseTime;
     }
 
     /**
@@ -141,10 +164,11 @@ class ContentReleaseService
                 $releasedCount++;
             }
 
-            // Process Kuis - update status from draft to published
+            // Process Kuis - update status from draft to published (only if has soal)
             $kuis = Kuis::where('waktu_rilis', '<=', $now)
                 ->where('status', 'draft')
                 ->whereNotNull('waktu_rilis')
+                ->whereHas('SoalKuis') // Only kuis with soal can be published
                 ->get();
             
             foreach ($kuis as $k) {

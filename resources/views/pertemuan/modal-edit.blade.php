@@ -115,7 +115,7 @@
                 {{-- Tanggal --}}
                 <div class="flex flex-col gap-[7px]">
                     <label class="text-[11.5px] font-bold text-gray-500 uppercase tracking-[0.55px]">
-                        Tanggal <span class="text-gray-400 font-normal normal-case tracking-normal">(opsional)</span>
+                        Tanggal <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-[13px] top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
@@ -123,10 +123,16 @@
                                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
                         </span>
-                        <input type="date" id="edit_tanggal" name="tanggal"
+                        <input type="date" id="edit_tanggal" name="tanggal" required
                                class="w-full rounded-[10px] border py-[10px] pl-[40px] pr-[14px] text-[14px] text-gray-900 bg-gray-50 outline-none transition-all duration-200 focus:border-[#E8930A] focus:shadow-[0_0_0_3px_rgba(232,147,10,0.13)] focus:bg-white
                                {{ $errors->has('tanggal') && old('_modal') === 'edit' ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
                     </div>
+                    <p class="text-[10.5px] text-gray-400 flex items-center gap-1">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span id="edit_tanggal_hint">Pilih jadwal terlebih dahulu</span>
+                    </p>
                     @if ($errors->has('tanggal') && old('_modal') === 'edit')
                         <p class="flex items-center gap-1 text-xs text-red-600">
                             <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -176,3 +182,89 @@
         </div>
     </div>
 </div>
+
+<script>
+// Edit modal: Validate tanggal based on jadwal hari
+document.addEventListener('DOMContentLoaded', function() {
+    const editJadwalSelect = document.getElementById('edit_id_jadwal');
+    const editTanggalInput = document.getElementById('edit_tanggal');
+    const editTanggalHint = document.getElementById('edit_tanggal_hint');
+    
+    // Mapping hari Indonesia ke day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const hariMap = {
+        'Minggu': 0,
+        'Senin': 1,
+        'Selasa': 2,
+        'Rabu': 3,
+        'Kamis': 4,
+        'Jumat': 5,
+        'Sabtu': 6
+    };
+    
+    let editAllowedDayOfWeek = null;
+    let editAllowedDayName = '';
+    
+    // Extract hari from jadwal select option text
+    function extractHariFromJadwal(jadwalText) {
+        // Format: "Mapel - Kelas • Hari • Jam"
+        const parts = jadwalText.split('•');
+        if (parts.length >= 2) {
+            const hari = parts[1].trim();
+            return hari;
+        }
+        return null;
+    }
+    
+    // Update allowed day when jadwal changes
+    if (editJadwalSelect) {
+        editJadwalSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const hari = extractHariFromJadwal(selectedOption.text);
+                if (hari && hariMap.hasOwnProperty(hari)) {
+                    editAllowedDayOfWeek = hariMap[hari];
+                    editAllowedDayName = hari;
+                    editTanggalHint.textContent = `Hanya tanggal hari ${hari} yang dapat dipilih`;
+                    editTanggalInput.disabled = false;
+                } else {
+                    editAllowedDayOfWeek = null;
+                    editAllowedDayName = '';
+                    editTanggalHint.textContent = 'Pilih jadwal terlebih dahulu';
+                }
+            } else {
+                editAllowedDayOfWeek = null;
+                editAllowedDayName = '';
+                editTanggalInput.disabled = true;
+                editTanggalHint.textContent = 'Pilih jadwal terlebih dahulu';
+            }
+        });
+        
+        // Trigger change on page load if jadwal already selected (e.g., when modal opens)
+        if (editJadwalSelect.value) {
+            editJadwalSelect.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Validate selected date matches allowed day
+    if (editTanggalInput) {
+        editTanggalInput.addEventListener('input', function() {
+            if (this.value && editAllowedDayOfWeek !== null) {
+                const selectedDate = new Date(this.value + 'T00:00:00'); // Add time to avoid timezone issues
+                const dayOfWeek = selectedDate.getDay();
+                
+                if (dayOfWeek !== editAllowedDayOfWeek) {
+                    this.setCustomValidity(`Tanggal harus jatuh pada hari ${editAllowedDayName}`);
+                    this.reportValidity();
+                } else {
+                    this.setCustomValidity('');
+                }
+            }
+        });
+        
+        // Also validate on change
+        editTanggalInput.addEventListener('change', function() {
+            this.dispatchEvent(new Event('input'));
+        });
+    }
+});
+</script>

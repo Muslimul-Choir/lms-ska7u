@@ -29,9 +29,79 @@
     .empty-state { padding:56px 20px; text-align:center; background:rgba(15,20,35,0.5); border-radius:18px; border:1px dashed rgba(255,255,255,0.09); }
     .empty-icon { width:64px; height:64px; margin:0 auto 16px; border-radius:18px; display:flex; align-items:center; justify-content:center; }
     .badge { font-size:10px; font-weight:800; padding:3px 10px; border-radius:99px; white-space:nowrap; flex-shrink:0; border-width:1px; border-style:solid; letter-spacing:.02em; }
+    
+    /* ─── PAGINATION STYLE ─── */
+    .pagination-wrapper { 
+        display:flex; 
+        align-items:center; 
+        justify-content:space-between; 
+        padding:16px 18px; 
+        background:rgba(15,20,35,0.6); 
+        backdrop-filter:blur(12px); 
+        border:1px solid rgba(255,255,255,0.06); 
+        border-radius:12px; 
+        margin-top:18px;
+        gap:12px;
+        flex-wrap:wrap;
+    }
+    .pagination-info { 
+        font-size:11px; 
+        color:#64748b; 
+        font-weight:600; 
+        letter-spacing:0.02em;
+    }
+    .pagination-nav { 
+        display:flex; 
+        align-items:center; 
+        gap:6px;
+        flex-wrap:wrap;
+    }
+    .pagination-nav a,
+    .pagination-nav span { 
+        min-width:36px; 
+        height:36px; 
+        display:flex; 
+        align-items:center; 
+        justify-content:center; 
+        border-radius:8px; 
+        font-size:12px; 
+        font-weight:700; 
+        text-decoration:none; 
+        transition:all .2s ease;
+        border:1px solid rgba(255,255,255,0.08);
+        background:rgba(255,255,255,0.03);
+        color:#94a3b8;
+    }
+    .pagination-nav a:hover { 
+        background:rgba(201,152,42,0.15); 
+        border-color:rgba(201,152,42,0.3); 
+        color:#f0be3d; 
+        transform:translateY(-1px);
+    }
+    .pagination-nav .active { 
+        background:linear-gradient(135deg,#c9982a,#f0be3d); 
+        border-color:transparent; 
+        color:#1a0800; 
+        box-shadow:0 4px 12px rgba(201,152,42,0.3);
+    }
+    .pagination-nav .disabled { 
+        opacity:0.3; 
+        cursor:not-allowed; 
+        pointer-events:none;
+    }
+    .pagination-nav svg { 
+        width:14px; 
+        height:14px;
+    }
+    @media (max-width:640px) {
+        .pagination-wrapper { padding:12px 14px; }
+        .pagination-info { font-size:10px; }
+        .pagination-nav a,
+        .pagination-nav span { min-width:32px; height:32px; font-size:11px; }
+    }
     </style>
 
-    <div style="max-width:960px;margin:0 auto;padding:20px 16px;" x-data="{ tab: 'tersedia' }">
+    <div style="max-width:960px;margin:0 auto;padding:20px 16px;">
 
         {{-- Main tab navigation --}}
         <div class="mp-tab-nav">
@@ -57,25 +127,25 @@
 
         {{-- Status tabs --}}
         <div class="status-tabs">
-            <button @click="tab='tersedia'"
-                :class="tab==='tersedia' ? 'status-tab-btn active-blue' : 'status-tab-btn'"
-                class="status-tab-btn">
-                Tersedia ({{ count($tersedia) }})
-            </button>
-            <button @click="tab='selesai'"
-                :class="tab==='selesai' ? 'status-tab-btn active-green' : 'status-tab-btn'"
-                class="status-tab-btn">
-                Selesai ({{ count($sudahDikerjakan) }})
-            </button>
-            <button @click="tab='ditutup'"
-                :class="tab==='ditutup' ? 'status-tab-btn active-red' : 'status-tab-btn'"
-                class="status-tab-btn">
-                Ditutup ({{ count($ditutup) }})
-            </button>
+            <a href="{{ route('siswa.kuis.index', ['status' => 'tersedia']) }}"
+                class="status-tab-btn {{ $currentTab === 'tersedia' ? 'active-blue' : '' }}"
+                style="text-decoration:none;">
+                Tersedia ({{ $totalTersediaCount }})
+            </a>
+            <a href="{{ route('siswa.kuis.index', ['status' => 'selesai']) }}"
+                class="status-tab-btn {{ $currentTab === 'selesai' ? 'active-green' : '' }}"
+                style="text-decoration:none;">
+                Selesai ({{ $totalSelesaiCount }})
+            </a>
+            <a href="{{ route('siswa.kuis.index', ['status' => 'ditutup']) }}"
+                class="status-tab-btn {{ $currentTab === 'ditutup' ? 'active-red' : '' }}"
+                style="text-decoration:none;">
+                Ditutup ({{ $totalDitutupCount }})
+            </a>
         </div>
 
         {{-- Tab: Tersedia --}}
-        <div x-show="tab==='tersedia'" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:{{ $currentTab === 'tersedia' ? 'flex' : 'none' }};flex-direction:column;gap:10px;">
             @forelse($tersedia as $item)
                 @php
                     $kuis = $item['kuis'];
@@ -117,10 +187,48 @@
                     <div style="font-size:12px;color:#334155;">Kuis baru akan muncul di sini</div>
                 </div>
             @endforelse
+            
+            {{-- Pagination for Tersedia --}}
+            @if($kuisList->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $kuisList->firstItem() ?? 0 }} - {{ $kuisList->lastItem() ?? 0 }} dari {{ $kuisList->total() }} kuis
+                    </div>
+                    <nav class="pagination-nav">
+                        @if ($kuisList->onFirstPage())
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $kuisList->previousPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                        @endif
+
+                        @foreach ($kuisList->getUrlRange(1, $kuisList->lastPage()) as $page => $url)
+                            @if ($page == $kuisList->currentPage())
+                                <span class="active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($kuisList->hasMorePages())
+                            <a href="{{ $kuisList->nextPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            @endif
         </div>
 
         {{-- Tab: Sudah Dikerjakan --}}
-        <div x-show="tab==='selesai'" style="display:flex;flex-direction:column;gap:10px;" x-cloak>
+        <div style="display:{{ $currentTab === 'selesai' ? 'flex' : 'none' }};flex-direction:column;gap:10px;">
             @forelse($sudahDikerjakan as $item)
                 @php
                     $kuis = $item['kuis'];
@@ -162,10 +270,48 @@
                     <div style="font-size:14px;font-weight:700;color:#64748b;">Belum ada kuis yang selesai dikerjakan</div>
                 </div>
             @endforelse
+            
+            {{-- Pagination for Selesai --}}
+            @if($kuisList->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $kuisList->firstItem() ?? 0 }} - {{ $kuisList->lastItem() ?? 0 }} dari {{ $kuisList->total() }} kuis
+                    </div>
+                    <nav class="pagination-nav">
+                        @if ($kuisList->onFirstPage())
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $kuisList->previousPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                        @endif
+
+                        @foreach ($kuisList->getUrlRange(1, $kuisList->lastPage()) as $page => $url)
+                            @if ($page == $kuisList->currentPage())
+                                <span class="active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($kuisList->hasMorePages())
+                            <a href="{{ $kuisList->nextPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            @endif
         </div>
 
         {{-- Tab: Ditutup --}}
-        <div x-show="tab==='ditutup'" style="display:flex;flex-direction:column;gap:10px;" x-cloak>
+        <div style="display:{{ $currentTab === 'ditutup' ? 'flex' : 'none' }};flex-direction:column;gap:10px;">
             @forelse($ditutup as $item)
                 @php $kuis = $item['kuis']; @endphp
                 <div class="task-card" style="border-color:rgba(239,68,68,0.12);opacity:0.72;cursor:default;">
@@ -189,6 +335,44 @@
                     <div style="font-size:14px;font-weight:700;color:#64748b;">Tidak ada kuis yang ditutup</div>
                 </div>
             @endforelse
+            
+            {{-- Pagination for Ditutup --}}
+            @if($kuisList->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Menampilkan {{ $kuisList->firstItem() ?? 0 }} - {{ $kuisList->lastItem() ?? 0 }} dari {{ $kuisList->total() }} kuis
+                    </div>
+                    <nav class="pagination-nav">
+                        @if ($kuisList->onFirstPage())
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $kuisList->previousPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </a>
+                        @endif
+
+                        @foreach ($kuisList->getUrlRange(1, $kuisList->lastPage()) as $page => $url)
+                            @if ($page == $kuisList->currentPage())
+                                <span class="active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($kuisList->hasMorePages())
+                            <a href="{{ $kuisList->nextPageUrl() }}">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <span class="disabled">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            @endif
         </div>
 
     </div>
