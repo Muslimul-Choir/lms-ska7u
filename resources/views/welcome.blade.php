@@ -1237,7 +1237,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p class="footer-copy">&copy; {{ date('Y') }} LMS SKA7U - SMK Negeri 7 Batam. Hak cipta dilindungi.</p>
+            <p class="footer-copy">&copy; {{ date('Y') }} LMS SKA7U - SMK Negeri 7 Batam.</p>
             <p class="footer-copy">Dibuat dengan semangat untuk pendidikan Indonesia.</p>
         </div>
     </div>
