@@ -9,28 +9,29 @@ use App\Http\Controllers\JadwalBelajarController;
 use App\Http\Controllers\JamBelajarController;
 use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KelasController;
+use App\Http\Controllers\KuisController;
 use App\Http\Controllers\MapelController;
+use App\Http\Controllers\PertemuanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\TingkatanController;
-use App\Http\Controllers\PertemuanController;
 use App\Http\Controllers\UserController;
+use App\Models\Absensi;
 use App\Models\Bagian;
 use App\Models\GuruMapel;
+use App\Models\HasilKuis;
 use App\Models\JadwalBelajar;
 use App\Models\JamBelajar;
 use App\Models\Jurusan;
+use App\Models\Kuis;
 use App\Models\Mapel;
+use App\Models\Pertemuan;
 use App\Models\Semester;
+use App\Models\SoalKuis;
 use App\Models\TahunAjaran;
 use App\Models\Tingkatan;
-use App\Models\Pertemuan;
-use App\Models\Absensi;
-use App\Models\Kuis;
-use App\Models\SoalKuis;
-use App\Models\HasilKuis;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -288,13 +289,32 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
         });
     });
 
-    // Pertemuan
+    // yang tidak bisa di akses walikelas (trash)
     Route::middleware('not_walikelas_only')->group(function () {
         Route::get('pertemuan/trash',                               [PertemuanController::class, 'trash'])->name('pertemuan.trash');
         Route::patch('pertemuan/trash/{id}/restore',                [PertemuanController::class, 'restore'])->name('pertemuan.restore');
         Route::delete('pertemuan/trash/{id}/force-delete',          [PertemuanController::class, 'forceDelete'])->name('pertemuan.force-delete');
         Route::patch('pertemuan/trash/restore-all',                 [PertemuanController::class, 'restoreAll'])->name('pertemuan.restoreAll');
         Route::delete('pertemuan/trash/force-delete-all',           [PertemuanController::class, 'forceDeleteAll'])->name('pertemuan.forceDeleteAll');
+    
+        Route::get('materi/trash',                                  [\App\Http\Controllers\MateriController::class, 'trash'])->name('materi.trash');
+        Route::patch('materi/trash/{id}/restore',                   [\App\Http\Controllers\MateriController::class, 'restore'])->name('materi.restore');
+        Route::delete('materi/trash/{id}/force-delete',             [\App\Http\Controllers\MateriController::class, 'forceDelete'])->name('materi.force-delete');
+        Route::patch('materi/trash/restore-all',                    [\App\Http\Controllers\MateriController::class, 'restoreAll'])->name('materi.restoreAll');
+        Route::delete('materi/trash/force-delete-all',              [\App\Http\Controllers\MateriController::class, 'forceDeleteAll'])->name('materi.forceDeleteAll');
+
+
+        Route::get('tugas/trash',                                   [\App\Http\Controllers\TugasController::class, 'trash'])->name('tugas.trash');
+        Route::patch('tugas/trash/{id}/restore',                    [\App\Http\Controllers\TugasController::class, 'restore'])->name('tugas.restore');
+        Route::delete('tugas/trash/{id}/force-delete',              [\App\Http\Controllers\TugasController::class, 'forceDelete'])->name('tugas.force-delete');
+        Route::patch('tugas/trash/restore-all',                     [\App\Http\Controllers\TugasController::class, 'restoreAll'])->name('tugas.restoreAll');
+        Route::delete('tugas/trash/force-delete-all',               [\App\Http\Controllers\TugasController::class, 'forceDeleteAll'])->name('tugas.forceDeleteAll');
+        
+        Route::get('penilaian/trash',                               [\App\Http\Controllers\PenilaianController::class, 'trash'])->name('penilaian.trash');
+
+        Route::get('kuis/trash',                                    [KuisController::class, 'trash'])->name('kuis.trash');
+        Route::patch('kuis/trash/{id}/restore',                     [KuisController::class, 'restore'])->name('kuis.restore');
+        Route::delete('kuis/trash/{id}/force-delete',               [KuisController::class, 'forceDelete'])->name('kuis.force-delete');
     });
     Route::resource('pertemuan', PertemuanController::class);
 
@@ -311,19 +331,9 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::post('/ruang-belajar/{materi}/mark-done',            [\App\Http\Controllers\RuangBelajarController::class, 'markAsDone'])->name('ruang-belajar.mark-done');
 
     // Materi
-    Route::get('materi/trash',                                  [\App\Http\Controllers\MateriController::class, 'trash'])->name('materi.trash');
-    Route::patch('materi/trash/{id}/restore',                   [\App\Http\Controllers\MateriController::class, 'restore'])->name('materi.restore');
-    Route::delete('materi/trash/{id}/force-delete',             [\App\Http\Controllers\MateriController::class, 'forceDelete'])->name('materi.force-delete');
-    Route::patch('materi/trash/restore-all',                    [\App\Http\Controllers\MateriController::class, 'restoreAll'])->name('materi.restoreAll');
-    Route::delete('materi/trash/force-delete-all',              [\App\Http\Controllers\MateriController::class, 'forceDeleteAll'])->name('materi.forceDeleteAll');
     Route::resource('materi', \App\Http\Controllers\MateriController::class);
 
     // Tugas
-    Route::get('tugas/trash',                                   [\App\Http\Controllers\TugasController::class, 'trash'])->name('tugas.trash');
-    Route::patch('tugas/trash/{id}/restore',                    [\App\Http\Controllers\TugasController::class, 'restore'])->name('tugas.restore');
-    Route::delete('tugas/trash/{id}/force-delete',              [\App\Http\Controllers\TugasController::class, 'forceDelete'])->name('tugas.force-delete');
-    Route::patch('tugas/trash/restore-all',                     [\App\Http\Controllers\TugasController::class, 'restoreAll'])->name('tugas.restoreAll');
-    Route::delete('tugas/trash/force-delete-all',               [\App\Http\Controllers\TugasController::class, 'forceDeleteAll'])->name('tugas.forceDeleteAll');
     Route::resource('tugas', \App\Http\Controllers\TugasController::class);
 
     // Pengumpulan Tugas
@@ -333,15 +343,11 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin,guru'])->group(fu
     Route::get('/pengumpulan-tugas/{pengumpulanTugas}/download', [\App\Http\Controllers\PengumpulanTugasController::class, 'download'])->name('pengumpulan-tugas.download');
 
     // Penilaian
-    Route::get('penilaian/trash',                               [\App\Http\Controllers\PenilaianController::class, 'trash'])->name('penilaian.trash');
     Route::resource('penilaian', \App\Http\Controllers\PenilaianController::class)->only(['index']);
     Route::post('/penilaian/quick-store',                       [\App\Http\Controllers\PenilaianController::class, 'quickStore'])->name('penilaian.quick-store');
 
     // Kuis
-    Route::prefix('kuis')->name('kuis.')->controller(\App\Http\Controllers\KuisController::class)->group(function () {
-        Route::get('/trash',               'trash')->name('trash');
-        Route::patch('/trash/{id}/restore','restore')->name('restore');
-        Route::delete('/trash/{id}/force', 'forceDelete')->name('force-delete');
+    Route::prefix('kuis')->name('kuis.')->controller(KuisController::class)->group(function () {
         Route::get('/',                    'index')->name('index');
         Route::get('/create',              'create')->name('create');
         Route::post('/',                   'store')->name('store');

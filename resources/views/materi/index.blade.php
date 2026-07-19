@@ -101,6 +101,8 @@
                         <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Daftar Materi</h3>
                         <p class="text-gray-400 text-xs mt-0.5">Kelola materi pembelajaran untuk setiap pertemuan</p>
                     </div>
+                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                in_array(Auth::user()->role, ['super_admin', 'admin']))
                     <div class="flex items-center gap-2">
                         {{-- Tombol Arsip --}}
                         <a href="{{ route('materi.trash') }}"
@@ -115,16 +117,16 @@
                         </a>
 
                         {{-- Tombol Tambah --}}
-                        @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']))
-                            <button @click="resetCreateForm(); modalMateri = true"
+                       
+                            <button @click="modalMateri = true"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                                 </svg>
                                 Tambah Materi
                             </button>
+                        </div>
                         @endif
-                    </div>
                 </div>
 
                 {{-- Search & Filter Bar --}}

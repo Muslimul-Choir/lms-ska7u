@@ -73,6 +73,8 @@
                         <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Daftar Penilaian Tugas</h3>
                         <p class="text-gray-400 text-xs mt-0.5">Kelola dan berikan nilai pada tugas yang dikumpulkan siswa</p>
                     </div>
+                    @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                in_array(Auth::user()->role, ['super_admin', 'admin']))
                     <div class="flex items-center gap-2">
                         {{-- Tombol Arsip --}}
                         <a href="{{ route('penilaian.trash') }}"
@@ -86,6 +88,7 @@
                             @endif
                         </a>
                     </div>
+                    @endif
                 </div>
 
                 {{-- Search & Filter Bar --}}

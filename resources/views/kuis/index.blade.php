@@ -60,6 +60,8 @@
                         <h3 class="font-semibold text-gray-800 text-sm tracking-wide">Daftar Kuis</h3>
                         <p class="text-gray-400 text-xs mt-0.5">Kelola kuis dan evaluasi pembelajaran siswa</p>
                     </div>
+                    @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                in_array(Auth::user()->role, ['super_admin', 'admin']))
                     <div class="flex items-center gap-2 font-medium">
                         {{-- Tombol Arsip --}}
                         <a href="{{ route('kuis.trash') }}"
@@ -72,11 +74,11 @@
                                 <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none ml-1">{{ $trashCount }}</span>
                             @endif
                         </a>
-
+                        
                         {{-- Tombol Tambah --}}
                         @if (Auth::user()->role === 'guru')
                         <a href="{{ route('kuis.create') }}"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -84,6 +86,7 @@
                         </a>
                         @endif
                     </div>
+                    @endif
                 </div>
 
                 {{-- Search & Filter Bar --}}
@@ -257,7 +260,11 @@
                                             <p class="font-semibold text-sm">Tidak ada kuis yang sesuai dengan pencarian.</p>
                                         @else
                                             <p class="font-semibold text-sm">Belum ada kuis.</p>
-                                            <a href="{{ route('kuis.create') }}" class="text-amber-600 hover:text-amber-700 font-bold text-xs mt-1">Buat kuis pertama</a>
+
+                                            @if (in_array(Auth::user()->guru?->status_pengajar, ['pengajar', 'keduanya']) ||
+                                                in_array(Auth::user()->role, ['super_admin', 'admin']))
+                                                <a href="{{ route('kuis.create') }}" class="text-amber-600 hover:text-amber-700 font-bold text-xs mt-1">Buat kuis pertama</a>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
